@@ -1,0 +1,207 @@
+
+
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Blog de l'intranquilité </title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --accent:#1f2937;
+      --maxw:760px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.7}
+    a{color:var(--accent);text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    header{
+      background:#8b0000; /* bandeau rouge sobre */
+      border-bottom:1px solid #7a0000;
+    }
+    .wrap{max-width:var(--maxw);margin:0 auto;padding:24px 20px}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:16px}
+    h1{
+      margin:0;
+      font-family:Merriweather,serif;
+      font-size:22px;
+      font-weight:700;
+      color:#ffffff;
+    }
+
+    nav{
+      display:flex;
+      gap:14px;
+      align-items:center;
+    }
+    nav>a,
+    nav .culture-btn,
+    nav .projets-btn{
+      font-size:14px;
+      color:#f3f4f6;
+    }
+    nav>a:hover,
+    nav .culture-btn:hover,
+    nav .projets-btn:hover{
+      text-decoration:underline;
+    }
+    nav>a{font-size:14px;color:var(--muted)}
+
+    /* Dropdown menus */
+    .menu-culture,.menu-projets{position:relative}
+    .culture-dropdown,.projets-dropdown{
+      display:none;
+      position:absolute;
+      top:100%;
+      left:0;
+      background:#ffffff;
+      border:1px solid #e5e7eb;
+      border-radius:6px;
+      min-width:160px;
+      z-index:10;
+      display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #e5e7eb;border-radius:6px;min-width:160px;
+    }
+    .culture-dropdown a,.projets-dropdown a{display:block;padding:8px 12px;font-size:14px;color:var(--text)}
+    .culture-dropdown a:hover,.projets-dropdown a:hover{background:#f9fafb}
+    .menu-culture:hover .culture-dropdown,.menu-projets:hover .projets-dropdown{display:block}
+
+    /* Language flags stacked */
+    .langs{position:relative}
+    .langs img{width:22px;height:14px;cursor:pointer;display:block}
+    .langs img:not(:first-child){display:none;position:absolute;top:0;left:0}
+    .langs:hover img{display:block}
+    .langs img.active{outline:1px solid #9ca3af}
+
+    main{max-width:var(--maxw);margin:40px auto;padding:0 20px}
+    section{margin-bottom:36px}
+    h2{font-family:Merriweather,serif;font-size:20px;margin-bottom:12px}
+    p{margin:0 0 14px 0}
+    .muted{color:var(--muted)}
+
+    form{margin-top:20px}
+    label{display:block;font-size:14px;margin-bottom:4px}
+    input,textarea{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:4px;margin-bottom:12px;font-family:inherit}
+    button{padding:10px 16px;background:var(--accent);color:white;border:none;border-radius:4px;cursor:pointer}
+
+    footer{border-top:1px solid #e5e7eb;text-align:center;font-size:14px;color:var(--muted);padding:24px 20px}
+    .hidden{display:none}
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="wrap top">
+    <h1>Blog de l'intranquilité</h1>
+    <div style="display:flex;align-items:center;gap:16px">
+      <nav>
+        <a href="#" onclick="showHome()">Accueil</a>
+        <a href="#" onclick="alert('Section Articles à venir')">Articles</a>
+        <div class="menu-projets">
+          <a href="#" class="projets-btn">Projets ▾</a>
+          <div class="projets-dropdown">
+            <a href="#" onclick="alert('Libres pensées – à venir')">Libres pensées</a>
+          </div>
+        </div>
+        <div class="menu-culture">
+          <a href="#" class="culture-btn">Culture ▾</a>
+          <div class="culture-dropdown">
+            <a href="#culture-films">Films</a>
+            <a href="#culture-livres">Livres</a>
+            <a href="#culture-musiques">Musiques</a>
+          </div>
+        </div>
+      </nav>
+      <div class="langs">
+        <img src="https://flagcdn.com/w20/fr.png" class="active" onclick="setLang('fr')" alt="Français">
+        <img src="https://flagcdn.com/w20/gb.png" onclick="setLang('en')" alt="English">
+        <img src="https://flagcdn.com/w20/pt.png" onclick="setLang('pt')" alt="Português">
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- HOME CONTENT ONLY -->
+  <section id="home">
+
+    <div data-lang="fr">
+      <h2>Présentation</h2>
+      <p>Ce site est un espace personnel consacré à la réflexion, à l’écriture et au partage de contenus intellectuels et culturels.</p>
+      <p>Il s’adresse à toute personne intéressée par les idées, les projets indépendants et les références culturelles durables.</p>
+
+      <h2>Biographie</h2>
+      <p>Je m’intéresse à la transmission des savoirs, à l’analyse rigoureuse et à la culture sous ses formes diverses. Ce blog sert de carnet public : j’y publie des textes, des projets et des recommandations qui ont marqué mon parcours.</p>
+
+      <h2>Contributions</h2>
+      <p class="muted">Les lecteurs peuvent proposer des articles, des projets ou des suggestions culturelles via le formulaire ci-dessous.</p>
+    </div>
+
+    <div data-lang="en" class="hidden">
+      <h2>About</h2>
+      <p>This website is a personal space dedicated to reflection, writing, and the sharing of intellectual and cultural content.</p>
+      <p>It is intended for readers interested in ideas, independent projects, and lasting cultural references.</p>
+
+      <h2>Biography</h2>
+      <p>I am interested in knowledge transmission, rigorous analysis, and culture in its many forms. This blog serves as a public notebook where I publish texts, projects, and recommendations.</p>
+
+      <h2>Contributions</h2>
+      <p class="muted">Readers are welcome to submit articles, projects, or cultural suggestions using the form below.</p>
+    </div>
+
+    <div data-lang="pt" class="hidden">
+      <h2>Apresentação</h2>
+      <p>Este site é um espaço pessoal dedicado à reflexão, à escrita e ao compartilhamento de conteúdos intelectuais e culturais.</p>
+      <p>Destina-se a leitores interessados em ideias, projetos independentes e referências culturais duradouras.</p>
+
+      <h2>Biografia</h2>
+      <p>Interesso-me pela transmissão do conhecimento, pela análise rigorosa e pela cultura em suas diversas formas. Este blog funciona como um caderno público.</p>
+
+      <h2>Contribuições</h2>
+      <p class="muted">Os leitores podem enviar artigos, projetos ou sugestões culturais através do formulário abaixo.</p>
+    </div>
+
+    <form action="mailto:toi@example.com" method="post" enctype="text/plain">
+      <label>Nom / Name</label>
+      <input name="name">
+      <label>Email</label>
+      <input name="email">
+      <label>Message</label>
+      <textarea name="message" rows="5"></textarea>
+      <button type="submit">Envoyer / Send</button>
+    </form>
+
+  </section>
+</main>
+
+<footer>
+  © <span id="year"></span> — Blog personnel
+</footer>
+
+<script>
+  const year = document.getElementById('year');
+  year.textContent = new Date().getFullYear();
+
+  function setLang(lang){
+    document.querySelectorAll('[data-lang]').forEach(el=>{
+      el.classList.toggle('hidden', el.dataset.lang!==lang);
+    });
+    document.querySelectorAll('.langs img').forEach(img=>img.classList.remove('active'));
+    if(lang==='fr') document.querySelector('.langs img[alt="Français"]').classList.add('active');
+    if(lang==='en') document.querySelector('.langs img[alt="English"]').classList.add('active');
+    if(lang==='pt') document.querySelector('.langs img[alt="Português"]').classList.add('active');
+    document.documentElement.lang = lang;
+  }
+
+  function showHome(){window.scrollTo({top:0,behavior:'smooth'})}
+</script>
+
+</body>
+</html>
+
