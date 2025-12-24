@@ -1,15 +1,9 @@
-
-
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta name="google-site-verification" content="OvFjwWFml52tRspo3--soDMlsilBOtZSCAeoDl4bANI" />
-  <meta name="robots" content="index, follow">
-
-
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Blog de l'intranquilité </title>
+  <title>Blog de l'intranquilité</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
 
@@ -26,62 +20,72 @@
     a{color:var(--accent);text-decoration:none}
     a:hover{text-decoration:underline}
 
-    header{
-      background:#8b0000; /* bandeau rouge sobre */
-      border-bottom:1px solid #7a0000;
-    }
+    header{ background:#8b0000; border-bottom:1px solid #7a0000; }
     .wrap{max-width:var(--maxw);margin:0 auto;padding:24px 20px}
     .top{display:flex;align-items:center;justify-content:space-between;gap:16px}
-    h1{
-      margin:0;
-      font-family:Merriweather,serif;
-      font-size:22px;
-      font-weight:700;
-      color:#ffffff;
-    }
+    h1{ margin:0;font-family:Merriweather,serif;font-size:22px;font-weight:700;color:#ffffff; }
 
-    nav{
-      display:flex;
-      gap:14px;
-      align-items:center;
-    }
-    nav>a,
-    nav .culture-btn,
-    nav .projets-btn{
-      font-size:14px;
-      color:#f3f4f6;
-    }
-    nav>a:hover,
-    nav .culture-btn:hover,
-    nav .projets-btn:hover{
-      text-decoration:underline;
-    }
-    nav>a{font-size:14px;color:var(--muted)}
+    nav{ display:flex; gap:14px; align-items:center; }
+    nav a, nav button { font-size:14px; color:#f3f4f6; background:none;border:0;cursor:pointer;padding:0 }
+    nav a:hover, nav button:hover { text-decoration:underline }
+    nav a.small-muted{ color:var(--muted) }
 
     /* Dropdown menus */
     .menu-culture,.menu-projets{position:relative}
     .culture-dropdown,.projets-dropdown{
-      display:none;
-      position:absolute;
-      top:100%;
-      left:0;
-      background:#ffffff;
-      border:1px solid #e5e7eb;
-      border-radius:6px;
-      min-width:160px;
-      z-index:10;
-      display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #e5e7eb;border-radius:6px;min-width:160px;
+      display:none; position:absolute; top:100%; left:0;
+      background:#ffffff;border:1px solid #e5e7eb;border-radius:6px;min-width:160px;z-index:10;
     }
     .culture-dropdown a,.projets-dropdown a{display:block;padding:8px 12px;font-size:14px;color:var(--text)}
     .culture-dropdown a:hover,.projets-dropdown a:hover{background:#f9fafb}
     .menu-culture:hover .culture-dropdown,.menu-projets:hover .projets-dropdown{display:block}
 
-    /* Language flags stacked */
-    .langs{position:relative}
-    .langs img{width:22px;height:14px;cursor:pointer;display:block}
-    .langs img:not(:first-child){display:none;position:absolute;top:0;left:0}
-    .langs:hover img{display:block}
-    .langs img.active{outline:1px solid #9ca3af}
+    /* Language selector corrected: stack overlaps slightly to avoid hover gap */
+    .langs { position: relative; display: inline-block; overflow: visible; }
+    .main-flag-btn { background: transparent; border: 0; padding: 0; cursor: pointer; display:inline-flex; align-items:center; position:relative; z-index:1; }
+    .main-flag-btn img { width:22px; height:14px; display:block; border-radius:3px; box-shadow:0 1px 2px rgba(0,0,0,.12); }
+
+    .lang-stack {
+      position: absolute;
+      left: 0;
+      /* IMPORTANT: slight overlap (-4px) so there's no mouse gap between main flag and stack */
+      top: calc(100% - 4px);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 8px;
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.12);
+      opacity: 0;
+      pointer-events: none;
+      transform-origin: top left;
+      transform: translateY(-6px) scale(.98);
+      transition: opacity .12s ease, transform .12s ease;
+      z-index: 9999; /* s'assurer que la pile soit au dessus */
+      min-width:44px;
+    }
+
+    .lang-item { background:none;border:0;padding:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;border-radius:6px }
+    .lang-item img{width:30px;height:20px;border-radius:4px;display:block}
+    .lang-item:focus { outline: 2px solid #cbd5e1; outline-offset:2px }
+    .lang-item.active { box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+
+    /* show on hover/focus or when .open (touch) */
+    .langs:hover .lang-stack,
+    .langs:focus-within .lang-stack,
+    .langs.open .lang-stack,
+    .main-flag-btn:hover + .lang-stack {
+      opacity:1; pointer-events:auto; transform:translateY(0) scale(1);
+    }
+
+    @media (max-width:420px){
+      .lang-stack{left:auto;right:0}
+      .lang-item img{width:26px;height:18px}
+      .main-flag-btn img{width:20px;height:13px}
+    }
+
+    .hidden{display:none}
 
     main{max-width:var(--maxw);margin:40px auto;padding:0 20px}
     section{margin-bottom:36px}
@@ -95,7 +99,6 @@
     button{padding:10px 16px;background:var(--accent);color:white;border:none;border-radius:4px;cursor:pointer}
 
     footer{border-top:1px solid #e5e7eb;text-align:center;font-size:14px;color:var(--muted);padding:24px 20px}
-    .hidden{display:none}
   </style>
 </head>
 <body>
@@ -105,107 +108,168 @@
     <h1>Blog de l'intranquilité</h1>
     <div style="display:flex;align-items:center;gap:16px">
       <nav>
-        <a href="#" onclick="showHome()">Accueil</a>
-        <a href="#" onclick="alert('Section Articles à venir')">Articles</a>
+        <a href="#" class="small-muted" data-i18="nav.home" onclick="showHome();return false">Accueil</a>
+        <a href="#" data-i18="nav.articles" onclick="showAlert('articles');return false">Articles</a>
         <div class="menu-projets">
-          <a href="#" class="projets-btn">Projets ▾</a>
+          <button aria-haspopup="true" aria-expanded="false" data-i18="nav.projects" onclick="showAlert('projects');return false">Projets ▾</button>
           <div class="projets-dropdown">
-            <a href="#" onclick="alert('Libres pensées – à venir')">Libres pensées</a>
+            <a href="#" onclick="showAlert('free_thoughts');return false" data-i18="nav.projects_free">Libres pensées</a>
           </div>
         </div>
         <div class="menu-culture">
-          <a href="#" class="culture-btn">Culture ▾</a>
+          <button aria-haspopup="true" aria-expanded="false" data-i18="nav.culture">Culture ▾</button>
           <div class="culture-dropdown">
-            <a href="#culture-films">Films</a>
-            <a href="#culture-livres">Livres</a>
-            <a href="#culture-musiques">Musiques</a>
+            <a href="#culture-films" data-i18="culture.films">Films</a>
+            <a href="#culture-livres" data-i18="culture.books">Livres</a>
+            <a href="#culture-musiques" data-i18="culture.music">Musiques</a>
           </div>
         </div>
       </nav>
-      <div class="langs">
-        <img src="https://flagcdn.com/w20/fr.png" class="active" onclick="setLang('fr')" alt="Français">
-        <img src="https://flagcdn.com/w20/gb.png" onclick="setLang('en')" alt="English">
-        <img src="https://flagcdn.com/w20/pt.png" onclick="setLang('pt')" alt="Português">
+
+      <!-- Language selector -->
+      <div class="langs" id="lang-toggle" aria-haspopup="true">
+        <button class="main-flag-btn" id="main-flag" aria-expanded="false" aria-label="Choisir la langue">
+          <img src="https://flagcdn.com/w20/fr.png" alt="Français" id="main-flag-img">
+        </button>
+
+        <div class="lang-stack" role="menu" aria-label="Langues disponibles">
+          <!-- attention : pas d'attribut title pour éviter tooltip gênant -->
+          <button class="lang-item" role="menuitem" data-lang="fr" aria-label="Français">
+            <img src="https://flagcdn.com/w40/fr.png" alt="Français">
+          </button>
+          <button class="lang-item" role="menuitem" data-lang="en" aria-label="English">
+            <img src="https://flagcdn.com/w40/gb.png" alt="English">
+          </button>
+          <button class="lang-item" role="menuitem" data-lang="pt" aria-label="Português">
+            <img src="https://flagcdn.com/w40/pt.png" alt="Português">
+          </button>
+        </div>
       </div>
+
     </div>
   </div>
 </header>
 
 <main>
-  <!-- HOME CONTENT ONLY -->
   <section id="home">
-
     <div data-lang="fr">
       <h2>Présentation</h2>
-      <p>Ce site est un espace personnel consacré à la réflexion, à l’écriture et au partage de contenus intellectuels et culturels.</p>
-      <p>Il s’adresse à toute personne intéressée par les idées, les projets indépendants et les références culturelles durables.</p>
-
-      <h2>Biographie</h2>
-      <p>Je m’intéresse à la transmission des savoirs, à l’analyse rigoureuse et à la culture sous ses formes diverses. Ce blog sert de carnet public : j’y publie des textes, des projets et des recommandations qui ont marqué mon parcours.</p>
-
-      <h2>Contributions</h2>
-      <p class="muted">Les lecteurs peuvent proposer des articles, des projets ou des suggestions culturelles via le formulaire ci-dessous.</p>
+      <p>Vous êtes à bord pour le voyage au pays des futures réflexions et discussions de Maceo Leal...</p>
     </div>
-
     <div data-lang="en" class="hidden">
       <h2>About</h2>
-      <p>This website is a personal space dedicated to reflection, writing, and the sharing of intellectual and cultural content.</p>
-      <p>It is intended for readers interested in ideas, independent projects, and lasting cultural references.</p>
-
-      <h2>Biography</h2>
-      <p>I am interested in knowledge transmission, rigorous analysis, and culture in its many forms. This blog serves as a public notebook where I publish texts, projects, and recommendations.</p>
-
-      <h2>Contributions</h2>
-      <p class="muted">Readers are welcome to submit articles, projects, or cultural suggestions using the form below.</p>
+      <p>You are on board for a journey into the future reflections and discussions of Maceo Leal...</p>
     </div>
-
     <div data-lang="pt" class="hidden">
       <h2>Apresentação</h2>
-      <p>Este site é um espaço pessoal dedicado à reflexão, à escrita e ao compartilhamento de conteúdos intelectuais e culturais.</p>
-      <p>Destina-se a leitores interessados em ideias, projetos independentes e referências culturais duradouras.</p>
-
-      <h2>Biografia</h2>
-      <p>Interesso-me pela transmissão do conhecimento, pela análise rigorosa e pela cultura em suas diversas formas. Este blog funciona como um caderno público.</p>
-
-      <h2>Contribuições</h2>
-      <p class="muted">Os leitores podem enviar artigos, projetos ou sugestões culturais através do formulário abaixo.</p>
+      <p>Você está a bordo para a viagem ao país das futuras reflexões e discussões de Maceo Leal...</p>
     </div>
 
-    <form action="mailto:toi@example.com" method="post" enctype="text/plain">
-      <label>Nom / Name</label>
-      <input name="name">
-      <label>Email</label>
-      <input name="email">
-      <label>Message</label>
-      <textarea name="message" rows="5"></textarea>
-      <button type="submit">Envoyer / Send</button>
+    <form id="contact-form" action="mailto:toi@example.com" method="post" enctype="text/plain" onsubmit="return handleSubmit(event)">
+      <label for="name-input" data-i18="form.nameLabel">Nom</label>
+      <input id="name-input" name="name">
+      <label for="email-input" data-i18="form.emailLabel">Email</label>
+      <input id="email-input" name="email">
+      <label for="message-input" data-i18="form.messageLabel">Message</label>
+      <textarea id="message-input" name="message" rows="5"></textarea>
+      <button type="submit" id="submit-button" data-i18="form.submit">Envoyer</button>
     </form>
-
   </section>
 </main>
 
 <footer>
-  © <span id="year"></span> — Blog personnel
+  <div id="footer-copy">© <span id="year"></span> — Blog personnel</div>
 </footer>
 
 <script>
+  // année
   const year = document.getElementById('year');
-  year.textContent = new Date().getFullYear();
+  if (year) year.textContent = new Date().getFullYear();
 
-  function setLang(lang){
-    document.querySelectorAll('[data-lang]').forEach(el=>{
-      el.classList.toggle('hidden', el.dataset.lang!==lang);
+  // traductions (réduites ici pour l'exemple)
+  const translations = {
+    fr: { "nav.home":"Accueil","nav.articles":"Articles","form.nameLabel":"Nom","form.emailLabel":"Email","form.messageLabel":"Message","form.submit":"Envoyer","footer.copy":"© {YEAR} — Blog personnel",
+          alerts:{articles:"Section Articles à venir",projects:"Projets — à venir",free_thoughts:"Libres pensées – à venir"}},
+    en: { "nav.home":"Home","nav.articles":"Articles","form.nameLabel":"Name","form.emailLabel":"Email","form.messageLabel":"Message","form.submit":"Send","footer.copy":"© {YEAR} — Personal blog",
+          alerts:{articles:"Articles section coming soon",projects:"Projects — coming soon",free_thoughts:"Free thoughts — coming soon"}},
+    pt: { "nav.home":"Início","nav.articles":"Artigos","form.nameLabel":"Nome","form.emailLabel":"Email","form.messageLabel":"Mensagem","form.submit":"Enviar","footer.copy":"© {YEAR} — Blog pessoal",
+          alerts:{articles:"Seção de artigos em breve",projects:"Projetos — em breve",free_thoughts:"Pensamentos livres – em breve"}}
+  };
+
+  function applyI18n(lang){
+    document.querySelectorAll('[data-i18]').forEach(el=>{
+      const key = el.getAttribute('data-i18');
+      const text = translations[lang] && translations[lang][key] ? translations[lang][key] : '';
+      if(text) el.textContent = text.replace('{YEAR}', new Date().getFullYear());
     });
-    document.querySelectorAll('.langs img').forEach(img=>img.classList.remove('active'));
-    if(lang==='fr') document.querySelector('.langs img[alt="Français"]').classList.add('active');
-    if(lang==='en') document.querySelector('.langs img[alt="English"]').classList.add('active');
-    if(lang==='pt') document.querySelector('.langs img[alt="Português"]').classList.add('active');
-    document.documentElement.lang = lang;
+    const footerEl = document.getElementById('footer-copy');
+    if(footerEl && translations[lang] && translations[lang]['footer.copy']) footerEl.textContent = translations[lang]['footer.copy'].replace('{YEAR}', new Date().getFullYear());
   }
 
-  function showHome(){window.scrollTo({top:0,behavior:'smooth'})}
+  function setLang(lang){
+    document.querySelectorAll('[data-lang]').forEach(el=> el.classList.toggle('hidden', el.dataset.lang !== lang));
+    document.querySelectorAll('.lang-item').forEach(btn=> btn.classList.toggle('active', btn.dataset.lang === lang));
+    // mettre petit drapeau principal pour signaler le choix
+    const mainImg = document.getElementById('main-flag-img');
+    const chosen = document.querySelector('.lang-item[data-lang="'+lang+'"] img');
+    if(chosen){
+      let small = chosen.src;
+      if(small.includes('/w40/')) small = small.replace('/w40/','/w20/');
+      mainImg.src = small;
+      mainImg.alt = chosen.alt;
+    }
+    applyI18n(lang);
+    document.documentElement.lang = lang;
+    try{ localStorage.setItem('site-lang', lang); } catch(e){}
+    const toggle = document.getElementById('lang-toggle');
+    toggle.classList.remove('open');
+    document.getElementById('main-flag')?.setAttribute('aria-expanded','false');
+  }
+
+  (function(){
+    const toggle = document.getElementById('lang-toggle');
+    const mainBtn = document.getElementById('main-flag');
+    const items = toggle.querySelectorAll('.lang-item');
+
+    mainBtn.addEventListener('click', ()=> {
+      const open = toggle.classList.toggle('open');
+      mainBtn.setAttribute('aria-expanded', String(open));
+      if(open) items[0].focus();
+    });
+
+    items.forEach((btn, idx)=>{
+      btn.addEventListener('click', ()=> setLang(btn.dataset.lang));
+      btn.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setLang(btn.dataset.lang); return; }
+        if(e.key === 'ArrowDown') { e.preventDefault(); items[(idx+1)%items.length].focus(); }
+        if(e.key === 'ArrowUp') { e.preventDefault(); items[(idx-1+items.length)%items.length].focus(); }
+        if(e.key === 'Escape') { toggle.classList.remove('open'); mainBtn.focus(); mainBtn.setAttribute('aria-expanded','false'); }
+      });
+    });
+
+    document.addEventListener('click', (e)=> { if(!toggle.contains(e.target)) { toggle.classList.remove('open'); mainBtn.setAttribute('aria-expanded','false'); } });
+
+    const saved = (function(){ try { return localStorage.getItem('site-lang'); } catch(e){ return null; } })();
+    const initial = saved || document.documentElement.lang || 'fr';
+    setLang(initial);
+  })();
+
+  function showAlert(key){
+    const lang = document.documentElement.lang || 'fr';
+    const msg = translations[lang] && translations[lang].alerts && translations[lang].alerts[key] ? translations[lang].alerts[key] : '';
+    if(msg) alert(msg);
+  }
+
+  function handleSubmit(e){
+    e.preventDefault();
+    const lang = document.documentElement.lang || 'fr';
+    const messages = { fr:'Merci — message envoyé (simulé).', en:'Thanks — message sent (simulated).', pt:'Obrigado — mensagem enviada (simulada).' };
+    alert(messages[lang] || messages.fr);
+    return false;
+  }
+
+  function showHome(){ window.scrollTo({top:0,behavior:'smooth'}) }
 </script>
 
 </body>
 </html>
-
