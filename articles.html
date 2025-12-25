@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Articles — Blog de l'intranquilité</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --maxw:760px; --bg:#ffffff; --text:#111827; --muted:#6b7280; --accent:#1f2937;
+      --brand:#8b0000;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.7}
+    a{color:var(--accent);text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    header{background:var(--brand);border-bottom:1px solid #7a0000}
+    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    h1{margin:0;font-family:Merriweather,serif;font-size:20px;font-weight:700;color:#fff}
+
+    nav{display:flex;align-items:center;gap:14px;flex-wrap:nowrap}
+    nav a{color:#f3f4f6;font-size:14px}
+    nav a.active{text-decoration:underline;font-weight:600}
+
+    .menu-projets,.menu-culture{position:relative;display:flex;align-items:center}
+    .projets-dropdown,.culture-dropdown{
+      display:none; position:absolute; top:100%; left:0; background:#fff; border:1px solid #e5e7eb; border-radius:6px; min-width:160px; z-index:10;
+    }
+    .projets-dropdown a,.culture-dropdown a{display:block;padding:8px 12px;color:var(--text)}
+    .menu-projets:hover .projets-dropdown,.menu-culture:hover .culture-dropdown{display:block}
+
+    .langs{display:flex;gap:6px;align-items:center}
+    .langs img.flag{width:22px;height:14px;border-radius:2px;border:1px solid transparent;cursor:pointer}
+
+    main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
+    .toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+    .search{flex:1;max-width:360px}
+    input[type="search"]{width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit}
+
+    .articles{display:flex;flex-direction:column;gap:18px}
+    article.card{border:1px solid #e6e6e9;border-radius:8px;padding:14px}
+    article.card h2{margin:0 0 6px;font-family:Merriweather,serif;font-size:18px}
+    .meta{color:var(--muted);font-size:13px;margin-bottom:8px}
+    .excerpt{margin:0 0 10px}
+
+    footer{border-top:1px solid #e5e7eb;text-align:center;font-size:14px;color:var(--muted);padding:18px 20px}
+    @media (max-width:640px){
+      nav{gap:10px}
+      .wrap{padding:14px}
+      .toolbar{flex-direction:column;align-items:stretch}
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>Blog de l'intranquilité</h1>
+
+    <div style="display:flex;align-items:center;gap:16px">
+      <nav aria-label="Navigation principale">
+        <a href="index.html">Accueil</a>
+        <a href="articles.html" id="nav-articles">Articles</a>
+        <div class="menu-projets">
+          <a href="projets-libres-pensees.html">Projets ▾</a>
+          <div class="projets-dropdown" role="menu" aria-label="Projets">
+            <a href="projets-libres-pensees.html">Libres Pensées</a>
+            <a href="#">Bref</a>
+          </div>
+        </div>
+        <div class="menu-culture">
+          <a href="#" class="culture-btn">Culture ▾</a>
+          <div class="culture-dropdown" role="menu" aria-label="Culture">
+            <a href="culture-films.html">Films</a>
+            <a href="culture-livres.html">Livres</a>
+            <a href="culture-musiques.html">Musiques</a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="langs" role="navigation" aria-label="Choix de la langue">
+        <img src="https://flagcdn.com/w20/fr.png" data-lang="fr" alt="Français" class="flag" tabindex="0">
+        <img src="https://flagcdn.com/w20/gb.png" data-lang="en" alt="English" class="flag" tabindex="0">
+        <img src="https://flagcdn.com/w20/pt.png" data-lang="pt" alt="Português" class="flag" tabindex="0">
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="toolbar">
+    <h2 style="margin:0;font-family:Merriweather,serif">Articles</h2>
+    <div class="search" aria-hidden="false">
+      <label for="q" class="sr-only" style="display:none">Rechercher</label>
+      <input id="q" type="search" placeholder="Rechercher un article…" oninput="filterArticles()">
+    </div>
+  </div>
+
+  <div class="articles" id="articles-list">
+    <!-- Exemple d'articles — remplace par tes contenus -->
+    <article class="card" data-title="Réflexions sur la lecture">
+      <h2>Réflexions sur la lecture</h2>
+      <p class="meta">Publié le 12 avril 2025 — Essai</p>
+      <p class="excerpt">Courtes notes sur la manière d’aborder un texte, la lecture attentive et ses usages contemporains.</p>
+      <p><a href="#">Lire la suite →</a></p>
+    </article>
+
+    <article class="card" data-title="Petites chroniques — ville et mémoire">
+      <h2>Petites chroniques — ville et mémoire</h2>
+      <p class="meta">Publié le 2 mars 2025 — Chronique</p>
+      <p class="excerpt">Observations sur l’espace urbain, les traces du passé et la façon dont la mémoire structure nos promenades.</p>
+      <p><a href="#">Lire la suite →</a></p>
+    </article>
+
+    <article class="card" data-title="Sur la méthode: notes pour un carnet">
+      <h2>Sur la méthode: notes pour un carnet</h2>
+      <p class="meta">Publié le 10 janvier 2025 — Notes</p>
+      <p class="excerpt">Conseils de prise de notes et méthode de travail pour garder un carnet intellectuel personnel.</p>
+      <p><a href="#">Lire la suite →</a></p>
+    </article>
+
+    <!-- Ajoute d'autres articles ici -->
+  </div>
+</main>
+
+<footer>
+  © <span id="year"></span> — Blog personnel
+</footer>
+
+<script>
+  // Affiche l'année
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Marque l'item actif dans la navigation
+  (function markActive(){
+    try {
+      const path = location.pathname.split('/').pop();
+      if (path === '' || path === 'index.html') { document.querySelector('nav a[href="index.html"]').classList.add('active'); }
+      const a = document.querySelector('nav a[href="' + path + '"]');
+      if (a) a.classList.add('active');
+    } catch(e){/* safe */ }
+  })();
+
+  // Filtre basique côté client pour la recherche
+  function filterArticles(){
+    const q = document.getElementById('q').value.trim().toLowerCase();
+    document.querySelectorAll('#articles-list article.card').forEach(card => {
+      const title = (card.dataset.title || card.querySelector('h2').textContent).toLowerCase();
+      const excerpt = (card.querySelector('.excerpt')?.textContent || '').toLowerCase();
+      const visible = q === '' || title.includes(q) || excerpt.includes(q);
+      card.style.display = visible ? '' : 'none';
+    });
+  }
+</script>
+
+</body>
+</html>
