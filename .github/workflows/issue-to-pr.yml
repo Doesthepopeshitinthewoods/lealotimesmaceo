@@ -1,0 +1,92 @@
+name: Issue to PR (publication modérée)
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  build-proposal:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const labels = issue.labels.map(l => l.name);
+
+            if (!labels.includes("proposal")) {
+              return;
+            }
+
+            let section = null;
+            if (labels.includes("film")) section = "films";
+            if (labels.includes("livre")) section = "livres";
+            if (labels.includes("musique")) section = "musiques";
+            if (labels.includes("article")) section = "articles";
+
+            if (!section) return;
+
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issueNumber = issue.number;
+            const slug = issue.title
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/(^-|-$)/g, "");
+
+            const branch = `proposal/${section}-${issueNumber}`;
+
+            const repoData = await github.rest.repos.get({ owner, repo });
+            const base = repoData.data.default_branch;
+
+            const baseRef = await github.rest.git.getRef({
+              owner, repo, ref: `heads/${base}`
+            });
+
+            await github.rest.git.createRef({
+              owner, repo,
+              ref: `refs/heads/${branch}`,
+              sha: baseRef.data.object.sha
+            });
+
+            const content = `---
+title: "${issue.title}"
+section: "${section}"
+pseudo: "voir issue #${issueNumber}"
+---
+
+${issue.body}
+`;
+
+            const path = `content/${section}/${issueNumber}-${slug}.md`;
+
+            await github.rest.repos.createOrUpdateFileContents({
+              owner, repo,
+              path,
+              message: `Ajout proposition (${section}) #${issueNumber}`,
+              content: Buffer.from(content).toString("base64"),
+              branch
+            });
+
+            const pr = await github.rest.pulls.create({
+              owner, repo,
+              head: branch,
+              base,
+              title: `Proposition ${section} #${issueNumber}`,
+              body: `Issue source : ${issue.html_url}`
+            });
+
+            await github.rest.issues.createComment({
+              owner, repo,
+              issue_number: issueNumber,
+              body: `Merci pour la proposition 🙏  
+Une Pull Request a été créée : ${pr.data.html_url}
+
+Elle sera publiée après validation.`
+            );
