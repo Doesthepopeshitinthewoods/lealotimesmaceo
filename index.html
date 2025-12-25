@@ -95,18 +95,21 @@
 <header>
   <div class="wrap top">
     <h1>Blog de l'intranquilité</h1>
-    <div style="display:flex;align-items:er;gap:16px">
+
+    <!-- conteneur droit : nav + langues -->
+    <div style="display:flex;align-items:center;gap:16px">
       <nav>
         <a href="#" onclick="showHome()">Accueil</a>
         <a href="#" onclick="alert('Section Articles à venir')">Articles</a>
+
         <div class="menu-projets">
           <a href="#" class="projets-btn">Projets ▾</a>
           <div class="projets-dropdown">
-            <div class="culture-dropdown">
-            <a href="culture-films.html">Libres Pensées</a>
-            <a href="culture-livres.html">Bref</a>
+            <a href="projets-libres-pensees.html">Libres Pensées</a>
+            <a href="#">Bref</a>
           </div>
         </div>
+
         <div class="menu-culture">
           <a href="#" class="culture-btn">Culture ▾</a>
           <div class="culture-dropdown">
@@ -115,12 +118,12 @@
             <a href="culture-musiques.html">Musiques</a>
           </div>
         </div>
-
       </nav>
+
       <div class="langs" role="navigation" aria-label="Choix de la langue">
-        <img src="https://flagcdn.com/w20/fr.png" data-lang="fr" alt="Français" class="flag" role="button" aria-pressed="false" tabindex="0">
-        <img src="https://flagcdn.com/w20/gb.png" data-lang="en" alt="English" class="flag" role="button" aria-pressed="false" tabindex="0">
-        <img src="https://flagcdn.com/w20/pt.png" data-lang="pt" alt="Português" class="flag" role="button" aria-pressed="false" tabindex="0">
+        <img src="https://flagcdn.com/w20/fr.png" data-lang="fr" alt="Français" class="flag" role="button" tabindex="0">
+        <img src="https://flagcdn.com/w20/gb.png" data-lang="en" alt="English" class="flag" role="button" tabindex="0">
+        <img src="https://flagcdn.com/w20/pt.png" data-lang="pt" alt="Português" class="flag" role="button" tabindex="0">
       </div>
     </div>
   </div>
