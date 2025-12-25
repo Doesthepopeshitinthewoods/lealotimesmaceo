@@ -1,185 +1,249 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Blog — Accueil</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Blog de l'intranquilité</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
+
   <style>
     :root{
-      --bg:#ffffff; --accent:#8b0000; --text:#111827; --muted:#6b7280; --maxw:1000px;
+      --bg:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --accent:#1f2937;
+      --maxw:760px;
     }
     *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--text);line-height:1.6}
-    header{background:var(--accent);color:#fff}
-    .wrap{max-width:var(--maxw);margin:0 auto;padding:16px}
-    .top{display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .brand{font-weight:700;font-size:18px}
-    nav{display:flex;gap:12px;align-items:center}
-    .nav-item{position:relative}
-    .nav-link{color:#fff;text-decoration:none;padding:8px 10px;display:inline-block}
-    .nav-link:hover{background:rgba(255,255,255,0.06);border-radius:6px}
-    .dropdown{display:none;position:absolute;top:100%;left:0;background:#fff;color:var(--text);border-radius:8px;padding:6px;box-shadow:0 6px 20px rgba(0,0,0,.12);min-width:180px;z-index:40}
-    .dropdown a{display:block;padding:8px 10px;color:var(--text);text-decoration:none;border-radius:6px}
-    .dropdown a:hover{background:#f3f4f6}
-    .nav-item:hover .dropdown{display:block}
-    .lang-btn{background:transparent;border:0;color:#fff;cursor:pointer;padding:6px 8px;display:inline-flex;align-items:center;gap:8px}
-    main{padding:32px 16px}
-    h1{font-family:Georgia,serif;margin:0 0 12px 0}
-    .muted{color:var(--muted)}
-    footer{text-align:center;padding:18px;border-top:1px solid #eee;color:var(--muted)}
-    .btn-link{display:inline-block;padding:8px 12px;background:#111;color:#fff;border-radius:6px;text-decoration:none;margin:6px 6px 0 0}
-    .hidden{display:none}
-    @media (max-width:720px){
-      .top{flex-direction:column;align-items:flex-start;gap:8px}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.7}
+    a{color:var(--accent);text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    header{
+      background:#8b0000; /* bandeau rouge sobre */
+      border-bottom:1px solid #7a0000;
     }
+    .wrap{max-width:var(--maxw);margin:0 auto;padding:24px 20px}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:16px}
+    h1{
+      margin:0;
+      font-family:Merriweather,serif;
+      font-size:22px;
+      font-weight:700;
+      color:#ffffff;
+    }
+
+    nav{
+      display:flex;
+      gap:14px;
+      align-items:center;
+    }
+    nav>a,
+    nav .culture-btn,
+    nav .projets-btn{
+      font-size:14px;
+      color:#f3f4f6;
+    }
+    nav>a:hover,
+    nav .culture-btn:hover,
+    nav .projets-btn:hover{
+      text-decoration:underline;
+    }
+    nav>a{font-size:14px;color:var(--muted)}
+
+    /* Dropdown menus */
+    .menu-culture,.menu-projets{position:relative}
+    .culture-dropdown,.projets-dropdown{
+      display:none;
+      position:absolute;
+      top:100%;
+      left:0;
+      background:#ffffff;
+      border:1px solid #e5e7eb;
+      border-radius:6px;
+      min-width:160px;
+      z-index:10;
+    }
+    .culture-dropdown a,.projets-dropdown a{display:block;padding:8px 12px;font-size:14px;color:var(--text)}
+    .culture-dropdown a:hover,.projets-dropdown a:hover{background:#f9fafb}
+    .menu-culture:hover .culture-dropdown,.menu-projets:hover .projets-dropdown{display:block}
+
+    /* Language flags — affichage pour mobile & desktop */
+    .langs { display:flex; gap:6px; align-items:center; }
+    .langs img.flag { width:22px; height:14px; cursor:pointer; display:inline-block; border-radius:2px; border:1px solid transparent; }
+    .langs img.flag:focus { outline:2px solid #fff; outline-offset:2px; }
+    .langs img.flag.active { outline:2px solid rgba(255,255,255,0.85); box-shadow:0 0 0 2px rgba(0,0,0,0.06) inset; border-color:rgba(0,0,0,0.06); }
+
+    main{max-width:var(--maxw);margin:40px auto;padding:0 20px}
+    section{margin-bottom:36px}
+    h2{font-family:Merriweather,serif;font-size:20px;margin-bottom:12px}
+    p{margin:0 0 14px 0}
+    .muted{color:var(--muted)}
+
+    form{margin-top:20px}
+    label{display:block;font-size:14px;margin-bottom:4px}
+    input,textarea{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:4px;margin-bottom:12px;font-family:inherit}
+    button{padding:10px 16px;background:var(--accent);color:white;border:none;border-radius:4px;cursor:pointer}
+
+    footer{border-top:1px solid #e5e7eb;text-align:center;font-size:14px;color:var(--muted);padding:24px 20px}
+    .hidden{display:none}
   </style>
 </head>
 <body>
-  <header>
-    <div class="wrap top">
-      <div class="brand">Blog de l'intranquilité</div>
 
+<header>
+  <div class="wrap top">
+    <h1>Blog de l'intranquilité</h1>
+    <div style="display:flex;align-items:center;gap:16px">
       <nav>
-        <div class="nav-item">
-          <a class="nav-link" href="index.html" data-i18="nav.home">Accueil</a>
-        </div>
-
-        <div class="nav-item">
-          <a class="nav-link" href="#" aria-haspopup="true">Culture ▾</a>
-          <div class="dropdown">
-            <a href="culture-films.html" data-i18="culture.films">Films</a>
-            <a href="culture-livres.html" data-i18="culture.books">Livres</a>
-            <a href="culture-musiques.html" data-i18="culture.music">Musiques</a>
+        <a href="#" onclick="showHome()">Accueil</a>
+        <a href="#" onclick="alert('Section Articles à venir')">Articles</a>
+        <div class="menu-projets">
+          <a href="#" class="projets-btn">Projets ▾</a>
+          <div class="projets-dropdown">
+            <a href="#" onclick="alert('Libres pensées – à venir')">Libres pensées</a>
           </div>
         </div>
-
-        <div class="nav-item">
-          <a class="nav-link" href="#" aria-haspopup="true">Projets ▾</a>
-          <div class="dropdown">
-            <a href="projets-libres-pensees.html" data-i18="nav.projects_free">Libres pensées</a>
-          </div>
-        </div>
-
-        <div class="nav-item">
-          <a class="nav-link" href="articles.html" data-i18="nav.articles">Articles</a>
-        </div>
-
-        <!-- Language selector (small) -->
-        <div class="nav-item" style="margin-left:8px">
-          <button class="lang-btn" id="lang-toggle" aria-expanded="false">
-            <img id="nav-main-flag" src="https://flagcdn.com/w20/fr.png" alt="fr" style="width:20px;height:14px;border-radius:3px">
-            <span id="nav-lang-code">FR</span>
-          </button>
-          <div class="dropdown" id="lang-dropdown" style="right:0;left:auto;min-width:160px">
-            <button class="lang-select" data-lang="fr" style="background:none;border:0;padding:8px 6px;width:100%;text-align:left;cursor:pointer">
-              <img src="https://flagcdn.com/w24/fr.png" style="width:22px;height:14px;vertical-align:middle;margin-right:8px"> Français
-            </button>
-            <button class="lang-select" data-lang="en" style="background:none;border:0;padding:8px 6px;width:100%;text-align:left;cursor:pointer">
-              <img src="https://flagcdn.com/w24/gb.png" style="width:22px;height:14px;vertical-align:middle;margin-right:8px"> English
-            </button>
-            <button class="lang-select" data-lang="pt" style="background:none;border:0;padding:8px 6px;width:100%;text-align:left;cursor:pointer">
-              <img src="https://flagcdn.com/w24/pt.png" style="width:22px;height:14px;vertical-align:middle;margin-right:8px"> Português
-            </button>
+        <div class="menu-culture">
+          <a href="#" class="culture-btn">Culture ▾</a>
+          <div class="culture-dropdown">
+            <a href="#culture-films">Films</a>
+            <a href="#culture-livres">Livres</a>
+            <a href="#culture-musiques">Musiques</a>
           </div>
         </div>
       </nav>
+      <div class="langs" role="navigation" aria-label="Choix de la langue">
+        <img src="https://flagcdn.com/w20/fr.png" data-lang="fr" alt="Français" class="flag" role="button" aria-pressed="false" tabindex="0">
+        <img src="https://flagcdn.com/w20/gb.png" data-lang="en" alt="English" class="flag" role="button" aria-pressed="false" tabindex="0">
+        <img src="https://flagcdn.com/w20/pt.png" data-lang="pt" alt="Português" class="flag" role="button" aria-pressed="false" tabindex="0">
+      </div>
     </div>
-  </header>
+  </div>
+</header>
 
-  <main class="wrap">
-    <h1 data-lang="fr">Bienvenue — page d'accueil</h1>
-    <h1 data-lang="en" class="hidden">Welcome — home page</h1>
-    <h1 data-lang="pt" class="hidden">Bem-vindo — página inicial</h1>
+<main>
+  <!-- HOME CONTENT ONLY -->
+  <section id="home">
 
-    <p data-lang="fr">Ceci est la page d'accueil. Choisissez une rubrique ci-dessus.</p>
-    <p data-lang="en" class="hidden">This is the home page. Choose a section above.</p>
-    <p data-lang="pt" class="hidden">Esta é a página inicial. Escolha uma seção acima.</p>
+    <div data-lang="fr" class="lang-block">
+      <h2>Présentation</h2>
+      <p>Ce site est un espace personnel consacré à la réflexion, à l’écriture et au partage de contenus intellectuels et culturels.</p>
+      <p>Il s’adresse à toute personne intéressée par les idées, les projets indépendants et les références culturelles durables.</p>
 
-    <p class="muted">Sections rapides :</p>
-    <div>
-      <a class="btn-link" href="culture-films.html" data-i18="culture.films">Films</a>
-      <a class="btn-link" href="culture-livres.html" data-i18="culture.books">Livres</a>
-      <a class="btn-link" href="culture-musiques.html" data-i18="culture.music">Musiques</a>
-      <a class="btn-link" href="projets-libres-pensees.html" data-i18="nav.projects_free">Libres pensées</a>
-      <a class="btn-link" href="articles.html" data-i18="nav.articles">Articles</a>
+      <h2>Biographie</h2>
+      <p>Je m’intéresse à la transmission des savoirs, à l’analyse rigoureuse et à la culture sous ses formes diverses. Ce blog sert de carnet public : j’y publie des textes, des projets et des recommandations qui ont marqué mon parcours.</p>
+
+      <h2>Contributions</h2>
+      <p class="muted">Les lecteurs peuvent proposer des articles, des projets ou des suggestions culturelles via le formulaire ci-dessous.</p>
     </div>
-  </main>
 
-  <footer>
-    <div id="footer-copy">© <span id="year"></span> — Blog personnel</div>
-  </footer>
+    <div data-lang="en" class="lang-block hidden">
+      <h2>About</h2>
+      <p>This website is a personal space dedicated to reflection, writing, and the sharing of intellectual and cultural content.</p>
+      <p>It is intended for readers interested in ideas, independent projects, and lasting cultural references.</p>
 
-  <script>
-    // I18N labels used in nav/footer
-    const translations = {
-      fr: {"nav.home":"Accueil","culture.films":"Films","culture.books":"Livres","culture.music":"Musiques","nav.projects_free":"Libres pensées","nav.articles":"Articles","footer.copy":"© {YEAR} — Blog personnel"},
-      en: {"nav.home":"Home","culture.films":"Films","culture.books":"Books","culture.music":"Music","nav.projects_free":"Free thoughts","nav.articles":"Articles","footer.copy":"© {YEAR} — Personal blog"},
-      pt: {"nav.home":"Início","culture.films":"Filmes","culture.books":"Livros","culture.music":"Músicas","nav.projects_free":"Pensamentos livres","nav.articles":"Artigos","footer.copy":"© {YEAR} — Blog pessoal"}
-    };
+      <h2>Biography</h2>
+      <p>I am interested in knowledge transmission, rigorous analysis, and culture in its many forms. This blog serves as a public notebook where I publish texts, projects, and recommendations.</p>
 
-    function applyI18n(lang){
-      document.querySelectorAll('[data-i18]').forEach(el=>{
-        const key = el.getAttribute('data-i18');
-        const txt = translations[lang] && translations[lang][key] ? translations[lang][key] : '';
-        if(txt) el.textContent = txt.replace('{YEAR}', new Date().getFullYear());
+      <h2>Contributions</h2>
+      <p class="muted">Readers are welcome to submit articles, projects, or cultural suggestions using the form below.</p>
+    </div>
+
+    <div data-lang="pt" class="lang-block hidden">
+      <h2>Apresentação</h2>
+      <p>Este site é um espaço pessoal dedicado à reflexão, à escrita e ao compartilhamento de conteúdos intelectuais e culturais.</p>
+      <p>Destina-se a leitores interessados em ideias, projetos independentes e referências culturais duradouras.</p>
+
+      <h2>Biografia</h2>
+      <p>Interesso-me pela transmissão do conhecimento, pela análise rigorosa e pela cultura em suas diversas formas. Este blog funciona como um caderno público.</p>
+
+      <h2>Contribuições</h2>
+      <p class="muted">Os leitores podem enviar artigos, projetos ou sugestões culturais através do formulário abaixo.</p>
+    </div>
+
+    <form action="mailto:toi@example.com" method="post" enctype="text/plain">
+      <label>Nom / Name</label>
+      <input name="name">
+      <label>Email</label>
+      <input name="email">
+      <label>Message</label>
+      <textarea name="message" rows="5"></textarea>
+      <button type="submit">Envoyer / Send</button>
+    </form>
+
+  </section>
+</main>
+
+<footer>
+  © <span id="year"></span> — Blog personnel
+</footer>
+
+<script>
+  // Met à jour l'année dans le footer
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Fonction pour scroller en haut
+  function showHome(){ window.scrollTo({top:0,behavior:'smooth'}) }
+
+  // Gestion des langues avec localStorage + accessibilité
+  (function() {
+    const LANG_KEY = 'blog_lang';
+
+    function setLang(lang) {
+      // Affiche / cache les blocs de contenu (on vise uniquement .lang-block)
+      document.querySelectorAll('.lang-block').forEach(el => {
+        el.classList.toggle('hidden', el.dataset.lang !== lang);
       });
-      const footer = document.getElementById('footer-copy');
-      footer.textContent = translations[lang]['footer.copy'].replace('{YEAR}', new Date().getFullYear());
+
+      // Met à jour l'état des drapeaux
+      document.querySelectorAll('.langs img[data-lang]').forEach(img => {
+        const isActive = (img.dataset.lang === lang);
+        img.classList.toggle('active', isActive);
+        img.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      });
+
+      // Met à jour l'attribut lang du document
+      document.documentElement.lang = lang;
+
+      // Sauvegarde la préférence
+      try {
+        localStorage.setItem(LANG_KEY, lang);
+      } catch (e) {
+        // si localStorage indisponible, on ignore proprement
+        console.warn('localStorage inaccessible :', e);
+      }
     }
 
-    (function(){
-      // lang dropdown open/close (small)
-      const toggle = document.getElementById('lang-toggle');
-      const container = document.querySelector('.nav-item .lang-btn') || document.getElementById('lang-toggle');
-      const menu = document.getElementById('lang-dropdown');
-      const mainFlag = document.getElementById('nav-main-flag');
-      const mainCode = document.getElementById('nav-lang-code');
-      // click to open
-      document.getElementById('lang-toggle').addEventListener('click', e => {
-        e.preventDefault();
-        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-      });
-
-      // choose language
-      menu.querySelectorAll('.lang-select').forEach(btn=>{
-        btn.addEventListener('click', ()=> {
-          const lang = btn.getAttribute('data-lang');
-          setLang(lang);
-          menu.style.display = 'none';
+    // Initialise les écouteurs sur les drapeaux
+    function initFlagListeners() {
+      document.querySelectorAll('.langs img[data-lang]').forEach(img => {
+        // click et interaction clavier (Enter, Space)
+        img.addEventListener('click', () => setLang(img.dataset.lang));
+        img.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setLang(img.dataset.lang);
+          }
         });
       });
+    }
 
-      function setLang(lang){
-        document.querySelectorAll('[data-lang]').forEach(el=> el.classList.toggle('hidden', el.getAttribute('data-lang') !== lang));
-        // update indicator
-        const chosenImg = menu.querySelector('[data-lang="'+lang+'"] img');
-        if(chosenImg){
-          let src = chosenImg.src.replace('/w24/','/w20/');
-          mainFlag.src = src;
-          mainFlag.alt = chosenImg.alt || lang;
-          mainCode.textContent = lang.toUpperCase();
-        }
-        applyI18n(lang);
-        document.documentElement.lang = lang;
-        try { localStorage.setItem('site-lang', lang); } catch(e){}
-      }
+    // Initialisation au chargement
+    document.addEventListener('DOMContentLoaded', () => {
+      initFlagListeners();
+      const stored = (function(){
+        try { return localStorage.getItem(LANG_KEY); } catch(e){ return null; }
+      })();
+      const initial = stored || document.documentElement.lang || 'fr';
+      setLang(initial);
+    });
+  })();
+</script>
 
-      // restore saved lang
-      const saved = (function(){ try { return localStorage.getItem('site-lang'); } catch(e){ return null; } })() || 'fr';
-      document.addEventListener('DOMContentLoaded', ()=>{
-        setLang(saved);
-        document.getElementById('year').textContent = new Date().getFullYear();
-      });
-
-      // close menu when clicking outside
-      document.addEventListener('click', e => {
-        if (!document.getElementById('lang-dropdown').contains(e.target) && !document.getElementById('lang-toggle').contains(e.target)) {
-          document.getElementById('lang-dropdown').style.display = 'none';
-        }
-      });
-    })();
-  </script>
 </body>
 </html>
+
 
 
