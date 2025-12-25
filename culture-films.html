@@ -4,73 +4,60 @@
   <meta charset="utf-8">
   <title>Culture — Films</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
-
   <style>
-    body {
-      margin: 0;
-      font-family: Inter, system-ui, sans-serif;
-      background: #ffffff;
-      color: #111827;
-      line-height: 1.7;
-    }
-    header {
-      background: #8b0000;
-      padding: 20px;
-    }
-    header a {
-      color: #fff;
-      text-decoration: none;
-      font-family: Merriweather, serif;
-      font-weight: 700;
-    }
-    main {
-      max-width: 760px;
-      margin: 40px auto;
-      padding: 0 20px;
-    }
-    h1 {
-      font-family: Merriweather, serif;
-      font-size: 24px;
-    }
-    article {
-      margin-bottom: 32px;
-    }
-    .year {
-      color: #6b7280;
-      font-size: 14px;
-    }
+    :root{--maxw:760px;--bg:#fff;--text:#111827;--muted:#6b7280;--accent:#1f2937}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.7}
+    header{background:#8b0000;border-bottom:1px solid #7a0000}
+    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between}
+    h1{margin:0;font-family:Merriweather,serif;font-size:20px;font-weight:700;color:#fff}
+    nav{display:flex;gap:12px;align-items:center}
+    nav a{color:#f3f4f6;text-decoration:none;font-size:14px}
+    nav a:hover{text-decoration:underline}
+    main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
+    h2{font-family:Merriweather,serif;font-size:18px;margin:0 0 8px}
+    article{margin-bottom:20px}
+    .meta{color:var(--muted);font-size:13px;margin-bottom:6px}
+    footer{border-top:1px solid #e5e7eb;text-align:center;font-size:14px;color:var(--muted);padding:18px 20px}
   </style>
 </head>
 <body>
+  <header>
+    <div class="wrap">
+      <h1>Blog de l'intranquilité</h1>
+      <nav aria-label="Navigation principale">
+        <a href="index.html">Accueil</a>
+        <a href="culture-films.html">Films</a>
+        <a href="culture-livres.html">Livres</a>
+        <a href="culture-musiques.html">Musiques</a>
+        <a href="projets-libres-pensees.html">Projets</a>
+      </nav>
+    </div>
+  </header>
 
-<header>
-  <a href="index.html">← Retour au blog</a>
-</header>
+  <main>
+    <h2>Films — Sélection</h2>
 
-<main>
-  <h1>Films</h1>
+    <article>
+      <h3>Stalker</h3>
+      <p class="meta">Andreï Tarkovski — 1979</p>
+      <p>Un film métaphysique et hypnotique qui interroge le désir, la foi et l’espace intérieur.</p>
+    </article>
 
-  <article>
-    <h2>Stalker</h2>
-    <p class="year">Andreï Tarkovski — 1979</p>
-    <p>
-      Un film métaphysique sur le désir, la foi et l’errance intérieure.
-    </p>
-  </article>
+    <article>
+      <h3>Le Septième Sceau</h3>
+      <p class="meta">Ingmar Bergman — 1957</p>
+      <p>Une méditation sur la mort et le sens de l’existence à travers une partie d’échecs allégorique.</p>
+    </article>
 
-  <article>
-    <h2>Le Septième Sceau</h2>
-    <p class="year">Ingmar Bergman — 1957</p>
-    <p>
-      Une méditation sur la mort, le silence de Dieu et le sens de l’existence.
-    </p>
-  </article>
+    <!-- Ajoute tes films ici -->
+  </main>
 
-  <!-- Ajoute autant de films que tu veux -->
-</main>
+  <footer>
+    © <span id="year"></span> — Blog personnel
+  </footer>
 
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 </body>
 </html>
-
