@@ -1,47 +1,63 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Musiques — Culture</title>
+  <meta charset="utf-8">
+  <title>Culture — Musiques</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
   <style>
-    :root{--bg:#fff;--text:#111;--accent:#8b0000;--maxw:900px}
-    body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--text)}
-    header{background:var(--accent);color:#fff;padding:12px}
-    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px}
-    .hidden{display:none}
-    footer{text-align:center;padding:12px;border-top:1px solid #eee;color:#666}
+    :root{--maxw:760px;--bg:#fff;--text:#111827;--muted:#6b7280;--accent:#1f2937}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.7}
+    header{background:#8b0000;border-bottom:1px solid #7a0000}
+    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between}
+    h1{margin:0;font-family:Merriweather,serif;font-size:20px;font-weight:700;color:#fff}
+    nav{display:flex;gap:12px;align-items:center}
+    nav a{color:#f3f4f6;text-decoration:none;font-size:14px}
+    nav a:hover{text-decoration:underline}
+    main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
+    h2{font-family:Merriweather,serif;font-size:18px;margin:0 0 8px}
+    article{margin-bottom:20px}
+    .meta{color:var(--muted);font-size:13px;margin-bottom:6px}
+    footer{border-top:1px solid #e5e7eb;text-align:center;font-size:14px;color:var(--muted);padding:18px 20px}
   </style>
 </head>
 <body>
-  <header><div class="wrap"><strong>Blog — Culture / Musiques</strong><span style="float:right"><img id="nav-main-flag" src="https://flagcdn.com/w20/fr.png" alt="" style="width:20px;height:14px"></span></div></header>
+  <header>
+    <div class="wrap">
+      <h1>Blog de l'intranquilité</h1>
+      <nav aria-label="Navigation principale">
+        <a href="index.html">Accueil</a>
+        <a href="culture-films.html">Films</a>
+        <a href="culture-livres.html">Livres</a>
+        <a href="culture-musiques.html">Musiques</a>
+        <a href="projets-libres-pensees.html">Projets</a>
+      </nav>
+    </div>
+  </header>
 
-  <main class="wrap">
-    <a href="index.html">← Retour</a>
+  <main>
+    <h2>Musiques — Recommandations</h2>
 
-    <h1 data-lang="fr">Musiques</h1>
-    <h1 data-lang="en" class="hidden">Music</h1>
-    <h1 data-lang="pt" class="hidden">Músicas</h1>
+    <article>
+      <h3>Symphonie n°5</h3>
+      <p class="meta">Ludwig van Beethoven</p>
+      <p>Une œuvre fondatrice, dense et structurée, qui a traversé les siècles.</p>
+    </article>
 
-    <p data-lang="fr">Découvertes, playlists et articles sur la musique.</p>
-    <p data-lang="en" class="hidden">Discoveries, playlists and articles about music.</p>
-    <p data-lang="pt" class="hidden">Descobertas, playlists e artigos sobre música.</p>
+    <article>
+      <h3>Blade Runner (soundtrack)</h3>
+      <p class="meta">Vangelis</p>
+      <p>Ambiances électroniques et nappes synthétiques — parfait pour la rêverie urbaine.</p>
+    </article>
+
+    <!-- Ajoute tes pistes / albums ici -->
   </main>
 
-  <footer>© <span id="year"></span> — Blog personnel</footer>
+  <footer>
+    © <span id="year"></span> — Blog personnel
+  </footer>
 
-  <script>
-    (function(){
-      function setLang(lang){
-        document.querySelectorAll('[data-lang]').forEach(el=> el.classList.toggle('hidden', el.getAttribute('data-lang') !== lang));
-        const map = {fr:'https://flagcdn.com/w20/fr.png',en:'https://flagcdn.com/w20/gb.png',pt:'https://flagcdn.com/w20/pt.png'};
-        if(map[lang]) document.getElementById('nav-main-flag').src = map[lang];
-        document.documentElement.lang = lang;
-      }
-      const saved = (function(){try{return localStorage.getItem('site-lang')}catch(e){return null}})() || 'fr';
-      document.addEventListener('DOMContentLoaded', ()=> setLang(saved));
-      const year = document.getElementById('year'); if(year) year.textContent = new Date().getFullYear();
-    })();
-  </script>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 </body>
 </html>
-
