@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Blog — Accueil</title>
+  <style>
+    :root{--bg:#fff;--text:#111;--muted:#6b7280;--accent:#8b0000;--maxw:900px}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--text);line-height:1.6}
+    .wrap{max-width:var(--maxw);margin:0 auto;padding:20px}
+    header{background:var(--accent);color:#fff;padding:14px 0}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:var(--maxw);margin:0 auto;padding:0 20px}
+    nav a{color:#fff;margin-right:12px;text-decoration:none}
+    nav a:hover{text-decoration:underline}
+    .lang-dropdown{position:relative;display:inline-block}
+    .lang-btn{background:transparent;border:0;color:#fff;cursor:pointer;padding:6px 8px}
+    .lang-menu{display:none;position:absolute;top:100%;left:0;background:#fff;color:#111;border:1px solid #e5e7eb;border-radius:8px;padding:6px;box-shadow:0 6px 20px rgba(0,0,0,.12);min-width:160px;z-index:50}
+    .lang-menu button{display:flex;align-items:center;gap:8px;width:100%;padding:8px;border:0;background:transparent;cursor:pointer}
+    .lang-dropdown.open .lang-menu{display:block}
+    main{padding:28px 20px}
+    h1{margin:0 0 8px 0;font-family:Georgia,serif}
+    .muted{color:var(--muted)}
+    footer{text-align:center;padding:18px 20px;border-top:1px solid #eee;color:var(--muted)}
+    .btn-link{display:inline-block;padding:8px 12px;background:#111;color:#fff;border-radius:6px;text-decoration:none}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="top">
+      <div><strong>Blog de l'intranquilité</strong></div>
+      <nav>
+        <a href="index.html" data-i18="nav.home">Accueil</a>
+        <a href="culture-films.html" data-i18="culture.films">Films</a>
+        <a href="culture-livres.html" data-i18="culture.books">Livres</a>
+        <a href="culture-musiques.html" data-i18="culture.music">Musiques</a>
+        <!-- Language dropdown (explicit) -->
+        <span class="lang-dropdown" id="lang-dropdown">
+          <button class="lang-btn" id="lang-toggle-btn" aria-expanded="false">
+            <img id="nav-main-flag" src="https://flagcdn.com/w20/fr.png" alt="Français" style="vertical-align:middle;width:20px;height:14px;border-radius:3px">
+            <span id="nav-lang-code">FR ▾</span>
+          </button>
+          <div class="lang-menu" id="lang-menu" role="menu" aria-label="Langues">
+            <button class="lang-select" data-lang="fr"><img src="https://flagcdn.com/w24/fr.png" alt="Français" style="width:22px;height:14px"> Français</button>
+            <button class="lang-select" data-lang="en"><img src="https://flagcdn.com/w24/gb.png" alt="English" style="width:22px;height:14px"> English</button>
+            <button class="lang-select" data-lang="pt"><img src="https://flagcdn.com/w24/pt.png" alt="Português" style="width:22px;height:14px"> Português</button>
+          </div>
+        </span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1 data-lang="fr">Bienvenue — page d'accueil</h1>
+    <h1 data-lang="en" class="hidden">Welcome — home page</h1>
+    <h1 data-lang="pt" class="hidden">Bem-vindo — página inicial</h1>
+
+    <p data-lang="fr">Ceci est la page d'accueil. Utilisez le menu « Culture » pour accéder à Films / Livres / Musiques.</p>
+    <p data-lang="en" class="hidden">This is the home page. Use the "Culture" links to reach Films / Books / Music.</p>
+    <p data-lang="pt" class="hidden">Esta é a página inicial. Use os links "Cultura" para acessar Filmes / Livros / Músicas.</p>
+
+    <p class="muted">Choisissez une rubrique :</p>
+    <ul>
+      <li><a href="culture-films.html" class="btn-link" data-i18="culture.films">Films</a></li>
+      <li><a href="culture-livres.html" class="btn-link" data-i18="culture.books">Livres</a></li>
+      <li><a href="culture-musiques.html" class="btn-link" data-i18="culture.music">Musiques</a></li>
+    </ul>
+  </main>
+
+  <footer>
+    <div id="footer-copy">© <span id="year"></span> — Blog personnel</div>
+  </footer>
+
+  <script>
+    // translations keys used on this site
+    const translations = {
+      fr: {"nav.home":"Accueil","culture.films":"Films","culture.books":"Livres","culture.music":"Musiques","form.submit":"Envoyer","footer.copy":"© {YEAR} — Blog personnel"},
+      en: {"nav.home":"Home","culture.films":"Films","culture.books":"Books","culture.music":"Music","form.submit":"Send","footer.copy":"© {YEAR} — Personal blog"},
+      pt: {"nav.home":"Início","culture.films":"Filmes","culture.books":"Livros","culture.music":"Músicas","form.submit":"Enviar","footer.copy":"© {YEAR} — Blog pessoal"}
+    };
+
+    function applyI18n(lang){
+      document.querySelectorAll('[data-i18]').forEach(el=>{
+        const key = el.getAttribute('data-i18');
+        const text = translations[lang] && translations[lang][key] ? translations[lang][key] : '';
+        if(text) el.textContent = text.replace('{YEAR}', new Date().getFullYear());
+      });
+      const footer = document.getElementById('footer-copy');
+      footer.textContent = translations[lang]['footer.copy'].replace('{YEAR}', new Date().getFullYear());
+    }
+
+    (function(){
+      const dropdown = document.getElementById('lang-dropdown');
+      const toggle = document.getElementById('lang-toggle-btn');
+      const menu = document.getElementById('lang-menu');
+      const mainFlag = document.getElementById('nav-main-flag');
+      const mainCode = document.getElementById('nav-lang-code');
+
+      function setLang(lang){
+        // show/hide content
+        document.querySelectorAll('[data-lang]').forEach(el=>{
+          el.classList.toggle('hidden', el.getAttribute('data-lang') !== lang);
+        });
+        // update nav indicator
+        const chosen = menu.querySelector('[data-lang="'+lang+'"] img');
+        if(chosen){
+          let src = chosen.src.replace('/w24/','/w20/');
+          mainFlag.src = src; mainFlag.alt = chosen.alt || lang;
+          mainCode.textContent = lang.toUpperCase() + ' ▾';
+        }
+        applyI18n(lang);
+        document.documentElement.lang = lang;
+        try{ localStorage.setItem('site-lang', lang); }catch(e){}
+      }
+
+      // open/close
+      toggle.addEventListener('click', (e)=> { e.preventDefault(); dropdown.classList.toggle('open'); toggle.setAttribute('aria-expanded', dropdown.classList.contains('open')); });
+
+      menu.querySelectorAll('.lang-select').forEach(btn=>{
+        btn.addEventListener('click', (e)=>{ const lang = btn.getAttribute('data-lang'); setLang(lang); dropdown.classList.remove('open'); toggle.setAttribute('aria-expanded','false'); });
+      });
+
+      // close when clicking outside
+      document.addEventListener('click', (e)=>{ if (!dropdown.contains(e.target)) { dropdown.classList.remove('open'); toggle.setAttribute('aria-expanded','false'); } });
+
+      const saved = (function(){ try{ return localStorage.getItem('site-lang'); }catch(e){return null;} })();
+      const initial = saved || document.documentElement.lang || 'fr';
+      document.addEventListener('DOMContentLoaded', ()=> setLang(initial));
+
+      // footer year
+      const year = document.getElementById('year'); if(year) year.textContent = new Date().getFullYear();
+    })();
+  </script>
+</body>
+</html>
