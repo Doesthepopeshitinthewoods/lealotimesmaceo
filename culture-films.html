@@ -1,46 +1,75 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Musiques — Culture</title>
+  <meta charset="utf-8">
+  <title>Culture — Films</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
+
   <style>
-    :root{--bg:#fff;--text:#111;--accent:#8b0000;--maxw:900px}
-    body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--text)}
-    header{background:var(--accent);color:#fff;padding:12px}
-    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px}
-    .hidden{display:none}
-    footer{text-align:center;padding:12px;border-top:1px solid #eee;color:#666}
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, sans-serif;
+      background: #ffffff;
+      color: #111827;
+      line-height: 1.7;
+    }
+    header {
+      background: #8b0000;
+      padding: 20px;
+    }
+    header a {
+      color: #fff;
+      text-decoration: none;
+      font-family: Merriweather, serif;
+      font-weight: 700;
+    }
+    main {
+      max-width: 760px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    h1 {
+      font-family: Merriweather, serif;
+      font-size: 24px;
+    }
+    article {
+      margin-bottom: 32px;
+    }
+    .year {
+      color: #6b7280;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
-  <header><div class="wrap"><strong>Blog — Culture / Musiques</strong><span style="float:right"><img id="nav-main-flag" src="https://flagcdn.com/w20/fr.png" alt="" style="width:20px;height:14px"></span></div></header>
 
-  <main class="wrap">
-    <a href="index.html">← Retour</a>
+<header>
+  <a href="index.html">← Retour au blog</a>
+</header>
 
-    <h1 data-lang="fr">Musiques</h1>
-    <h1 data-lang="en" class="hidden">Music</h1>
-    <h1 data-lang="pt" class="hidden">Músicas</h1>
+<main>
+  <h1>Films</h1>
 
-    <p data-lang="fr">Découvertes, playlists et articles sur la musique.</p>
-    <p data-lang="en" class="hidden">Discoveries, playlists and articles about music.</p>
-    <p data-lang="pt" class="hidden">Descobertas, playlists e artigos sobre música.</p>
-  </main>
+  <article>
+    <h2>Stalker</h2>
+    <p class="year">Andreï Tarkovski — 1979</p>
+    <p>
+      Un film métaphysique sur le désir, la foi et l’errance intérieure.
+    </p>
+  </article>
 
-  <footer>© <span id="year"></span> — Blog personnel</footer>
+  <article>
+    <h2>Le Septième Sceau</h2>
+    <p class="year">Ingmar Bergman — 1957</p>
+    <p>
+      Une méditation sur la mort, le silence de Dieu et le sens de l’existence.
+    </p>
+  </article>
 
-  <script>
-    (function(){
-      function setLang(lang){
-        document.querySelectorAll('[data-lang]').forEach(el=> el.classList.toggle('hidden', el.getAttribute('data-lang') !== lang));
-        const map = {fr:'https://flagcdn.com/w20/fr.png',en:'https://flagcdn.com/w20/gb.png',pt:'https://flagcdn.com/w20/pt.png'};
-        if(map[lang]) document.getElementById('nav-main-flag').src = map[lang];
-        document.documentElement.lang = lang;
-      }
-      const saved = (function(){try{return localStorage.getItem('site-lang')}catch(e){return null}})() || 'fr';
-      document.addEventListener('DOMContentLoaded', ()=> setLang(saved));
-      const year = document.getElementById('year'); if(year) year.textContent = new Date().getFullYear();
-    })();
-  </script>
+  <!-- Ajoute autant de films que tu veux -->
+</main>
+
 </body>
 </html>
