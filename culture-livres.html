@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Films — Culture</title>
+  <style>
+    :root{--bg:#fff;--text:#111;--accent:#8b0000;--maxw:900px}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--text)}
+    header{background:var(--accent);color:#fff;padding:12px}
+    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px}
+    nav a{color:#fff;margin-right:10px;text-decoration:none}
+    .hidden{display:none}
+    main{padding:18px}
+    footer{text-align:center;padding:12px;border-top:1px solid #eee;color:#666}
+    .back{display:inline-block;margin-bottom:12px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <strong>Blog — Culture / Films</strong>
+      <!-- small language control copy (same as index) -->
+      <span style="float:right">
+        <img id="nav-main-flag" src="https://flagcdn.com/w20/fr.png" alt="flag" style="width:20px;height:14px;border-radius:3px;vertical-align:middle">
+        <span id="nav-lang-code">FR</span>
+      </span>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <a href="index.html" class="back">← Retour</a>
+
+    <h1 data-lang="fr">Films</h1>
+    <h1 data-lang="en" class="hidden">Films</h1>
+    <h1 data-lang="pt" class="hidden">Filmes</h1>
+
+    <p data-lang="fr">Critiques, listes et analyses de films. (Contenu statique — multilingue)</p>
+    <p data-lang="en" class="hidden">Reviews, lists and analyses of films. (Multilingual static content)</p>
+    <p data-lang="pt" class="hidden">Críticas, listas e análises de filmes. (Conteúdo multilíngue)</p>
+  </main>
+
+  <footer>
+    © <span id="year"></span> — Blog personnel
+  </footer>
+
+  <script>
+    // same language mechanism (reads localStorage)
+    (function(){
+      const menuItems = [
+        {lang:'fr',flag:'https://flagcdn.com/w20/fr.png'},
+        {lang:'en',flag:'https://flagcdn.com/w20/gb.png'},
+        {lang:'pt',flag:'https://flagcdn.com/w20/pt.png'}
+      ];
+      function setLang(lang){
+        document.querySelectorAll('[data-lang]').forEach(el=> el.classList.toggle('hidden', el.getAttribute('data-lang') !== lang));
+        const chosen = menuItems.find(m=>m.lang===lang);
+        if(chosen){ document.getElementById('nav-main-flag').src = chosen.flag; document.getElementById('nav-lang-code').textContent = lang.toUpperCase(); }
+        document.documentElement.lang = lang;
+      }
+      const saved = (function(){try{return localStorage.getItem('site-lang')}catch(e){return null}})() || 'fr';
+      document.addEventListener('DOMContentLoaded', ()=> setLang(saved));
+      const year = document.getElementById('year'); if(year) year.textContent = new Date().getFullYear();
+    })();
+  </script>
+</body>
+</html>
