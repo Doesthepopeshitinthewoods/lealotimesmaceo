@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Livres — Culture</title>
+  <style>
+    :root{--bg:#fff;--text:#111;--accent:#8b0000;--maxw:900px}
+    body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--text)}
+    header{background:var(--accent);color:#fff;padding:12px}
+    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px}
+    .hidden{display:none}
+    footer{text-align:center;padding:12px;border-top:1px solid #eee;color:#666}
+  </style>
+</head>
+<body>
+  <header><div class="wrap"><strong>Blog — Culture / Livres</strong><span style="float:right"><img id="nav-main-flag" src="https://flagcdn.com/w20/fr.png" alt="" style="width:20px;height:14px"></span></div></header>
+
+  <main class="wrap">
+    <a href="index.html">← Retour</a>
+
+    <h1 data-lang="fr">Livres</h1>
+    <h1 data-lang="en" class="hidden">Books</h1>
+    <h1 data-lang="pt" class="hidden">Livros</h1>
+
+    <p data-lang="fr">Critiques de livres, suggestions de lecture.</p>
+    <p data-lang="en" class="hidden">Book reviews and reading suggestions.</p>
+    <p data-lang="pt" class="hidden">Críticas de livros e sugestões de leitura.</p>
+  </main>
+
+  <footer>© <span id="year"></span> — Blog personnel</footer>
+
+  <script>
+    (function(){
+      function setLang(lang){
+        document.querySelectorAll('[data-lang]').forEach(el=> el.classList.toggle('hidden', el.getAttribute('data-lang') !== lang));
+        const map = {fr:'https://flagcdn.com/w20/fr.png',en:'https://flagcdn.com/w20/gb.png',pt:'https://flagcdn.com/w20/pt.png'};
+        if(map[lang]) document.getElementById('nav-main-flag').src = map[lang];
+        document.documentElement.lang = lang;
+      }
+      const saved = (function(){try{return localStorage.getItem('site-lang')}catch(e){return null}})() || 'fr';
+      document.addEventListener('DOMContentLoaded', ()=> setLang(saved));
+      const year = document.getElementById('year'); if(year) year.textContent = new Date().getFullYear();
+    })();
+  </script>
+</body>
+</html>
