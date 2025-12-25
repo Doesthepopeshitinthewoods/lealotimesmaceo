@@ -9,19 +9,15 @@
 
   <style>
     :root{
-      --bg:#ffffff;
-      --text:#111827;
-      --muted:#6b7280;
-      --accent:#1f2937;
-      --maxw:760px;
+      --bg:#ffffff; --text:#111827; --muted:#6b7280; --accent:#1f2937; --maxw:960px; --ui-radius:8px;
     }
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.7}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.6}
     a{color:var(--accent);text-decoration:none}
     a:hover{text-decoration:underline}
 
     header{ background:#8b0000; border-bottom:1px solid #7a0000; }
-    .wrap{max-width:var(--maxw);margin:0 auto;padding:24px 20px}
+    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px}
     .top{display:flex;align-items:center;justify-content:space-between;gap:16px}
     h1{ margin:0;font-family:Merriweather,serif;font-size:22px;font-weight:700;color:#ffffff; }
 
@@ -30,75 +26,41 @@
     nav a:hover, nav button:hover { text-decoration:underline }
     nav a.small-muted{ color:var(--muted) }
 
-    /* Dropdown menus */
-    .menu-culture,.menu-projets{position:relative}
-    .culture-dropdown,.projets-dropdown{
-      display:none; position:absolute; top:100%; left:0;
-      background:#ffffff;border:1px solid #e5e7eb;border-radius:6px;min-width:160px;z-index:10;
+    /* Dropdown menus (culture / projets / langue) */
+    .dropdown { position:relative; display:inline-block; }
+    .dropdown-menu {
+      display:none; position:absolute; top:100%; left:0; background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:6px;
+      box-shadow:0 10px 30px rgba(0,0,0,.12); z-index:999;
+      min-width:180px;
     }
-    .culture-dropdown a,.projets-dropdown a{display:block;padding:8px 12px;font-size:14px;color:var(--text)}
-    .culture-dropdown a:hover,.projets-dropdown a:hover{background:#f9fafb}
-    .menu-culture:hover .culture-dropdown,.menu-projets:hover .projets-dropdown{display:block}
+    .dropdown-menu a, .dropdown-menu button { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:6px; background:transparent; border:0; cursor:pointer; width:100%; text-align:left; color:var(--text) }
+    .dropdown-menu a:hover, .dropdown-menu button:hover { background:#f3f4f6; }
 
-    /* Language selector corrected: stack overlaps slightly to avoid hover gap */
-    .langs { position: relative; display: inline-block; overflow: visible; }
-    .main-flag-btn { background: transparent; border: 0; padding: 0; cursor: pointer; display:inline-flex; align-items:center; position:relative; z-index:1; }
-    .main-flag-btn img { width:22px; height:14px; display:block; border-radius:3px; box-shadow:0 1px 2px rgba(0,0,0,.12); }
+    /* Language dropdown label */
+    .lang-flag { width:28px; height:18px; border-radius:4px; display:inline-block; vertical-align:middle; margin-right:8px; }
+    .lang-short { color:#fff; font-size:14px; margin-left:6px; }
 
-    .lang-stack {
-      position: absolute;
-      left: 0;
-      /* IMPORTANT: slight overlap (-4px) so there's no mouse gap between main flag and stack */
-      top: calc(100% - 4px);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      padding: 8px;
-      background: #ffffff;
-      border-radius: 8px;
-      box-shadow: 0 6px 20px rgba(0,0,0,.12);
-      opacity: 0;
-      pointer-events: none;
-      transform-origin: top left;
-      transform: translateY(-6px) scale(.98);
-      transition: opacity .12s ease, transform .12s ease;
-      z-index: 9999; /* s'assurer que la pile soit au dessus */
-      min-width:44px;
-    }
+    /* show dropdown when parent has .open */
+    .dropdown.open > .dropdown-menu { display:block; }
 
-    .lang-item { background:none;border:0;padding:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;border-radius:6px }
-    .lang-item img{width:30px;height:20px;border-radius:4px;display:block}
-    .lang-item:focus { outline: 2px solid #cbd5e1; outline-offset:2px }
-    .lang-item.active { box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+    /* Accessibility focus */
+    .dropdown-menu button:focus, .dropdown-menu a:focus { outline:2px solid rgba(59,130,246,.18); outline-offset:2px }
 
-    /* show on hover/focus or when .open (touch) */
-    .langs:hover .lang-stack,
-    .langs:focus-within .lang-stack,
-    .langs.open .lang-stack,
-    .main-flag-btn:hover + .lang-stack {
-      opacity:1; pointer-events:auto; transform:translateY(0) scale(1);
-    }
-
-    @media (max-width:420px){
-      .lang-stack{left:auto;right:0}
-      .lang-item img{width:26px;height:18px}
-      .main-flag-btn img{width:20px;height:13px}
-    }
-
-    .hidden{display:none}
-
-    main{max-width:var(--maxw);margin:40px auto;padding:0 20px}
+    /* layout main */
+    main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
     section{margin-bottom:36px}
-    h2{font-family:Merriweather,serif;font-size:20px;margin-bottom:12px}
+    h2{font-family:Merriweather,serif;font-size:20px;margin-bottom:10px}
     p{margin:0 0 14px 0}
     .muted{color:var(--muted)}
 
     form{margin-top:20px}
-    label{display:block;font-size:14px;margin-bottom:4px}
-    input,textarea{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:4px;margin-bottom:12px;font-family:inherit}
-    button{padding:10px 16px;background:var(--accent);color:white;border:none;border-radius:4px;cursor:pointer}
+    label{display:block;font-size:14px;margin-bottom:6px}
+    input,textarea{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:6px;margin-bottom:12px;font-family:inherit}
+    button{padding:8px 14px;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer}
 
-    footer{border-top:1px solid #e5e7eb;text-align:center;font-size:14px;color:var(--muted);padding:24px 20px}
+    footer{border-top:1px solid #e5e7eb;text-align:center;font-size:14px;color:var(--muted);padding:20px}
+
+    .back-btn { background:none;border:1px solid #e5e7eb;padding:6px 10px;border-radius:6px;cursor:pointer }
   </style>
 </head>
 <body>
@@ -106,75 +68,88 @@
 <header>
   <div class="wrap top">
     <h1>Blog de l'intranquilité</h1>
-    <div style="display:flex;align-items:center;gap:16px">
+    <div style="display:flex;align-items:center;gap:12px">
       <nav>
         <a href="#" class="small-muted" data-i18="nav.home" onclick="showHome();return false">Accueil</a>
         <a href="#" data-i18="nav.articles" onclick="showAlert('articles');return false">Articles</a>
-        <div class="menu-projets">
-          <button aria-haspopup="true" aria-expanded="false" data-i18="nav.projects" onclick="showAlert('projects');return false">Projets ▾</button>
-          <div class="projets-dropdown">
-            <a href="#" onclick="showAlert('free_thoughts');return false" data-i18="nav.projects_free">Libres pensées</a>
+
+        <div class="dropdown menu-projets">
+          <button aria-haspopup="true" aria-expanded="false" data-i18="nav.projects">Projets ▾</button>
+          <div class="dropdown-menu projets-dropdown" role="menu" aria-label="Projets menu">
+            <a href="#projects-free" data-i18="nav.projects_free">Libres pensées</a>
+            <a href="#projects-bref" data-i18="nav.projects_bref">Bref</a>
           </div>
         </div>
-        <div class="menu-culture">
+
+        <div class="dropdown menu-culture">
           <button aria-haspopup="true" aria-expanded="false" data-i18="nav.culture">Culture ▾</button>
-          <div class="culture-dropdown">
+          <div class="dropdown-menu culture-dropdown" role="menu" aria-label="Culture menu">
             <a href="#culture-films" data-i18="culture.films">Films</a>
             <a href="#culture-livres" data-i18="culture.books">Livres</a>
             <a href="#culture-musiques" data-i18="culture.music">Musiques</a>
           </div>
         </div>
-      </nav>
 
-      <!-- Language selector -->
-      <div class="langs" id="lang-toggle" aria-haspopup="true">
-        <button class="main-flag-btn" id="main-flag" aria-expanded="false" aria-label="Choisir la langue">
-          <img src="https://flagcdn.com/w20/fr.png" alt="Français" id="main-flag-img">
-        </button>
+        <!-- NEW: explicit Language section in nav -->
+        <div class="dropdown" id="lang-dropdown" aria-haspopup="true">
+          <button id="lang-toggle-btn" aria-expanded="false" style="display:inline-flex;align-items:center;gap:8px;">
+            <img src="https://flagcdn.com/w20/fr.png" class="lang-flag" id="nav-main-flag" alt="Français">
+            <span class="lang-short" id="nav-lang-code">FR ▾</span>
+          </button>
 
-        <div class="lang-stack" role="menu" aria-label="Langues disponibles">
-          <!-- attention : pas d'attribut title pour éviter tooltip gênant -->
-          <button class="lang-item" role="menuitem" data-lang="fr" aria-label="Français">
-            <img src="https://flagcdn.com/w40/fr.png" alt="Français">
-          </button>
-          <button class="lang-item" role="menuitem" data-lang="en" aria-label="English">
-            <img src="https://flagcdn.com/w40/gb.png" alt="English">
-          </button>
-          <button class="lang-item" role="menuitem" data-lang="pt" aria-label="Português">
-            <img src="https://flagcdn.com/w40/pt.png" alt="Português">
-          </button>
+          <div class="dropdown-menu" id="lang-menu" role="menu" aria-label="Langues disponibles">
+            <button data-lang="fr" class="lang-select" role="menuitem">
+              <img src="https://flagcdn.com/w40/fr.png" class="lang-flag" alt="Français"><span>Français</span>
+            </button>
+            <button data-lang="en" class="lang-select" role="menuitem">
+              <img src="https://flagcdn.com/w40/gb.png" class="lang-flag" alt="English"><span>English</span>
+            </button>
+            <button data-lang="pt" class="lang-select" role="menuitem">
+              <img src="https://flagcdn.com/w40/pt.png" class="lang-flag" alt="Português"><span>Português</span>
+            </button>
+          </div>
         </div>
-      </div>
-
+      </nav>
     </div>
   </div>
 </header>
 
 <main>
+  <!-- HOME CONTENT -->
   <section id="home">
     <div data-lang="fr">
       <h2>Présentation</h2>
-      <p>Vous êtes à bord pour le voyage au pays des futures réflexions et discussions de Maceo Leal...</p>
-    </div>
-    <div data-lang="en" class="hidden">
-      <h2>About</h2>
-      <p>You are on board for a journey into the future reflections and discussions of Maceo Leal...</p>
-    </div>
-    <div data-lang="pt" class="hidden">
-      <h2>Apresentação</h2>
-      <p>Você está a bordo para a viagem ao país das futuras reflexões e discussões de Maceo Leal...</p>
+      <p>Bienvenue — version française du blog.</p>
+      <h2>Contributions</h2>
+      <p class="muted">Les lecteurs peuvent proposer des articles ou projets via le formulaire ci-dessous.</p>
     </div>
 
-    <form id="contact-form" action="mailto:toi@example.com" method="post" enctype="text/plain" onsubmit="return handleSubmit(event)">
-      <label for="name-input" data-i18="form.nameLabel">Nom</label>
-      <input id="name-input" name="name">
-      <label for="email-input" data-i18="form.emailLabel">Email</label>
-      <input id="email-input" name="email">
-      <label for="message-input" data-i18="form.messageLabel">Message</label>
-      <textarea id="message-input" name="message" rows="5"></textarea>
-      <button type="submit" id="submit-button" data-i18="form.submit">Envoyer</button>
+    <div data-lang="en" class="hidden">
+      <h2>About</h2>
+      <p>Welcome — English version of the blog.</p>
+      <h2>Contributions</h2>
+      <p class="muted">Readers can submit articles or projects via the form below.</p>
+    </div>
+
+    <div data-lang="pt" class="hidden">
+      <h2>Apresentação</h2>
+      <p>Bem-vindo — versão em português do blog.</p>
+      <h2>Contribuições</h2>
+      <p class="muted">Leitores podem enviar artigos ou projetos através do formulário abaixo.</p>
+    </div>
+
+    <form id="contact-form" onsubmit="return handleSubmit(event)">
+      <label data-i18="form.nameLabel" for="name">Nom</label>
+      <input id="name" name="name">
+      <label data-i18="form.emailLabel" for="email">Email</label>
+      <input id="email" name="email">
+      <label data-i18="form.messageLabel" for="message">Message</label>
+      <textarea id="message" name="message" rows="5"></textarea>
+      <button type="submit" data-i18="form.submit">Envoyer</button>
     </form>
   </section>
+
+  <!-- Dynamic pages appended here -->
 </main>
 
 <footer>
@@ -182,94 +157,243 @@
 </footer>
 
 <script>
-  // année
-  const year = document.getElementById('year');
-  if (year) year.textContent = new Date().getFullYear();
-
-  // traductions (réduites ici pour l'exemple)
-  const translations = {
-    fr: { "nav.home":"Accueil","nav.articles":"Articles","form.nameLabel":"Nom","form.emailLabel":"Email","form.messageLabel":"Message","form.submit":"Envoyer","footer.copy":"© {YEAR} — Blog personnel",
-          alerts:{articles:"Section Articles à venir",projects:"Projets — à venir",free_thoughts:"Libres pensées – à venir"}},
-    en: { "nav.home":"Home","nav.articles":"Articles","form.nameLabel":"Name","form.emailLabel":"Email","form.messageLabel":"Message","form.submit":"Send","footer.copy":"© {YEAR} — Personal blog",
-          alerts:{articles:"Articles section coming soon",projects:"Projects — coming soon",free_thoughts:"Free thoughts — coming soon"}},
-    pt: { "nav.home":"Início","nav.articles":"Artigos","form.nameLabel":"Nome","form.emailLabel":"Email","form.messageLabel":"Mensagem","form.submit":"Enviar","footer.copy":"© {YEAR} — Blog pessoal",
-          alerts:{articles:"Seção de artigos em breve",projects:"Projetos — em breve",free_thoughts:"Pensamentos livres – em breve"}}
-  };
-
-  function applyI18n(lang){
-    document.querySelectorAll('[data-i18]').forEach(el=>{
-      const key = el.getAttribute('data-i18');
-      const text = translations[lang] && translations[lang][key] ? translations[lang][key] : '';
-      if(text) el.textContent = text.replace('{YEAR}', new Date().getFullYear());
-    });
-    const footerEl = document.getElementById('footer-copy');
-    if(footerEl && translations[lang] && translations[lang]['footer.copy']) footerEl.textContent = translations[lang]['footer.copy'].replace('{YEAR}', new Date().getFullYear());
+/* ---------- Translations ---------- */
+const translations = {
+  fr: {
+    "nav.home":"Accueil","nav.articles":"Articles","nav.projects":"Projets ▾","nav.projects_free":"Libres pensées","nav.projects_bref":"Bref",
+    "nav.culture":"Culture ▾","culture.films":"Films","culture.books":"Livres","culture.music":"Musiques",
+    "projects.free":"Libres pensées","projects.bref":"Bref",
+    "form.nameLabel":"Nom","form.emailLabel":"Email","form.messageLabel":"Message","form.submit":"Envoyer",
+    "footer.copy":"© {YEAR} — Blog personnel",
+    alerts:{articles:"Section Articles à venir",projects:"Projets — à venir",free_thoughts:"Libres pensées – à venir"}
+  },
+  en: {
+    "nav.home":"Home","nav.articles":"Articles","nav.projects":"Projects ▾","nav.projects_free":"Free thoughts","nav.projects_bref":"Brief",
+    "nav.culture":"Culture ▾","culture.films":"Films","culture.books":"Books","culture.music":"Music",
+    "projects.free":"Free thoughts","projects.bref":"Brief",
+    "form.nameLabel":"Name","form.emailLabel":"Email","form.messageLabel":"Message","form.submit":"Send",
+    "footer.copy":"© {YEAR} — Personal blog",
+    alerts:{articles:"Articles section coming soon",projects:"Projects — coming soon",free_thoughts:"Free thoughts — coming soon"}
+  },
+  pt: {
+    "nav.home":"Início","nav.articles":"Artigos","nav.projects":"Projetos ▾","nav.projects_free":"Pensamentos livres","nav.projects_bref":"Breve",
+    "nav.culture":"Cultura ▾","culture.films":"Filmes","culture.books":"Livros","culture.music":"Músicas",
+    "projects.free":"Pensamentos livres","projects.bref":"Breve",
+    "form.nameLabel":"Nome","form.emailLabel":"Email","form.messageLabel":"Mensagem","form.submit":"Enviar",
+    "footer.copy":"© {YEAR} — Blog pessoal",
+    alerts:{articles:"Seção de artigos em breve",projects:"Projetos — em breve",free_thoughts:"Pensamentos livres – em breve"}
   }
+};
+
+function applyI18n(lang){
+  document.querySelectorAll('[data-i18]').forEach(el=>{
+    const key = el.getAttribute('data-i18');
+    const text = translations[lang] && translations[lang][key] ? translations[lang][key] : '';
+    if(text) el.textContent = text.replace('{YEAR}', new Date().getFullYear());
+  });
+  const footerEl = document.getElementById('footer-copy');
+  if(footerEl && translations[lang] && translations[lang]['footer.copy']) {
+    footerEl.textContent = translations[lang]['footer.copy'].replace('{YEAR}', new Date().getFullYear());
+  }
+}
+
+/* ---------- Language control (explicit nav section) ---------- */
+(function LanguageNav(){
+  const LANGS = ['fr','en','pt'];
+  const dropdown = document.getElementById('lang-dropdown');
+  const menu = document.getElementById('lang-menu');
+  const toggleBtn = document.getElementById('lang-toggle-btn');
+  const mainFlag = document.getElementById('nav-main-flag');
+  const mainCode = document.getElementById('nav-lang-code');
 
   function setLang(lang){
+    if (!LANGS.includes(lang)) return;
+    // show/hide blocks
     document.querySelectorAll('[data-lang]').forEach(el=> el.classList.toggle('hidden', el.dataset.lang !== lang));
-    document.querySelectorAll('.lang-item').forEach(btn=> btn.classList.toggle('active', btn.dataset.lang === lang));
-    // mettre petit drapeau principal pour signaler le choix
-    const mainImg = document.getElementById('main-flag-img');
-    const chosen = document.querySelector('.lang-item[data-lang="'+lang+'"] img');
-    if(chosen){
-      let small = chosen.src;
-      if(small.includes('/w40/')) small = small.replace('/w40/','/w20/');
-      mainImg.src = small;
-      mainImg.alt = chosen.alt;
+    // update nav indicator
+    const chosen = menu.querySelector('[data-lang="'+lang+'"] img');
+    if (chosen) {
+      // reduce to small for nav
+      let src = chosen.src;
+      src = src.replace('/w80/','/w20/').replace('/w40/','/w20/');
+      mainFlag.src = src;
+      mainFlag.alt = chosen.alt || lang;
+      mainCode.textContent = lang.toUpperCase() + ' ▾';
     }
+    // active style on menu items
+    menu.querySelectorAll('[data-lang]').forEach(el=> el.classList.toggle('active', el.getAttribute('data-lang') === lang));
+    // i18n labels
     applyI18n(lang);
     document.documentElement.lang = lang;
-    try{ localStorage.setItem('site-lang', lang); } catch(e){}
-    const toggle = document.getElementById('lang-toggle');
-    toggle.classList.remove('open');
-    document.getElementById('main-flag')?.setAttribute('aria-expanded','false');
+    try { localStorage.setItem('site-lang', lang); } catch(e){}
+    // refresh dynamic page content language (if open)
+    if (typeof refreshOpenPageForLang === 'function') refreshOpenPageForLang(lang);
   }
 
-  (function(){
-    const toggle = document.getElementById('lang-toggle');
-    const mainBtn = document.getElementById('main-flag');
-    const items = toggle.querySelectorAll('.lang-item');
+  // open/close dropdown on toggle click
+  toggleBtn.addEventListener('click', (e)=>{
+    e.preventDefault();
+    dropdown.classList.toggle('open');
+    toggleBtn.setAttribute('aria-expanded', dropdown.classList.contains('open'));
+  });
 
-    mainBtn.addEventListener('click', ()=> {
-      const open = toggle.classList.toggle('open');
-      mainBtn.setAttribute('aria-expanded', String(open));
-      if(open) items[0].focus();
+  // click on language rows
+  menu.querySelectorAll('.lang-select').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      const lang = btn.getAttribute('data-lang');
+      setLang(lang);
+      dropdown.classList.remove('open');
+      toggleBtn.setAttribute('aria-expanded','false');
     });
+  });
 
-    items.forEach((btn, idx)=>{
-      btn.addEventListener('click', ()=> setLang(btn.dataset.lang));
-      btn.addEventListener('keydown', (e)=>{
-        if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setLang(btn.dataset.lang); return; }
-        if(e.key === 'ArrowDown') { e.preventDefault(); items[(idx+1)%items.length].focus(); }
-        if(e.key === 'ArrowUp') { e.preventDefault(); items[(idx-1+items.length)%items.length].focus(); }
-        if(e.key === 'Escape') { toggle.classList.remove('open'); mainBtn.focus(); mainBtn.setAttribute('aria-expanded','false'); }
-      });
+  // keyboard accessibility inside menu
+  menu.querySelectorAll('.lang-select').forEach((btn, idx, list)=>{
+    btn.setAttribute('tabindex','0');
+    btn.addEventListener('keydown', (e)=>{
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); btn.click(); }
+      if (e.key === 'ArrowDown') { e.preventDefault(); (list[(idx+1)%list.length]).focus(); }
+      if (e.key === 'ArrowUp') { e.preventDefault(); (list[(idx-1+list.length)%list.length]).focus(); }
+      if (e.key === 'Escape') { dropdown.classList.remove('open'); toggleBtn.focus(); }
     });
+  });
 
-    document.addEventListener('click', (e)=> { if(!toggle.contains(e.target)) { toggle.classList.remove('open'); mainBtn.setAttribute('aria-expanded','false'); } });
+  // close when clicking outside
+  document.addEventListener('click', (e)=>{
+    if (!dropdown.contains(e.target)) { dropdown.classList.remove('open'); toggleBtn.setAttribute('aria-expanded','false'); }
+  });
 
-    const saved = (function(){ try { return localStorage.getItem('site-lang'); } catch(e){ return null; } })();
-    const initial = saved || document.documentElement.lang || 'fr';
-    setLang(initial);
-  })();
+  // restore saved or default
+  const saved = (function(){ try { return localStorage.getItem('site-lang'); } catch(e){ return null; } })();
+  const initial = saved || document.documentElement.lang || 'fr';
+  window.addEventListener('DOMContentLoaded', ()=> setLang(initial));
+})();
 
-  function showAlert(key){
+/* ---------- Simple dynamic page system (culture-* and projects-*) ---------- */
+(function PageSystem(){
+  function showHome(){
+    const home = document.getElementById('home'); if (home) home.classList.remove('hidden');
+    document.querySelectorAll('[data-page]').forEach(p => p.classList.add('hidden'));
+    try { history.replaceState(null,'', location.pathname + location.search); } catch(e){}
+  }
+  window.showHome = showHome;
+
+  function openPage(pageId){
+    if(!pageId) return;
+    const home = document.getElementById('home'); if (home) home.classList.add('hidden');
+
+    let page = document.querySelector('[data-page="'+pageId+'"]');
+    if (!page) { page = createPage(pageId); document.querySelector('main').appendChild(page); }
+    document.querySelectorAll('[data-page]').forEach(p => p.classList.add('hidden'));
+    page.classList.remove('hidden');
+
+    try { location.hash = pageId; } catch(e){}
+    const lang = document.documentElement.lang || 'fr';
+    loadPageContent(pageId, lang);
+  }
+  window.openPage = openPage;
+
+  function createPage(pageId){
+    const section = document.createElement('section');
+    section.setAttribute('data-page', pageId);
+    section.style.marginBottom = '36px';
+
+    const header = document.createElement('div');
+    header.style.display='flex'; header.style.alignItems='center'; header.style.gap='12px'; header.style.marginBottom='12px';
+
+    const back = document.createElement('button'); back.textContent='←'; back.className='back-btn';
+    back.addEventListener('click',(e)=>{ e.preventDefault(); showHome(); });
+
+    const title = document.createElement('h2'); title.style.margin='0'; title.dataset.titleFor = pageId;
+
+    header.appendChild(back); header.appendChild(title);
+
+    const label = document.createElement('label'); label.textContent='Contenu (modifiable)'; label.style.display='block'; label.style.marginTop='8px';
+    const textarea = document.createElement('textarea'); textarea.rows=12; textarea.style.width='100%'; textarea.style.padding='10px'; textarea.style.border='1px solid #d1d5db'; textarea.style.borderRadius='6px'; textarea.style.marginTop='6px';
+    textarea.setAttribute('aria-label','Éditeur');
+
+    const saveBtn = document.createElement('button'); saveBtn.textContent='Enregistrer'; saveBtn.style.marginTop='8px';
+    saveBtn.addEventListener('click',(e)=>{ e.preventDefault(); const lang = document.documentElement.lang||'fr'; const key='page:'+pageId+':'+lang; try{ localStorage.setItem(key, textarea.value);}catch(e){}; renderPreview(pageId, textarea.value); alert(lang==='fr'?'Enregistré':lang==='en'?'Saved':'Gravado'); });
+
+    const previewLabel = document.createElement('div'); previewLabel.style.marginTop='14px'; previewLabel.style.fontWeight='600'; previewLabel.textContent='Aperçu';
+    const preview = document.createElement('div'); preview.style.marginTop='8px'; preview.style.padding='12px'; preview.style.border='1px solid #e5e7eb'; preview.style.borderRadius='6px'; preview.style.minHeight='40px';
+    preview.dataset.previewFor = pageId;
+
+    section.appendChild(header); section.appendChild(label); section.appendChild(textarea); section.appendChild(saveBtn); section.appendChild(previewLabel); section.appendChild(preview);
+
+    section.classList.add('hidden'); section._editor = textarea; section._preview = preview; section._titleEl = title;
+    updatePageTitle(section,pageId);
+    return section;
+  }
+
+  function updatePageTitle(section, pageId){
+    const lang = document.documentElement.lang || 'fr';
+    const key = pageId.replace('-', '.'); // e.g. culture-films -> culture.films
+    const title = (translations[lang] && translations[lang][key]) ? translations[lang][key] : pageId;
+    if (section && section._titleEl) section._titleEl.textContent = title;
+  }
+
+  function renderPreview(pageId,content){
+    const preview = document.querySelector('[data-preview-for="'+pageId+'"]');
+    if(preview){ const safe = escapeHtml(content||'').replace(/\n/g,'<br>'); preview.innerHTML = safe; }
+  }
+
+  function loadPageContent(pageId,lang){
+    const page = document.querySelector('[data-page="'+pageId+'"]'); if(!page) return;
+    updatePageTitle(page,pageId);
+    const key='page:'+pageId+':'+lang;
+    const saved=(function(){ try{ return localStorage.getItem(key);}catch(e){return''; } })()||'';
+    if(page._editor) page._editor.value=saved;
+    renderPreview(pageId,saved);
+  }
+
+  function refreshOpenPageForLang(lang){
+    const open = Array.from(document.querySelectorAll('[data-page]')).find(p => !p.classList.contains('hidden'));
+    if(open){ const pageId = open.getAttribute('data-page'); loadPageContent(pageId, lang); }
+    document.querySelectorAll('[data-page]').forEach(p => updatePageTitle(p, p.getAttribute('data-page')));
+  }
+  window.refreshOpenPageForLang = refreshOpenPageForLang;
+
+  function escapeHtml(str){ return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+
+  // intercept clicks on anchors #culture-* or #projects-*
+  document.addEventListener('click', function(e){
+    const a = e.target.closest('a');
+    if(!a) return;
+    const href = a.getAttribute('href') || '';
+    if (href.startsWith('#culture-') || href.startsWith('#projects-')) {
+      e.preventDefault();
+      openPage(href.slice(1));
+    }
+  }, false);
+
+  // open on hash load
+  window.addEventListener('DOMContentLoaded', ()=> {
+    if (location.hash && (location.hash.startsWith('#culture-') || location.hash.startsWith('#projects-'))) {
+      openPage(location.hash.slice(1));
+    }
+  });
+
+})(); // PageSystem end
+
+/* ---------- App helpers ---------- */
+(function AppHelpers(){
+  const yearEl = document.getElementById('year'); if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+  window.showAlert = function(key){
     const lang = document.documentElement.lang || 'fr';
     const msg = translations[lang] && translations[lang].alerts && translations[lang].alerts[key] ? translations[lang].alerts[key] : '';
     if(msg) alert(msg);
-  }
+  };
 
-  function handleSubmit(e){
+  window.handleSubmit = function(e){
     e.preventDefault();
     const lang = document.documentElement.lang || 'fr';
     const messages = { fr:'Merci — message envoyé (simulé).', en:'Thanks — message sent (simulated).', pt:'Obrigado — mensagem enviada (simulada).' };
     alert(messages[lang] || messages.fr);
     return false;
-  }
-
-  function showHome(){ window.scrollTo({top:0,behavior:'smooth'}) }
+  };
+})();
 </script>
-
 </body>
 </html>
