@@ -272,6 +272,124 @@ document.getElementById('contact-form').addEventListener('submit', async e => {
     });
   })();
 </script>
+<script>
+/* === Configuration ===
+   Mettez l'URL de votre endpoint si vous en avez un (ex: Cloudflare Worker).
+   Si vous laissez la valeur par défaut, l'envoi serveur sera ignoré et seule la sauvegarde locale sera proposée.
+*/
+const WORKER_URL = "https://TON-WORKER.workers.dev"; // changez si besoin
+
+// Utilitaire : formate un timestamp lisible pour le nom de fichier
+function filenameTimestamp() {
+  return new Date().toISOString().replace(/[:.]/g, "-");
+}
+
+// Sauvegarde locale : crée et déclenche le téléchargement d'un fichier JSON
+function saveLocally(payload) {
+  try {
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const filename = `contact-${payload.pseudo.replace(/\s+/g, "_")}-${filenameTimestamp()}.json`;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    // Insérer temporairement pour que certains navigateurs acceptent le click
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    return true;
+  } catch (err) {
+    console.error("Erreur lors de la sauvegarde locale :", err);
+    return false;
+  }
+}
+
+// Envoi vers le serveur avec timeout
+async function postToWorker(url, payload, timeout = 8000) {
+  if (!url || url.includes("TON-WORKER")) return { ok: false, reason: "no-worker-configured" };
+
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+    clearTimeout(id);
+    return { ok: res.ok, status: res.status, text: await res.text().catch(()=>"") };
+  } catch (err) {
+    clearTimeout(id);
+    return { ok: false, reason: err.name === "AbortError" ? "timeout" : err.message };
+  }
+}
+
+// Gestion du formulaire
+document.getElementById("contact-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const nameEl = document.getElementById("cf-name");
+  const emailEl = document.getElementById("cf-email");
+  const msgEl = document.getElementById("cf-message");
+  const resultEl = document.getElementById("cf-result");
+
+  const pseudo = (nameEl.value || "Anonyme").trim();
+  const email = (emailEl.value || "").trim();
+  const message = (msgEl.value || "").trim();
+
+  // Validation simple (HTML required attr est présent, mais double-check côté script)
+  if (!email || !message) {
+    resultEl.textContent = "Veuillez renseigner au minimum l'email et le message.";
+    return;
+  }
+
+  const payload = {
+    title: "Contact",
+    pseudo,
+    email,
+    content: message + "\n\n---\nEmail: " + email,
+    section: "contacts",
+    timestamp: new Date().toISOString()
+  };
+
+  // Indiquer à l'utilisateur que l'envoi est en cours
+  resultEl.textContent = "Envoi…";
+
+  // Tenter l'envoi au serveur si configuré
+  const serverResp = await postToWorker(WORKER_URL, payload);
+
+  if (serverResp.ok) {
+    resultEl.textContent = "Message envoyé et enregistré sur le serveur ✔";
+    // Optionnel : effacer le formulaire
+    nameEl.value = "";
+    emailEl.value = "";
+    msgEl.value = "";
+    return;
+  }
+
+  // Si envoi serveur échoue (ou pas configuré) : proposer / effectuer la sauvegarde locale
+  const saved = saveLocally(payload);
+
+  if (serverResp.reason && serverResp.reason !== "no-worker-configured") {
+    console.warn("Envoi au serveur échoué :", serverResp);
+  }
+
+  if (saved) {
+    resultEl.textContent = serverResp.ok
+      ? "Message envoyé et sauvegardé localement ✔"
+      : "Aucun serveur joignable — votre message a été sauvegardé en local (fichier téléchargé).";
+    // Optionnel : vider le formulaire
+    nameEl.value = "";
+    emailEl.value = "";
+    msgEl.value = "";
+  } else {
+    resultEl.textContent = "Erreur : impossible d'enregistrer le message localement.";
+  }
+});
+</script>
 
 </body>
 </html>
