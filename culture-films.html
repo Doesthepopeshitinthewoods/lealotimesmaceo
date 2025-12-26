@@ -135,13 +135,14 @@ $('#proposal-form').onsubmit = async e => {
     });
     const j = await r.json();
 
-    if(j.success){
+    if (j.success) {
   $('#result').textContent = '✔ Proposition envoyée';
+  prependProposal(data);
   e.target.reset();
-  setTimeout(()=>loadProposals('films'),1000);
-} else {
-  $('#result').textContent = 'Erreur : ' + j.error;
+  setTimeout(()=>loadProposals('films'), 800);
+  setTimeout(()=>loadProposals('films'), 3000);
 }
+
 
   } catch(err){
     $('#result').textContent = 'Erreur réseau';
