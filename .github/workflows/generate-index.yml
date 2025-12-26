@@ -1,0 +1,90 @@
+
+name: Generate content index
+
+on:
+  push:
+    paths:
+      - 'content/**'
+
+permissions:
+  contents: write
+  issues: read
+
+jobs:
+  build-index:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate index from content folder
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const defaultBranch = (await github.rest.repos.get({ owner, repo })).data.default_branch;
+
+            // helper : read a path (folder) and return files
+            async function listFiles(path) {
+              try {
+                const res = await github.rest.repos.getContent({ owner, repo, path, ref: defaultBranch });
+                if (!Array.isArray(res.data)) return [];
+                return res.data.filter(f => f.type === 'file');
+              } catch (err) {
+                // folder may not exist
+                return [];
+              }
+            }
+
+            const sections = ['films','livres','musiques','articles'];
+            const items = [];
+
+            for (const s of sections) {
+              const files = await listFiles(`content/${s}`);
+              for (const f of files) {
+                try {
+                  const file = await github.rest.repos.getContent({ owner, repo, path: f.path, ref: defaultBranch });
+                  const content = Buffer.from(file.data.content, file.data.encoding).toString('utf8');
+
+                  // extract simple frontmatter keys via regex
+                  const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
+                  const meta = { path: f.path };
+                  if (fmMatch) {
+                    const fm = fmMatch[1];
+                    for (const line of fm.split('\n')) {
+                      const m = line.match(/^([a-zA-Z0-9_]+):\s*"?(.*?)"?\s*$/);
+                      if (m) { meta[m[1]] = m[2]; }
+                    }
+                  }
+                  items.push(meta);
+                } catch (err) {
+                  core.warning('Could not read ' + f.path + ': ' + err.message);
+                }
+              }
+            }
+
+            const indexPath = 'content/index.json';
+            const indexContent = JSON.stringify(items.sort((a,b)=> (b.created_at||'').localeCompare(a.created_at||'')), null, 2);
+
+            // check if index exists and compare
+            let existingSha = null;
+            try {
+              const existing = await github.rest.repos.getContent({ owner, repo, path: indexPath, ref: defaultBranch });
+              existingSha = existing.data.sha;
+              const existingContent = Buffer.from(existing.data.content, existing.data.encoding).toString('utf8');
+              if (existingContent === indexContent) {
+                core.info('Index unchanged — nothing to commit.');
+                return;
+              }
+            } catch (err) {
+              core.info('Index does not exist yet — will create.');
+            }
+
+            // create or update index.json on default branch
+            if (existingSha) {
+              await github.rest.repos.createOrUpdateFileContents({
+                owner, repo, path: indexPath, message: 'Update content index', content: Buffer.from(indexContent).toString('base64'), sha: existingSha, branch: defaultBranch
+              });
+            } else {
+              await github.rest.repos.createOrUpdateFileContents({
+                owner, repo, path: indexPath, message: 'Create content index', content: Buffer.from(indexContent).toString('base64'), branch: defaultBranch
+              });
+            }
