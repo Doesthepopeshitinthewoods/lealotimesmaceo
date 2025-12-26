@@ -20,6 +20,17 @@
     article{margin-bottom:20px}
     .meta{color:var(--muted);font-size:13px;margin-bottom:6px}
     footer{border-top:1px solid #e5e7eb;text-align:center;font-size:14px;color:var(--muted);padding:18px 20px}
+    /* form + list */
+    form{margin-top:14px}
+    input,textarea,select{width:100%;padding:10px;margin-bottom:12px;border:1px solid #d1d5db;border-radius:4px}
+    button.primary{padding:10px 16px;background:var(--accent);color:#fff;border:none;border-radius:4px;cursor:pointer}
+    #proposals-list article{border:1px solid #eee;padding:12px;border-radius:8px}
+    .pending-badge{font-size:12px;color:#9ca3af;margin-left:8px}
+    pre.debug{display:none;background:#111;color:#0f0;padding:10px;font-size:12px;white-space:pre-wrap}
+    .delete-btn{background:transparent;border:1px solid #e5e7eb;color:#111;padding:6px 10px;border-radius:6px;cursor:pointer;margin-left:8px}
+    .delete-btn:disabled{opacity:0.6;cursor:not-allowed}
+    .actions{margin-top:10px}
+    .small-muted{font-size:12px;color:var(--muted)}
   </style>
 </head>
 <body>
@@ -37,16 +48,305 @@
   </header>
 
   <main>
-    <h2>Musiques — Recommandations</h2>
+    <h2>Proposer une piste / un album</h2>
 
+    <form id="proposal-form">
+      <input type="hidden" name="section" value="musiques">
+      <input name="pseudo" placeholder="Pseudo" required>
+      <input name="title" placeholder="Titre (piste / album)" required>
+      <input name="artist" placeholder="Interprète / Groupe (optionnel)">
+      <textarea name="content" rows="5" placeholder="Pourquoi recommander ? (commentaire)" required></textarea>
+      <button class="primary">Envoyer</button>
+    </form>
 
-    <!-- Ajoute tes pistes / albums ici -->
+    <p id="result" class="meta small-muted"></p>
+
+    <hr>
+
+    <h2>Recommandations récentes</h2>
+    <div id="proposals-list">Chargement…</div>
+    <pre id="debug" class="debug"></pre>
   </main>
 
   <footer>
     © <span id="year"></span> — Blog personnel
   </footer>
 
-  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+  <!-- deps -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
+
+  <script>
+  /* ========= CONFIG ========= */
+  const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev";
+  const LOCAL_KEY = 'musiques_pending_v1';
+  const PSEUDO_KEY = 'musiques_user_pseudo';
+
+  /* ========= HELPERS ========= */
+  const $ = s => document.querySelector(s);
+  function escapeHtml(s){ return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') }
+  function debug(t){ $('#debug').style.display = t ? 'block' : 'none'; $('#debug').textContent = t || '' }
+  function sanitizeHtml(html){ if(window.DOMPurify && typeof DOMPurify.sanitize==='function') return DOMPurify.sanitize(html); return escapeHtml(html); }
+  function renderMarkdown(md){ try{ return sanitizeHtml(marked.parse(md || '')); }catch(e){ return sanitizeHtml(escapeHtml(md || '')); } }
+
+  /* ========= PENDING STORAGE ========= */
+  let pending = loadPendingFromStorage(); // {title,pseudo,artist,content,_tempId,createdAt}
+
+  function loadPendingFromStorage(){
+    try{
+      const raw = localStorage.getItem(LOCAL_KEY);
+      if(!raw) return [];
+      return JSON.parse(raw);
+    }catch(e){
+      console.error('failed parse pending', e);
+      return [];
+    }
+  }
+  function savePendingToStorage(){ try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(pending)); }catch(e){ console.warn('localStorage full?'); } }
+  function addPending(item){ pending.unshift(item); savePendingToStorage(); }
+  function removePendingByTempId(tempId){
+    const idx = pending.findIndex(p => p._tempId === tempId);
+    if(idx !== -1){ pending.splice(idx,1); savePendingToStorage(); return true; }
+    return false;
+  }
+  function removePendingMatchedByServerItem(serverItem){
+    const sContent = (serverItem.content||'').trim().slice(0,120);
+    const idx = pending.findIndex(p => p.title === serverItem.title && p.pseudo === serverItem.pseudo && (p.content||'').trim().slice(0,120) === sContent);
+    if(idx!==-1){ pending.splice(idx,1); savePendingToStorage(); return true; }
+    return false;
+  }
+  function getStoredPseudo(){ return localStorage.getItem(PSEUDO_KEY) || ''; }
+  function setStoredPseudo(p){ try{ localStorage.setItem(PSEUDO_KEY, p); }catch(e){} }
+
+  /* ========= RENDER HELPERS ========= */
+  function buildArticleHtml(obj, opts = {}){
+    const badge = opts.pending ? `<span class="pending-badge">(en attente)</span>` : '';
+    const artistLine = obj.artist ? `<div class="meta">Interprète : ${escapeHtml(obj.artist)}</div>` : '';
+    const contentHtml = obj.contentHtml ? sanitizeHtml(obj.contentHtml) : renderMarkdown(obj.content || '');
+
+    const actions = [];
+    if(opts.pending && obj._tempId) actions.push(`<button class="delete-btn pending-delete" data-temp="${escapeHtml(obj._tempId)}">Supprimer</button>`);
+    if(!opts.pending && obj.path) actions.push(`<button class="delete-btn server-delete" data-path="${escapeHtml(obj.path)}">Supprimer</button>`);
+    const actionsHtml = actions.length ? `<div class="actions">${actions.join('')}</div>` : '';
+
+    return `<article ${obj._tempId ? 'data-temp="'+escapeHtml(obj._tempId)+'"' : ''} ${obj.path ? 'data-path="'+escapeHtml(obj.path)+'"' : ''}>
+      <h3>${escapeHtml(obj.title || 'Sans titre')}${badge}</h3>
+      <div class="meta">Par ${escapeHtml(obj.pseudo || 'Anonyme')}</div>
+      ${artistLine}
+      ${contentHtml}
+      ${actionsHtml}
+    </article>`;
+  }
+
+  function stripHtml(html){ const tmp = document.createElement('div'); tmp.innerHTML = html || ''; return tmp.textContent || tmp.innerText || ''; }
+
+  function renderCombinedList(serverItems = []){
+    const serverMap = serverItems.map(si => ({
+      title: si.title,
+      pseudo: si.pseudo,
+      snippet: (si.contentHtml ? stripHtml(si.contentHtml) : (si.content||'')).trim().slice(0,120)
+    }));
+    const serverHtml = serverItems.map(si => buildArticleHtml(si, { pending:false })).join('');
+    const missingPending = pending.filter(p => {
+      const pSnippet = (p.content||'').trim().slice(0,120);
+      return !serverMap.some(sm => sm.title === p.title && sm.pseudo === p.pseudo && sm.snippet === pSnippet);
+    });
+    const pendingHtml = missingPending.map(p => buildArticleHtml(p, { pending:true })).join('');
+    const combined = (pendingHtml ? pendingHtml : '') + (serverHtml ? serverHtml : '');
+    $('#proposals-list').innerHTML = combined || 'Aucune proposition.';
+  }
+
+  /* ========= FORM ========= */
+  $('#proposal-form').onsubmit = async e => {
+    e.preventDefault();
+    $('#result').textContent = 'Envoi…';
+
+    const data = Object.fromEntries(new FormData(e.target).entries());
+    // include artist field in data
+    // minimal validation
+    if(!data.title || !data.content || !data.pseudo){ $('#result').textContent = 'Remplis tous les champs.'; return; }
+
+    // store pseudo locally so deletion is possible later
+    setStoredPseudo(data.pseudo);
+
+    try{
+      const r = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(data)
+      });
+      const j = await r.json().catch(()=>({ success: false, error: 'Invalid JSON response' }));
+
+      if(j.success){
+        $('#result').textContent = '✔ Proposition envoyée';
+        const temp = Object.assign({}, data, { _tempId: 't'+Date.now()+Math.random().toString(36).slice(2,6), createdAt: Date.now() });
+        addPending(temp);
+        loadAndRenderNow();
+        e.target.reset();
+
+        // if server returned item with content, remove pending
+        if(j.item){
+          // j.item may not include artist in index; we rely on matching heuristics
+          removePendingMatchedByServerItem(j.item);
+          setTimeout(()=>loadAndRenderNow(true), 300);
+        }
+        // start polling to confirm pending
+        ensurePolling();
+      } else {
+        $('#result').textContent = 'Erreur : ' + (j.error || 'inconnue');
+        debug(JSON.stringify(j));
+      }
+    } catch(err){
+      $('#result').textContent = 'Erreur réseau';
+      debug(String(err));
+    }
+  };
+
+  /* ========= NETWORK (via Worker) ========= */
+  async function fetchIndexNoCache(){
+    const url = WORKER_URL + '/index?t=' + Date.now();
+    const r = await fetch(url, { cache: 'no-store' });
+    if(!r.ok) throw new Error('index fetch status ' + r.status);
+    return await r.json();
+  }
+  async function fetchMarkdownNoCache(path){
+    const p = (path || '').replace(/^\/+/, '');
+    const url = WORKER_URL + '/md?path=' + encodeURIComponent(p) + '&t=' + Date.now();
+    const r = await fetch(url, { cache: 'no-store' });
+    if(!r.ok) throw new Error('md fetch status ' + r.status + ' ' + p);
+    return await r.text();
+  }
+
+  /* parse simple YAML frontmatter key: value lines -> returns object */
+  function parseFrontmatter(md){
+    const m = md.match(/^---\s*([\s\S]*?)\s*---/);
+    if(!m) return {};
+    const lines = m[1].split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const obj = {};
+    for(const line of lines){
+      const kv = line.split(':');
+      if(kv.length < 2) continue;
+      const key = kv[0].trim();
+      const val = kv.slice(1).join(':').trim().replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1');
+      obj[key] = val;
+    }
+    return obj;
+  }
+
+  /* ========= LOAD & MERGE ========= */
+  async function loadAndRenderNow(forceServerOnly = false){
+    try{
+      const rawIndex = await fetchIndexNoCache();
+      const index = Array.isArray(rawIndex) ? rawIndex : (Array.isArray(rawIndex.items) ? rawIndex.items : []);
+
+      // keep items that belong to musiques (either indexed by section or have path under /content/musiques/)
+      const items = index.filter(i => i.section === 'musiques' || (i.path && i.path.includes('/content/musiques/')));
+
+      const serverItems = await Promise.all(items.map(async i => {
+        try{
+          const md = await fetchMarkdownNoCache(i.path);
+          const front = parseFrontmatter(md);
+          const body = md.replace(/^---[\s\S]*?---/, '');
+          return {
+            title: i.title || front.title || '',
+            pseudo: i.pseudo || front.pseudo || '',
+            artist: front.artist || i.artist || '',
+            contentHtml: marked.parse(body),
+            content: stripHtml(body),
+            path: i.path
+          };
+        }catch(err){
+          return { title: i.title, pseudo: i.pseudo, artist: '', contentHtml: '<div class="meta">Erreur lecture contenu</div>', path: i.path };
+        }
+      }));
+
+      // remove confirmed pending
+      for(const si of serverItems){
+        removePendingMatchedByServerItem({ title: si.title, pseudo: si.pseudo, content: si.content || '' });
+      }
+
+      renderCombinedList(serverItems);
+    }catch(e){
+      console.warn('loadAndRenderNow failed', e);
+      renderCombinedList([]);
+      debug(String(e));
+    }
+  }
+
+  /* ========= POLLING ========= */
+  let pollHandle = null;
+  let pollAttempts = 0;
+  function pollOnce(){
+    pollAttempts++;
+    loadAndRenderNow().then(()=>{
+      if(pending.length === 0 || pollAttempts >= 8){ clearPoll(); }
+      else { const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); }
+    }).catch(()=>{ const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); });
+  }
+  function ensurePolling(){ if(pollHandle) return; pollAttempts = 0; pollOnce(); }
+  function clearPoll(){ if(pollHandle) clearTimeout(pollHandle); pollHandle = null; pollAttempts = 0; }
+
+  /* ========= DELETE HANDLERS (delegation) ========= */
+  $('#proposals-list').addEventListener('click', async (ev) => {
+    const btn = ev.target.closest('button.delete-btn');
+    if(!btn) return;
+
+    // pending delete (local)
+    if(btn.classList.contains('pending-delete')){
+      const temp = btn.dataset.temp;
+      if(!confirm('Supprimer cette proposition locale ?')) return;
+      if(removePendingByTempId(temp)){
+        $('#result').textContent = 'Proposition locale supprimée';
+        loadAndRenderNow();
+      } else { $('#result').textContent = 'Introuvable'; }
+      return;
+    }
+
+    // server delete
+    if(btn.classList.contains('server-delete')){
+      const path = btn.dataset.path;
+      if(!path){ $('#result').textContent = 'Impossible : pas de chemin connu pour cette proposition.'; return; }
+      if(!confirm('Confirmer suppression sur le serveur ? Cette action est irréversible.')) return;
+
+      try{
+        btn.disabled = true;
+        $('#result').textContent = 'Suppression…';
+        // include pseudo if stored locally (worker expects pseudo in many implementations)
+        const payload = { path };
+        const storedPseudo = getStoredPseudo();
+        if(storedPseudo) payload.pseudo = storedPseudo;
+
+        const r = await fetch(WORKER_URL + '/delete', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(payload)
+        });
+
+        let j = {};
+        try{ j = await r.json(); } catch(e){ j = { success: r.ok }; }
+
+        if(r.ok && j.success){
+          $('#result').textContent = '✔ Supprimé sur le serveur';
+          await loadAndRenderNow(true);
+        } else {
+          $('#result').textContent = 'Erreur suppression: ' + (j.error || r.status || 'inconnue');
+          btn.disabled = false;
+          debug(JSON.stringify(j));
+        }
+      }catch(err){
+        $('#result').textContent = 'Erreur réseau';
+        btn.disabled = false;
+        debug(String(err));
+      }
+    }
+  });
+
+  /* ========= INIT ========= */
+  document.getElementById('year').textContent = new Date().getFullYear();
+  // initial load
+  loadAndRenderNow().then(()=>{ if(pending.length) ensurePolling(); });
+  // periodic refresh
+  setInterval(()=>{ loadAndRenderNow().catch(()=>{}); }, 5*60*1000);
+  </script>
 </body>
 </html>
