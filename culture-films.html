@@ -63,7 +63,40 @@
   </a>
 </p>
 
+<!-- place this where you want the list to appear -->
+<div id="proposals-list">Chargement…</div>
 
+
+<!-- marked.js pour convertir markdown en html -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+async function loadProposals(section) {
+const container = document.getElementById('proposals-list');
+container.innerHTML = 'Chargement…';
+try {
+const idx = await fetch('/content/index.json').then(r => r.json());
+const items = idx.filter(i => i.section === section);
+if (items.length === 0) { container.innerHTML = '<p>Aucune proposition.</p>'; return; }
+
+
+// render each item
+const parts = await Promise.all(items.map(async it => {
+const md = await fetch('/' + it.path).then(r => r.ok ? r.text() : '');
+// remove frontmatter
+const mdNoFm = md.replace(/^---[\s\S]*?---\n?/, '');
+const html = marked.parse(mdNoFm);
+const title = it.title || extractTitle(mdNoFm) || 'Sans titre';
+const meta = (it.author_issue ? `<div class="meta">Par: ${escapeHtml(it.author_issue)} — ${escapeHtml(it.created_at||'')}</div>` : '');
+return `<article class="proposal">\n <h3>${escapeHtml(title)}</h3>\n ${meta}\n <div class="content">${html}</div>\n</article>`;
+}));
+
+
+container.innerHTML = parts.join('\n');
+} catch (err) {
+container.innerHTML = '<p>Erreur de chargement.</p>';
+console.error(err);
+}
+}
   <footer>
     © <span id="year"></span> — Blog personnel
   </footer>
