@@ -176,7 +176,7 @@ async function loadProposals(section) {
 
   try {
     // anti-cache pour s'assurer d'avoir la dernière version
-    const idxResp = await fetch('/content/index.json?t=' + Date.now());
+    const idxResp = await fetch('content/index.json');
     if (!idxResp.ok) throw new Error('index.json introuvable (status ' + idxResp.status + ')');
 
     const idxText = await idxResp.text();
