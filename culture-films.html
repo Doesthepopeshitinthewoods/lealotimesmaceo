@@ -84,8 +84,41 @@ const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev";
 
 /* ========= HELPERS ========= */
 const $ = s => document.querySelector(s);
-function escapeHtml(s){return s?.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')}
-function debug(t){$('#debug').style.display=t?'block':'none';$('#debug').textContent=t||''}
+function escapeHtml(s){ return s?.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') }
+function debug(t){ $('#debug').style.display = t ? 'block' : 'none'; $('#debug').textContent = t || '' }
+
+/* ========= DOM HELPERS ========= */
+function createArticleFrom(data){
+  const article = document.createElement('article');
+
+  const h3 = document.createElement('h3');
+  h3.innerHTML = escapeHtml(data.title || 'Sans titre');
+
+  const meta = document.createElement('div');
+  meta.className = 'meta';
+  meta.textContent = 'Par ' + (data.pseudo || 'Anonyme');
+
+  const bodyDiv = document.createElement('div');
+  // Rend du markdown (attention : marked ne sanitise pas tout seul -> idéalement sanitize côté serveur)
+  try {
+    bodyDiv.innerHTML = marked.parse(data.content || '');
+  } catch(e) {
+    bodyDiv.textContent = data.content || '';
+  }
+
+  article.appendChild(h3);
+  article.appendChild(meta);
+  article.appendChild(bodyDiv);
+  return article;
+}
+
+function prependProposal(data){
+  const list = $('#proposals-list');
+  if(!list) return;
+  if(list.textContent.trim() === 'Aucune proposition.' || list.textContent.trim().startsWith('Erreur')) list.innerHTML = '';
+  // insert at top
+  list.insertAdjacentElement('afterbegin', createArticleFrom(data));
+}
 
 /* ========= FORM ========= */
 $('#proposal-form').onsubmit = async e => {
@@ -95,47 +128,65 @@ $('#proposal-form').onsubmit = async e => {
   const data = Object.fromEntries(new FormData(e.target).entries());
 
   try {
-    const r = await fetch(WORKER_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(data)
+    const r = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(data)
     });
     const j = await r.json();
 
-    if(j.success){
+    if (j.success) {
       $('#result').textContent = '✔ Proposition envoyée';
+      // affichage optimiste immédiat (évite d'attendre l'index.json)
+      prependProposal({ title: data.title, pseudo: data.pseudo, content: data.content });
+
       e.target.reset();
-      setTimeout(()=>loadProposals('films'),1000);
+
+      // puis resynchroniser avec le serveur (sans cache)
+      setTimeout(()=>loadProposals('films'), 1000);
+      setTimeout(()=>loadProposals('films'), 3000);
     } else {
-      $('#result').textContent = 'Erreur : ' + j.error;
+      $('#result').textContent = 'Erreur : ' + (j.error || 'inconnue');
     }
   } catch(err){
     $('#result').textContent = 'Erreur réseau';
-    debug(err);
+    debug(String(err));
   }
 };
 
 /* ========= LOAD PROPOSALS ========= */
 async function loadProposals(section){
   try{
-    const r = await fetch('content/index.json?t=' + Date.now());
+    // use no-store cache option to avoid stale cached responses
+    const r = await fetch('content/index.json?t=' + Date.now(), { cache: 'no-store' });
+    if(!r.ok) throw new Error('status ' + r.status);
     const index = await r.json();
 
-    const items = index.filter(i=>i.section===section);
-    if(!items.length){$('#proposals-list').innerHTML='Aucune proposition.';return}
+    const items = index.filter(i => i.section === section);
+    if(!items.length){ $('#proposals-list').innerHTML = 'Aucune proposition.'; return }
 
-    const html = await Promise.all(items.map(async i=>{
+    // fetch each md with no-store
+    const htmlParts = await Promise.all(items.map(async i=>{
       const path = i.path.replace(/^\/+/,'');
-      const md = await (await fetch(path)).text();
-      const body = md.replace(/^---[\s\S]*?---/, '');
-      return `<article>
-        <h3>${escapeHtml(i.title)}</h3>
-        <div class="meta">Par ${escapeHtml(i.pseudo)}</div>
-        ${marked.parse(body)}
-      </article>`;
+      try{
+        const md = await (await fetch(path, { cache: 'no-store' })).text();
+        const body = md.replace(/^---[\s\S]*?---/, '');
+        return `<article>
+          <h3>${escapeHtml(i.title)}</h3>
+          <div class="meta">Par ${escapeHtml(i.pseudo)}</div>
+          ${marked.parse(body)}
+        </article>`;
+      }catch(e){
+        // si lecture du fichier échoue, on retourne au moins le titre/pseudo
+        return `<article>
+          <h3>${escapeHtml(i.title)}</h3>
+          <div class="meta">Par ${escapeHtml(i.pseudo)}</div>
+          <div class="meta">Erreur lecture contenu</div>
+        </article>`;
+      }
     }));
 
-    $('#proposals-list').innerHTML = html.join('');
+    $('#proposals-list').innerHTML = htmlParts.join('');
   } catch(e){
     $('#proposals-list').innerHTML = 'Erreur de chargement';
     debug(String(e));
@@ -144,7 +195,8 @@ async function loadProposals(section){
 
 /* ========= INIT ========= */
 $('#year').textContent = new Date().getFullYear();
-document.addEventListener('DOMContentLoaded',()=>loadProposals('films'));
+// appeler directement (le script est en bas de page)
+loadProposals('films');
 </script>
 
 </body>
