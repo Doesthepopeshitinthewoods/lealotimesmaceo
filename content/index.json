@@ -3,6 +3,9 @@
     "path": "content/films/test"
   },
   {
+    "path": "content/livres/test"
+  },
+  {
     "path": "content/musiques/test"
   }
 ]
