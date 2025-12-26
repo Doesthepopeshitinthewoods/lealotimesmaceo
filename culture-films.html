@@ -28,7 +28,7 @@
     #proposals-list .meta{color:#666;font-size:13px;margin-bottom:8px}
     .muted{color:var(--muted)}
     .small{font-size:13px;color:var(--muted)}
-    pre.debug{background:#111;color:#fff;padding:8px;border-radius:6px;overflow:auto}
+    pre.debug{background:#111;color:#fff;padding:8px;border-radius:6px;overflow:auto;display:none;}
   </style>
 </head>
 <body>
@@ -70,16 +70,12 @@
 
     <form id="proposal-form" autocomplete="off" novalidate>
       <input type="hidden" name="section" value="films">
-
       <label for="pseudo">Pseudo</label>
       <input id="pseudo" name="pseudo" required>
-
       <label for="title">Titre du film</label>
       <input id="title" name="title" required>
-
       <label for="content">Commentaire</label>
       <textarea id="content" name="content" rows="5" required></textarea>
-
       <button type="submit">Envoyer</button>
       <div class="small muted" style="margin-top:8px">Ton jeton de suppression sera stocké localement dans ton navigateur.</div>
     </form>
@@ -90,7 +86,7 @@
 
     <h2>Propositions récentes</h2>
     <div id="proposals-list">Chargement…</div>
-    <pre id="debug" class="debug" style="display:none;"></pre>
+    <pre id="debug" class="debug"></pre>
   </main>
 
   <footer>
@@ -101,33 +97,24 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <script>
-  // ======= CONFIG - Remplace WORKER_URL par l'URL exacte de ton Worker =======
-  const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev"; // <-- remplace par ton URL
+  // ======= CONFIG =======
+  const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev"; // <-- ton URL Worker
 
   // ======= Helpers =======
   function escapeHtml(s){ return s ? s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') : ''; }
-  function extractTitle(md) { const m = md.match(/^#\s*(.+)$/m); return m ? m[1].trim() : null; }
+  function extractTitle(md){ const m = md.match(/^#\s*(.+)$/m); return m ? m[1].trim() : null; }
   function showDebug(text){ const el = document.getElementById('debug'); el.style.display = text ? 'block' : 'none'; el.textContent = text || ''; }
 
   // ======= Form submission =======
   (function initForm() {
     const form = document.getElementById("proposal-form");
     const result = document.getElementById("result");
-
-    if (!form) {
-      console.error("Form not found: #proposal-form");
-      showDebug("Erreur: formulaire introuvable (id=proposal-form).");
-      return;
-    }
-
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       result.textContent = "Envoi en cours…";
       showDebug('');
 
       const data = Object.fromEntries(new FormData(form).entries());
-
-      // Basic client-side validation
       if (!data.pseudo || !data.title || !data.content) {
         result.textContent = "Veuillez remplir tous les champs.";
         return;
@@ -140,134 +127,72 @@
           body: JSON.stringify(data),
         });
 
-        // try to parse JSON response
         let json = null;
-        try { json = await res.json(); } catch (err) { /* ignore */ }
+        try { json = await res.json(); } catch(e){}
 
         if (res.ok && json && json.success) {
-          // store deletion token locally if provided
           if (json.token) {
-            try {
-              localStorage.setItem("deleteToken", json.token);
-              localStorage.setItem("lastPseudo", data.pseudo || "");
-              localStorage.setItem("lastSection", data.section || "films");
-            } catch (e) { console.warn("localStorage error:", e); }
+            localStorage.setItem("deleteToken", json.token);
+            localStorage.setItem("lastPseudo", data.pseudo);
+            localStorage.setItem("lastSection", data.section);
           }
-          result.textContent = "Proposition envoyée ✔ Conservez votre clé de suppression (stockée localement).";
+          result.textContent = "Proposition envoyée ✔ Conservez votre clé de suppression.";
           form.reset();
-          // reload proposals after short delay (allow GitHub to update)
           setTimeout(() => loadProposals('films'), 1500);
         } else {
-          // build helpful error message
-          let msg = `HTTP ${res.status}`;
-          if (json && json.error) msg = json.error;
-          if (json && json.details) msg += " — " + json.details;
+          let msg = json?.error || `HTTP ${res.status}`;
           result.textContent = "Erreur : " + msg;
           showDebug(JSON.stringify({ status: res.status, body: json }, null, 2));
           console.error("API error:", res.status, json);
         }
-      } catch (err) {
-        console.error("Network error:", err);
+      } catch(err) {
         result.textContent = "Erreur réseau (vérifie l'URL du Worker, CORS et que le Worker est déployé).";
         showDebug(String(err));
+        console.error(err);
       }
     });
   })();
 
-  // ======= Load proposals from content/index.json =======
-  async function loadProposals(section) {
+  // ======= Load proposals =======
+  async function loadProposals(section){
     const container = document.getElementById('proposals-list');
     container.innerHTML = 'Chargement…';
     try {
       const idxResp = await fetch('/content/index.json');
-      if (!idxResp.ok) throw new Error('index.json introuvable (404)');
+      if (!idxResp.ok) throw new Error('index.json introuvable');
       const idx = await idxResp.json();
-      const items = idx.filter(i => i.section === section);
-      if (!items.length) { container.innerHTML = '<p>Aucune proposition.</p>'; return; }
+      const items = idx.filter(i=>i.section===section);
+      if (!items.length){ container.innerHTML='<p>Aucune proposition.</p>'; return; }
 
-      const parts = await Promise.all(items.map(async it => {
-        const mdResp = await fetch('/' + it.path);
+      const htmlItems = await Promise.all(items.map(async it=>{
+        const mdResp = await fetch('/'+it.path);
         const md = mdResp.ok ? await mdResp.text() : '';
-        const mdNoFm = md.replace(/^---[\s\S]*?---\n?/, '');
+        const mdNoFm = md.replace(/^---[\s\S]*?---\n?/,'');
         const html = marked.parse(mdNoFm);
         const title = it.title || extractTitle(mdNoFm) || 'Sans titre';
-        const meta = `<div class="meta">Par: ${escapeHtml(it.author_issue || it.pseudo || '')} — ${escapeHtml(it.created_at || '')}</div>`;
-        return `<article class="proposal">\n <h3>${escapeHtml(title)}</h3>\n ${meta}\n <div class="content">${html}</div>\n</article>`;
+        const meta = `<div class="meta">Par: ${escapeHtml(it.pseudo || 'Anonyme')} — ${escapeHtml(it.created_at || '')}</div>`;
+        return `<article class="proposal">
+                  <h3>${escapeHtml(title)}</h3>
+                  ${meta}
+                  <div class="content">${html}</div>
+                </article>`;
       }));
 
-      container.innerHTML = parts.join('\n');
-    } catch (err) {
-      container.innerHTML = '<p>Erreur de chargement.</p>';
+      container.innerHTML = htmlItems.join('\n');
+
+    } catch(err) {
+      container.innerHTML = '<p>Erreur de chargement des propositions.</p>';
       showDebug(String(err));
       console.error(err);
     }
   }
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  // ======= Init page =======
+
+  // ======= Init =======
   document.getElementById('year').textContent = new Date().getFullYear();
-  document.addEventListener('DOMContentLoaded', () => loadProposals('films'));
+  document.addEventListener('DOMContentLoaded',()=>loadProposals('films'));
   </script>
-  <!-- Propositions récentes -->
-<div id="proposals-list">Chargement…</div>
-
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script>
-async function loadProposals(section) {
-  const container = document.getElementById('proposals-list');
-  container.innerHTML = 'Chargement…';
-
-  try {
-    // 1️⃣ Récupère l'index
-    const idxResp = await fetch('/content/index.json');
-    if (!idxResp.ok) throw new Error('index.json introuvable');
-    const idx = await idxResp.json();
-
-    // 2️⃣ Filtre par section (films)
-    const items = idx.filter(item => item.section === section);
-    if (items.length === 0) { container.innerHTML = '<p>Aucune proposition.</p>'; return; }
-
-    // 3️⃣ Récupère chaque fichier markdown et transforme en HTML
-    const htmlItems = await Promise.all(items.map(async item => {
-      const mdResp = await fetch('/' + item.path);
-      const md = mdResp.ok ? await mdResp.text() : '';
-      const mdNoFrontMatter = md.replace(/^---[\s\S]*?---\n?/, '');
-      const html = marked.parse(mdNoFrontMatter);
-      const title = item.title || mdNoFrontMatter.match(/^#\s*(.+)$/m)?.[1] || 'Sans titre';
-      const meta = `<div class="meta">Par: ${item.pseudo || 'Anonyme'} — ${item.created_at?.split('T')[0] || ''}</div>`;
-      return `<article class="proposal">
-                <h3>${title}</h3>
-                ${meta}
-                <div class="content">${html}</div>
-              </article>`;
-    }));
-
-    container.innerHTML = htmlItems.join('\n');
-
-  } catch (err) {
-    container.innerHTML = '<p>Erreur de chargement des propositions.</p>';
-    console.error(err);
-  }
-}
-
-// lance la récupération
-document.addEventListener('DOMContentLoaded', () => loadProposals('films'));
-</script>
-
-<style>
-#proposals-list article.proposal {
-  border:1px solid #eee;
-  padding:12px;
-  border-radius:8px;
-  margin-bottom:12px;
-}
-#proposals-list .meta {
-  color:#666;
-  font-size:13px;
-  margin-bottom:8px;
-}
-</style>
-
 </body>
 </html>
+
 
 
