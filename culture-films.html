@@ -23,6 +23,7 @@
     input,textarea{width:100%;padding:10px;margin-bottom:12px;border:1px solid #d1d5db;border-radius:4px}
     button{padding:10px 16px;background:#1f2937;color:#fff;border:none;border-radius:4px;cursor:pointer}
     #proposals-list article{border:1px solid #eee;padding:12px;border-radius:8px}
+    .pending-badge{font-size:12px;color:#9ca3af;margin-left:8px}
     pre.debug{display:none;background:#111;color:#0f0;padding:10px;font-size:12px;white-space:pre-wrap}
   </style>
 </head>
@@ -83,20 +84,45 @@
 <script>
 /* ========= CONFIG ========= */
 const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev";
+const INDEX_URL = 'content/index.json';
+const LOCAL_KEY = 'films_pending_v1'; // localStorage key
 
 /* ========= HELPERS ========= */
 const $ = s => document.querySelector(s);
 function escapeHtml(s){ return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') }
 function debug(t){ $('#debug').style.display = t ? 'block' : 'none'; $('#debug').textContent = t || '' }
 
-/* ========= OPTIMISTIC STORAGE ========= */
-const optimistic = []; // propositions locales en attente de confirmation serveur
+/* ========= PENDING STORAGE ========= */
+let pending = loadPendingFromStorage(); // array of objects {title,pseudo,content,_tempId,createdAt}
 
-function sameProposal(a, b){
-  if(!a || !b) return false;
-  const aC = (a.content||'').trim().slice(0,120);
-  const bC = (b.content||'').trim().slice(0,120);
-  return a.title === b.title && a.pseudo === b.pseudo && aC === bC;
+function loadPendingFromStorage(){
+  try{
+    const raw = localStorage.getItem(LOCAL_KEY);
+    if(!raw) return [];
+    return JSON.parse(raw);
+  }catch(e){
+    console.error('failed parse pending', e);
+    return [];
+  }
+}
+function savePendingToStorage(){
+  try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(pending)); }catch(e){console.warn('localStorage full?');}
+}
+function addPending(item){
+  pending.unshift(item);
+  savePendingToStorage();
+}
+function removePendingByTempId(tempId){
+  const idx = pending.findIndex(p => p._tempId === tempId);
+  if(idx !== -1){ pending.splice(idx,1); savePendingToStorage(); return true; }
+  return false;
+}
+function removePendingMatchedByServerItem(serverItem){
+  // heuristic: title + pseudo + prefix-of-content
+  const sContent = (serverItem.content||'').trim().slice(0,120);
+  const idx = pending.findIndex(p => p.title === serverItem.title && p.pseudo === serverItem.pseudo && (p.content||'').trim().slice(0,120) === sContent);
+  if(idx!==-1){ pending.splice(idx,1); savePendingToStorage(); return true; }
+  return false;
 }
 
 /* ========= RENDER HELPERS ========= */
@@ -104,47 +130,54 @@ function sanitizeHtml(html){
   if(window.DOMPurify && typeof DOMPurify.sanitize === 'function'){
     return DOMPurify.sanitize(html);
   }
-  // fallback: escape (perd le rendu markdown mais reste sûr)
   return escapeHtml(html);
 }
-
-function renderContentFromMarkdown(md){
+function renderMarkdown(md){
   try{
-    const raw = marked.parse(md || '');
-    return sanitizeHtml(raw);
+    return sanitizeHtml(marked.parse(md || ''));
   }catch(e){
     return sanitizeHtml(escapeHtml(md || ''));
   }
 }
 
-function createArticleFrom(obj){
-  const article = document.createElement('article');
-  const h3 = document.createElement('h3');
-  h3.innerHTML = escapeHtml(obj.title || 'Sans titre');
-
-  const meta = document.createElement('div');
-  meta.className = 'meta';
-  meta.textContent = 'Par ' + (obj.pseudo || 'Anonyme');
-
-  const bodyDiv = document.createElement('div');
-  // si on a déjà le HTML (contentHtml), on l'utilise; sinon on génère depuis content
-  if(obj.contentHtml){
-    bodyDiv.innerHTML = sanitizeHtml(obj.contentHtml);
-  } else {
-    bodyDiv.innerHTML = renderContentFromMarkdown(obj.content || '');
-  }
-
-  article.appendChild(h3);
-  article.appendChild(meta);
-  article.appendChild(bodyDiv);
-  return article;
+function buildArticleHtml(obj, opts = {}){
+  // opts.pending -> boolean: show badge
+  const badge = opts.pending ? `<span class="pending-badge">(en attente)</span>` : '';
+  const contentHtml = obj.contentHtml ? sanitizeHtml(obj.contentHtml) : renderMarkdown(obj.content || '');
+  return `<article ${obj._tempId ? 'data-temp="'+escapeHtml(obj._tempId)+'"' : ''}>
+    <h3>${escapeHtml(obj.title || 'Sans titre')}${badge}</h3>
+    <div class="meta">Par ${escapeHtml(obj.pseudo || 'Anonyme')}</div>
+    ${contentHtml}
+  </article>`;
 }
 
-function prependProposal(obj){
-  const list = $('#proposals-list');
-  if(!list) return;
-  if(list.textContent.trim() === 'Aucune proposition.' || list.textContent.trim().startsWith('Erreur')) list.innerHTML = '';
-  list.insertAdjacentElement('afterbegin', createArticleFrom(obj));
+/* ========= UI MUTATION ========= */
+function renderCombinedList(serverItems = []){
+  // serverItems: [{title,pseudo,contentHtml,...}, ...]
+  // Build server map to detect matches
+  const serverMap = serverItems.map(si => ({
+    title: si.title,
+    pseudo: si.pseudo,
+    snippet: (si.contentHtml ? stripHtml(si.contentHtml) : (si.content||'')).trim().slice(0,120)
+  }));
+  // Build server HTML
+  const serverHtml = serverItems.map(si => buildArticleHtml(si, {pending:false})).join('');
+
+  // Find pending items not present on server (heuristic)
+  const missingPending = pending.filter(p => {
+    const pSnippet = (p.content||'').trim().slice(0,120);
+    return !serverMap.some(sm => sm.title === p.title && sm.pseudo === p.pseudo && sm.snippet === pSnippet);
+  });
+
+  const pendingHtml = missingPending.map(p => buildArticleHtml(p, {pending:true})).join('');
+
+  const combined = (pendingHtml ? pendingHtml : '') + (serverHtml ? serverHtml : '');
+  $('#proposals-list').innerHTML = combined || 'Aucune proposition.';
+}
+
+// helper to strip tags for snippet comparison
+function stripHtml(html){
+  const tmp = document.createElement('div'); tmp.innerHTML = html || ''; return tmp.textContent || tmp.innerText || '';
 }
 
 /* ========= FORM ========= */
@@ -154,39 +187,45 @@ $('#proposal-form').onsubmit = async e => {
 
   const data = Object.fromEntries(new FormData(e.target).entries());
 
+  // minimal local validation
+  if(!data.title || !data.content || !data.pseudo){
+    $('#result').textContent = 'Remplis tous les champs.';
+    return;
+  }
+
   try {
     const r = await fetch(WORKER_URL, {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify(data)
     });
+    // if non-json, will throw in j = await r.json()
     const j = await r.json();
 
     if (j.success) {
       $('#result').textContent = '✔ Proposition envoyée';
 
-      // optimistic : marque temporaire + insertion locale
-      const temp = Object.assign({}, data, { _tempId: 't'+Date.now() });
-      optimistic.unshift(temp);
-      prependProposal(temp);
+      // create pending item
+      const temp = Object.assign({}, data, { _tempId: 't'+Date.now() + Math.random().toString(36).slice(2,6), createdAt: Date.now() });
+      addPending(temp);
+
+      // render immediately (pending at top)
+      loadAndRenderNow();
 
       e.target.reset();
 
-      // re-synchronisation forcée pour checker l'index serveur
-      setTimeout(()=>loadProposals('films'), 800);
-      setTimeout(()=>loadProposals('films'), 3000);
-
-      // si le worker renvoie l'item exact (j.item), on supprime l'optimistic correspondant
+      // if server returned the exact item, try to remove pending now
       if(j.item){
-        for(let i=0;i<optimistic.length;i++){
-          if(sameProposal(optimistic[i], j.item)){
-            optimistic.splice(i,1);
-            break;
-          }
-        }
-        // et on force un reload pour intégrer la version serveur
-        setTimeout(()=>loadProposals('films'), 500);
+        removePendingMatchedByServerItem(j.item);
+        // force immediate reload of index to show server version
+        setTimeout(()=>loadAndRenderNow(true), 300);
+      } else if (j.path){
+        // optional: if worker returns path where content got saved, try to fetch and confirm
+        // we'll rely on polling below
       }
+
+      // start/continue polling (we also poll globally on a timer)
+      ensurePolling();
     } else {
       $('#result').textContent = 'Erreur : ' + (j.error || 'inconnue');
     }
@@ -196,77 +235,104 @@ $('#proposal-form').onsubmit = async e => {
   }
 };
 
-/* ========= LOAD PROPOSALS ========= */
-async function loadProposals(section){
-  try{
-    const r = await fetch('content/index.json?t=' + Date.now(), { cache: 'no-store' });
-    if(!r.ok){
-      if(r.status === 404){
-        $('#proposals-list').innerHTML = 'Aucune proposition.';
-        return;
-      }
-      throw new Error('status ' + r.status);
-    }
-    const index = await r.json();
+/* ========= FETCH + MERGE ========= */
+async function fetchIndexNoCache(){
+  const url = INDEX_URL + '?t=' + Date.now();
+  const r = await fetch(url, { cache: 'no-store' });
+  if(!r.ok) throw new Error('status ' + r.status);
+  return await r.json();
+}
 
-    const items = index.filter(i => i.section === section);
-    // récupère le contenu markdown de chaque item (si possible)
-    const htmlParts = await Promise.all(items.map(async i=>{
-      const path = (i.path || '').replace(/^\/+/, '');
+async function fetchMarkdownNoCache(path){
+  const p = (path || '').replace(/^\/+/, '');
+  const r = await fetch(p + '?t=' + Date.now(), { cache: 'no-store' });
+  if(!r.ok) throw new Error('md status ' + r.status + ' ' + p);
+  return await r.text();
+}
+
+async function loadAndRenderNow(forceServerOnly = false){
+  // forceServerOnly: when true, still render pending but prefer server content update (used after j.item)
+  try{
+    // 1) fetch index
+    const index = await fetchIndexNoCache();
+    const items = (index || []).filter(i => i.section === 'films');
+
+    // 2) fetch md content for each item
+    const serverItems = await Promise.all(items.map(async i => {
       try{
-        const mdText = await (await fetch(path, { cache: 'no-store' })).text();
-        const body = mdText.replace(/^---[\s\S]*?---/, '');
+        const md = await fetchMarkdownNoCache(i.path);
+        const body = md.replace(/^---[\s\S]*?---/, '');
         return { title: i.title, pseudo: i.pseudo, contentHtml: marked.parse(body) };
       }catch(e){
         return { title: i.title, pseudo: i.pseudo, contentHtml: '<div class="meta">Erreur lecture contenu</div>' };
       }
     }));
 
-    // Construit l'HTML serveur
-    const serverHtml = htmlParts.map(h => {
-      return `
-      <article>
-        <h3>${escapeHtml(h.title)}</h3>
-        <div class="meta">Par ${escapeHtml(h.pseudo)}</div>
-        ${sanitizeHtml(h.contentHtml)}
-      </article>`;
-    }).join('');
-
-    // Détecte les optimistics manquantes dans l'index serveur (heuristique)
-    const missingOptimistic = optimistic.filter(opt => {
-      return !items.some(it =>
-        it.title === opt.title &&
-        it.pseudo === opt.pseudo &&
-        ((it.content||'').trim().slice(0,120) === (opt.content||'').trim().slice(0,120))
-      );
-    });
-
-    const optimisticHtml = missingOptimistic.map(o => {
-      const contentHtml = renderContentFromMarkdown(o.content || '');
-      return `<article data-temp="${o._tempId}">
-        <h3>${escapeHtml(o.title)}</h3>
-        <div class="meta">Par ${escapeHtml(o.pseudo)}</div>
-        ${contentHtml}
-      </article>`;
-    }).join('');
-
-    // Préfixe les optimistic (pour que l'utilisateur voie ses propositions immédiatement)
-    const combined = (optimisticHtml ? optimisticHtml : '') + (serverHtml ? serverHtml : '');
-    $('#proposals-list').innerHTML = combined || 'Aucune proposition.';
-
-    if(!items.length && !missingOptimistic.length){
-      $('#proposals-list').innerHTML = 'Aucune proposition.';
+    // 3) remove pending items that now appear in serverItems
+    // Convert serverItems to simplified items with content text for matching
+    for(const si of serverItems){
+      // try to match and remove pending
+      removePendingMatchedByServerItem({ title: si.title, pseudo: si.pseudo, content: stripHtml(si.contentHtml) });
     }
-  } catch(e){
-    $('#proposals-list').innerHTML = 'Erreur de chargement';
+
+    // 4) render combined
+    renderCombinedList(serverItems);
+  }catch(e){
+    // on erreur, on se rabat sur l'affichage local uniquement
+    console.warn('loadAndRenderNow failed', e);
+    const fallbackServerItems = [];
+    renderCombinedList(fallbackServerItems);
     debug(String(e));
   }
 }
 
+/* ========= POLLING (backoff) ========= */
+let pollHandle = null;
+let pollAttempts = 0;
+const POLL_MAX_ATTEMPTS = 8; // exponentiel (approx up to ~10-60s)
+function pollOnce(){
+  pollAttempts++;
+  loadAndRenderNow().then(()=>{
+    // if pending empty, stop polling
+    if(pending.length === 0 || pollAttempts >= POLL_MAX_ATTEMPTS){
+      clearPoll();
+    } else {
+      // schedule next with backoff
+      const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); // 1s,2s,4s,8s,...
+      pollHandle = setTimeout(pollOnce, delay);
+    }
+  }).catch(()=>{
+    // error already handled in loadAndRenderNow
+    const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000);
+    pollHandle = setTimeout(pollOnce, delay);
+  });
+}
+
+function ensurePolling(){
+  if(pollHandle) return;
+  pollAttempts = 0;
+  pollOnce();
+}
+
+function clearPoll(){
+  if(pollHandle) clearTimeout(pollHandle);
+  pollHandle = null;
+  pollAttempts = 0;
+}
+
 /* ========= INIT ========= */
 $('#year').textContent = new Date().getFullYear();
-loadProposals('films');
+
+// on load: render server + pending (pending stored in localStorage)
+loadAndRenderNow().then(()=>{
+  // if there are pending items, start polling to confirm them
+  if(pending.length) ensurePolling();
+});
+
+// also poll periodically in background to keep list fresh (every 5 minutes)
+setInterval(()=>{ loadAndRenderNow(); }, 5*60*1000);
 </script>
 
 </body>
 </html>
+
