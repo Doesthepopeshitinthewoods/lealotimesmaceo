@@ -4,9 +4,8 @@
   <meta charset="utf-8">
   <title>Culture — Films</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
-
+  <meta http-equiv="Cache-Control" content="no-store">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
-
   <style>
     :root{--maxw:760px;--bg:#fff;--text:#111827;--muted:#6b7280}
     *{box-sizing:border-box}
@@ -17,19 +16,18 @@
     nav a{color:#f3f4f6;text-decoration:none;margin-left:12px;font-size:14px}
     main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
     h2{font-family:Merriweather,serif;font-size:18px}
-    article{margin-bottom:20px}
+    article{margin-bottom:20px;position:relative}
     .meta{color:var(--muted);font-size:13px}
     form{margin-top:20px}
     input,textarea{width:100%;padding:10px;margin-bottom:12px;border:1px solid #d1d5db;border-radius:4px}
-    button{padding:10px 16px;background:#1f2937;color:#fff;border:none;border-radius:4px;cursor:pointer}
-    #proposals-list article{border:1px solid #eee;padding:12px;border-radius:8px}
+    button{padding:8px 12px;background:#1f2937;color:#fff;border:none;border-radius:4px;cursor:pointer}
+    .delete-btn{background:#991b1b;margin-left:8px;padding:6px 10px;border-radius:6px}
     .pending-badge{font-size:12px;color:#9ca3af;margin-left:8px}
+    #proposals-list article{border:1px solid #eee;padding:12px;border-radius:8px}
     pre.debug{display:none;background:#111;color:#0f0;padding:10px;font-size:12px;white-space:pre-wrap}
   </style>
 </head>
-
 <body>
-
 <header>
   <div class="wrap">
     <h1>Blog de l'intranquilité</h1>
@@ -41,20 +39,14 @@
     </nav>
   </div>
 </header>
-
 <main>
-
 <h2>Films — Sélection</h2>
-
 <article>
   <h3>Stalker</h3>
   <p class="meta">Andreï Tarkovski — 1979</p>
 </article>
-
 <hr>
-
 <h2>Proposer un film</h2>
-
 <form id="proposal-form">
   <input type="hidden" name="section" value="films">
   <input name="pseudo" placeholder="Pseudo" required>
@@ -62,276 +54,190 @@
   <textarea name="content" rows="5" placeholder="Commentaire" required></textarea>
   <button>Envoyer</button>
 </form>
-
 <p id="result" class="meta"></p>
-
 <hr>
-
 <h2>Propositions récentes</h2>
 <div id="proposals-list">Chargement…</div>
 <pre id="debug" class="debug"></pre>
-
 </main>
+<footer style="text-align:center;color:#777;padding:20px">© <span id="year"></span></footer>
 
-<footer style="text-align:center;color:#777;padding:20px">
-  © <span id="year"></span>
-</footer>
-
-<!-- dépendances -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
 
 <script>
-/* ========= CONFIG ========= */
-const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev";
-const INDEX_URL = 'content/index.json';
-const LOCAL_KEY = 'films_pending_v1'; // localStorage key
+/* CONFIG */
+const WORKER_URL = 'https://ton-worker.example.workers.dev'; // <- remplace par ton Worker
+const LOCAL_KEY = 'films_pending_v1';
+const PSEUDO_KEY = 'films_user_pseudo';
 
-/* ========= HELPERS ========= */
+/* HELPERS */
 const $ = s => document.querySelector(s);
 function escapeHtml(s){ return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') }
 function debug(t){ $('#debug').style.display = t ? 'block' : 'none'; $('#debug').textContent = t || '' }
+function sanitizeHtml(html){ return window.DOMPurify ? DOMPurify.sanitize(html) : escapeHtml(html); }
+function renderMarkdown(md){ try{ return sanitizeHtml(marked.parse(md||'')); }catch(e){ return sanitizeHtml(escapeHtml(md||'')); } }
 
-/* ========= PENDING STORAGE ========= */
-let pending = loadPendingFromStorage(); // array of objects {title,pseudo,content,_tempId,createdAt}
+/* STORAGE */
+let pending = (() => { try{ return JSON.parse(localStorage.getItem(LOCAL_KEY) || '[]'); }catch(e){ return []; } })();
+function savePending(){ try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(pending)); }catch(e){ } }
+function addPending(it){ pending.unshift(it); savePending(); }
+function removePendingByTempId(tempId){ const i = pending.findIndex(p=>p._tempId===tempId); if(i!==-1){ pending.splice(i,1); savePending(); return true } return false }
+function removePendingMatchedByServerItem(serverItem){ const sSnippet = (serverItem.content||'').trim().slice(0,120); const i = pending.findIndex(p => p.title===serverItem.title && p.pseudo===serverItem.pseudo && (p.content||'').trim().slice(0,120)===sSnippet); if(i!==-1){ pending.splice(i,1); savePending(); return true } return false }
+function getStoredPseudo(){ return localStorage.getItem(PSEUDO_KEY) || '' }
+function setStoredPseudo(p){ try{ localStorage.setItem(PSEUDO_KEY,p); }catch(e){} }
 
-function loadPendingFromStorage(){
-  try{
-    const raw = localStorage.getItem(LOCAL_KEY);
-    if(!raw) return [];
-    return JSON.parse(raw);
-  }catch(e){
-    console.error('failed parse pending', e);
-    return [];
-  }
-}
-function savePendingToStorage(){
-  try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(pending)); }catch(e){console.warn('localStorage full?');}
-}
-function addPending(item){
-  pending.unshift(item);
-  savePendingToStorage();
-}
-function removePendingByTempId(tempId){
-  const idx = pending.findIndex(p => p._tempId === tempId);
-  if(idx !== -1){ pending.splice(idx,1); savePendingToStorage(); return true; }
-  return false;
-}
-function removePendingMatchedByServerItem(serverItem){
-  // heuristic: title + pseudo + prefix-of-content
-  const sContent = (serverItem.content||'').trim().slice(0,120);
-  const idx = pending.findIndex(p => p.title === serverItem.title && p.pseudo === serverItem.pseudo && (p.content||'').trim().slice(0,120) === sContent);
-  if(idx!==-1){ pending.splice(idx,1); savePendingToStorage(); return true; }
-  return false;
-}
-
-/* ========= RENDER HELPERS ========= */
-function sanitizeHtml(html){
-  if(window.DOMPurify && typeof DOMPurify.sanitize === 'function'){
-    return DOMPurify.sanitize(html);
-  }
-  return escapeHtml(html);
-}
-function renderMarkdown(md){
-  try{
-    return sanitizeHtml(marked.parse(md || ''));
-  }catch(e){
-    return sanitizeHtml(escapeHtml(md || ''));
-  }
-}
-
+/* RENDER */
 function buildArticleHtml(obj, opts = {}){
-  // opts.pending -> boolean: show badge
   const badge = opts.pending ? `<span class="pending-badge">(en attente)</span>` : '';
   const contentHtml = obj.contentHtml ? sanitizeHtml(obj.contentHtml) : renderMarkdown(obj.content || '');
-  return `<article ${obj._tempId ? 'data-temp="'+escapeHtml(obj._tempId)+'"' : ''}>
-    <h3>${escapeHtml(obj.title || 'Sans titre')}${badge}</h3>
-    <div class="meta">Par ${escapeHtml(obj.pseudo || 'Anonyme')}</div>
+  // attach path attribute for server items
+  const dataAttrs = obj._tempId ? `data-temp="${escapeHtml(obj._tempId)}"` : (obj.path ? `data-path="${escapeHtml(obj.path)}"` : '');
+  // delete button visible if canDelete flag
+  const deleteBtn = opts.canDelete ? `<button class="delete-btn" data-path="${escapeHtml(obj.path||'')}" data-temp="${escapeHtml(obj._tempId||'')}">Supprimer</button>` : '';
+  return `<article ${dataAttrs}>
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h3 style="margin:0">${escapeHtml(obj.title||'Sans titre')}${badge}</h3>
+      <div>${deleteBtn}</div>
+    </div>
+    <div class="meta">Par ${escapeHtml(obj.pseudo||'Anonyme')}</div>
     ${contentHtml}
   </article>`;
 }
 
-/* ========= UI MUTATION ========= */
-function renderCombinedList(serverItems = []){
-  // serverItems: [{title,pseudo,contentHtml,...}, ...]
-  // Build server map to detect matches
-  const serverMap = serverItems.map(si => ({
-    title: si.title,
-    pseudo: si.pseudo,
-    snippet: (si.contentHtml ? stripHtml(si.contentHtml) : (si.content||'')).trim().slice(0,120)
-  }));
-  // Build server HTML
-  const serverHtml = serverItems.map(si => buildArticleHtml(si, {pending:false})).join('');
-
-  // Find pending items not present on server (heuristic)
+function renderCombinedList(serverItems=[]){
+  const serverMap = serverItems.map(si=>({ title: si.title, pseudo: si.pseudo, snippet: (si.content||'').trim().slice(0,120) }));
+  // pending not present on server
   const missingPending = pending.filter(p => {
     const pSnippet = (p.content||'').trim().slice(0,120);
-    return !serverMap.some(sm => sm.title === p.title && sm.pseudo === p.pseudo && sm.snippet === pSnippet);
+    return !serverMap.some(sm => sm.title===p.title && sm.pseudo===p.pseudo && sm.snippet===pSnippet);
   });
-
-  const pendingHtml = missingPending.map(p => buildArticleHtml(p, {pending:true})).join('');
-
-  const combined = (pendingHtml ? pendingHtml : '') + (serverHtml ? serverHtml : '');
-  $('#proposals-list').innerHTML = combined || 'Aucune proposition.';
+  // build HTML with delete button only for items matching stored pseudo (or pending items)
+  const storedPseudo = getStoredPseudo();
+  const pendingHtml = missingPending.map(p => buildArticleHtml(p, { pending:true, canDelete:true })).join('');
+  const serverHtml = serverItems.map(si => {
+    const canDelete = storedPseudo && si.pseudo === storedPseudo;
+    return buildArticleHtml(si, { pending:false, canDelete });
+  }).join('');
+  $('#proposals-list').innerHTML = (pendingHtml ? pendingHtml : '') + (serverHtml ? serverHtml : '') || 'Aucune proposition.';
 }
 
-// helper to strip tags for snippet comparison
-function stripHtml(html){
-  const tmp = document.createElement('div'); tmp.innerHTML = html || ''; return tmp.textContent || tmp.innerText || '';
+/* NETWORK (Worker only) */
+async function fetchIndex(){ const r = await fetch(WORKER_URL + '/index?t=' + Date.now(), { cache:'no-store' }); if(!r.ok) throw new Error('index fetch '+r.status); return await r.json(); }
+async function fetchMd(path){ const r = await fetch(WORKER_URL + '/md?path=' + encodeURIComponent(path) + '&t=' + Date.now(), { cache:'no-store' }); if(!r.ok) throw new Error('md fetch '+r.status); return await r.text(); }
+async function postDelete(path, pseudo){ const r = await fetch(WORKER_URL + '/delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ path, pseudo }) }); return r.json(); }
+
+/* LOAD & SYNC */
+async function loadAndRenderNow(){
+  try{
+    const index = await fetchIndex();
+    const items = (index||[]).filter(i=>i.section==='films');
+    const serverItems = await Promise.all(items.map(async i=>{
+      try{
+        const rawMd = await fetchMd((i.path||'').replace(/^\/+/,''));
+        const body = rawMd.replace(/^---[\s\S]*?---/, '');
+        return { title:i.title, pseudo:i.pseudo, path:i.path, contentHtml: marked.parse(body), content: body.replace(/<\/?[^>]+(>|$)/g,'') };
+      }catch(e){
+        return { title:i.title, pseudo:i.pseudo, path:i.path, contentHtml:'<div class="meta">Erreur lecture contenu</div>', content: '' };
+      }
+    }));
+    for(const si of serverItems){
+      removePendingMatchedByServerItem({ title: si.title, pseudo: si.pseudo, content: si.content||'' });
+    }
+    renderCombinedList(serverItems);
+  }catch(e){
+    console.warn('load failed', e);
+    renderCombinedList([]);
+    debug(String(e));
+  }
 }
 
-/* ========= FORM ========= */
-$('#proposal-form').onsubmit = async e => {
+/* POLLING (backoff) */
+let pollHandle = null, pollAttempts = 0;
+function startPolling(){ if(pollHandle) return; pollAttempts = 0; const once = async ()=>{ pollAttempts++; await loadAndRenderNow(); if(pending.length===0 || pollAttempts>=8){ clearTimeout(pollHandle); pollHandle=null; return; } const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(once, delay); }; pollHandle = setTimeout(once,0); }
+
+/* FORM submit */
+$('#proposal-form').onsubmit = async function(e){
   e.preventDefault();
   $('#result').textContent = 'Envoi…';
-
   const data = Object.fromEntries(new FormData(e.target).entries());
+  if(!data.title || !data.pseudo || !data.content){ $('#result').textContent = 'Remplis tous les champs.'; return; }
+  // save pseudo locally so delete is available
+  setStoredPseudo(data.pseudo);
 
-  // minimal local validation
-  if(!data.title || !data.content || !data.pseudo){
-    $('#result').textContent = 'Remplis tous les champs.';
-    return;
-  }
-
-  try {
-    const r = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(data)
-    });
-    // if non-json, will throw in j = await r.json()
+  try{
+    const r = await fetch(WORKER_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
     const j = await r.json();
-
-    if (j.success) {
+    if(j.success){
       $('#result').textContent = '✔ Proposition envoyée';
-
-      // create pending item
-      const temp = Object.assign({}, data, { _tempId: 't'+Date.now() + Math.random().toString(36).slice(2,6), createdAt: Date.now() });
+      const temp = Object.assign({}, data, { _tempId: 't'+Date.now()+Math.random().toString(36).slice(2,6), createdAt: Date.now() });
       addPending(temp);
-
-      // render immediately (pending at top)
       loadAndRenderNow();
-
       e.target.reset();
-
-      // if server returned the exact item, try to remove pending now
       if(j.item){
         removePendingMatchedByServerItem(j.item);
-        // force immediate reload of index to show server version
-        setTimeout(()=>loadAndRenderNow(true), 300);
-      } else if (j.path){
-        // optional: if worker returns path where content got saved, try to fetch and confirm
-        // we'll rely on polling below
+        setTimeout(()=>loadAndRenderNow(), 300);
       }
-
-      // start/continue polling (we also poll globally on a timer)
-      ensurePolling();
+      if(pending.length) startPolling();
     } else {
       $('#result').textContent = 'Erreur : ' + (j.error || 'inconnue');
+      debug(JSON.stringify(j));
     }
-  } catch(err){
+  }catch(err){
     $('#result').textContent = 'Erreur réseau';
     debug(String(err));
   }
 };
 
-/* ========= FETCH + MERGE ========= */
-async function fetchIndexNoCache(){
-  const url = INDEX_URL + '?t=' + Date.now();
-  const r = await fetch(url, { cache: 'no-store' });
-  if(!r.ok) throw new Error('status ' + r.status);
-  return await r.json();
-}
+/* DELETE handling (event delegation) */
+$('#proposals-list').addEventListener('click', async (ev) => {
+  const btn = ev.target.closest('.delete-btn');
+  if(!btn) return;
+  const path = btn.getAttribute('data-path'); // may be empty for pending
+  const temp = btn.getAttribute('data-temp');
+  const storedPseudo = getStoredPseudo();
+  // confirmation
+  if(!confirm('Confirmez-vous la suppression de cette proposition ?')) return;
 
-async function fetchMarkdownNoCache(path){
-  const p = (path || '').replace(/^\/+/, '');
-  const r = await fetch(p + '?t=' + Date.now(), { cache: 'no-store' });
-  if(!r.ok) throw new Error('md status ' + r.status + ' ' + p);
-  return await r.text();
-}
+  // If temp present -> delete pending locally
+  if(temp){
+    removePendingByTempId(temp);
+    loadAndRenderNow();
+    return;
+  }
 
-async function loadAndRenderNow(forceServerOnly = false){
-  // forceServerOnly: when true, still render pending but prefer server content update (used after j.item)
+  // else server deletion: require path & storedPseudo
+  if(!path){
+    alert('Impossible de supprimer : chemin manquant.');
+    return;
+  }
+  if(!storedPseudo){
+    alert('Pour supprimer une proposition, entrez d’abord le pseudo utilisé lors de la publication.');
+    return;
+  }
+
   try{
-    // 1) fetch index
-    const index = await fetchIndexNoCache();
-    const items = (index || []).filter(i => i.section === 'films');
-
-    // 2) fetch md content for each item
-    const serverItems = await Promise.all(items.map(async i => {
-      try{
-        const md = await fetchMarkdownNoCache(i.path);
-        const body = md.replace(/^---[\s\S]*?---/, '');
-        return { title: i.title, pseudo: i.pseudo, contentHtml: marked.parse(body) };
-      }catch(e){
-        return { title: i.title, pseudo: i.pseudo, contentHtml: '<div class="meta">Erreur lecture contenu</div>' };
-      }
-    }));
-
-    // 3) remove pending items that now appear in serverItems
-    // Convert serverItems to simplified items with content text for matching
-    for(const si of serverItems){
-      // try to match and remove pending
-      removePendingMatchedByServerItem({ title: si.title, pseudo: si.pseudo, content: stripHtml(si.contentHtml) });
+    const res = await postDelete(path, storedPseudo);
+    if(res && res.success){
+      // optimistic UI update: remove any matching pending and reload
+      removePendingMatchedByServerItem({ title: res.removed.title, pseudo: res.removed.pseudo, content: res.removed.content || '' });
+      setTimeout(()=>loadAndRenderNow(), 200);
+    } else {
+      alert('Suppression échouée: ' + (res && res.error ? res.error : 'inconnue'));
+      debug(JSON.stringify(res));
     }
-
-    // 4) render combined
-    renderCombinedList(serverItems);
   }catch(e){
-    // on erreur, on se rabat sur l'affichage local uniquement
-    console.warn('loadAndRenderNow failed', e);
-    const fallbackServerItems = [];
-    renderCombinedList(fallbackServerItems);
+    alert('Erreur réseau lors de suppression');
     debug(String(e));
   }
-}
-
-/* ========= POLLING (backoff) ========= */
-let pollHandle = null;
-let pollAttempts = 0;
-const POLL_MAX_ATTEMPTS = 8; // exponentiel (approx up to ~10-60s)
-function pollOnce(){
-  pollAttempts++;
-  loadAndRenderNow().then(()=>{
-    // if pending empty, stop polling
-    if(pending.length === 0 || pollAttempts >= POLL_MAX_ATTEMPTS){
-      clearPoll();
-    } else {
-      // schedule next with backoff
-      const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); // 1s,2s,4s,8s,...
-      pollHandle = setTimeout(pollOnce, delay);
-    }
-  }).catch(()=>{
-    // error already handled in loadAndRenderNow
-    const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000);
-    pollHandle = setTimeout(pollOnce, delay);
-  });
-}
-
-function ensurePolling(){
-  if(pollHandle) return;
-  pollAttempts = 0;
-  pollOnce();
-}
-
-function clearPoll(){
-  if(pollHandle) clearTimeout(pollHandle);
-  pollHandle = null;
-  pollAttempts = 0;
-}
-
-/* ========= INIT ========= */
-$('#year').textContent = new Date().getFullYear();
-
-// on load: render server + pending (pending stored in localStorage)
-loadAndRenderNow().then(()=>{
-  // if there are pending items, start polling to confirm them
-  if(pending.length) ensurePolling();
 });
 
-// also poll periodically in background to keep list fresh (every 5 minutes)
-setInterval(()=>{ loadAndRenderNow(); }, 5*60*1000);
+/* INIT */
+$('#year').textContent = new Date().getFullYear();
+document.addEventListener('DOMContentLoaded', ()=>{
+  loadAndRenderNow().then(()=>{ if(pending.length) startPolling(); });
+  setInterval(()=>{ loadAndRenderNow().catch(()=>{}); }, 5*60*1000);
+});
 </script>
-
 </body>
 </html>
