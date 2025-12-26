@@ -39,13 +39,12 @@
     </nav>
   </div>
 </header>
+
 <main>
 <h2>Films — Sélection</h2>
-<article>
-  <h3>Stalker</h3>
-  <p class="meta">Andreï Tarkovski — 1979</p>
-</article>
+<article><h3>Stalker</h3><p class="meta">Andreï Tarkovski — 1979</p></article>
 <hr>
+
 <h2>Proposer un film</h2>
 <form id="proposal-form">
   <input type="hidden" name="section" value="films">
@@ -54,12 +53,15 @@
   <textarea name="content" rows="5" placeholder="Commentaire" required></textarea>
   <button>Envoyer</button>
 </form>
+
 <p id="result" class="meta"></p>
 <hr>
+
 <h2>Propositions récentes</h2>
 <div id="proposals-list">Chargement…</div>
 <pre id="debug" class="debug"></pre>
 </main>
+
 <footer style="text-align:center;color:#777;padding:20px">© <span id="year"></span></footer>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -67,7 +69,7 @@
 
 <script>
 /* CONFIG */
-const WORKER_URL = 'steep-dawn-b94d.ettae634.workers.dev'; // <- remplace par ton Worker
+const WORKER_URL = 'https://steep-dawn-b94d.ettae634.workers.dev'; // <- TON WORKER
 const LOCAL_KEY = 'films_pending_v1';
 const PSEUDO_KEY = 'films_user_pseudo';
 
@@ -75,10 +77,10 @@ const PSEUDO_KEY = 'films_user_pseudo';
 const $ = s => document.querySelector(s);
 function escapeHtml(s){ return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') }
 function debug(t){ $('#debug').style.display = t ? 'block' : 'none'; $('#debug').textContent = t || '' }
-function sanitizeHtml(html){ return window.DOMPurify ? DOMPurify.sanitize(html) : escapeHtml(html); }
+function sanitizeHtml(html){ return window.DOMPurify ? DOMPurify.sanitize(html) : escapeHtml(html) }
 function renderMarkdown(md){ try{ return sanitizeHtml(marked.parse(md||'')); }catch(e){ return sanitizeHtml(escapeHtml(md||'')); } }
 
-/* STORAGE */
+/* PENDING storage */
 let pending = (() => { try{ return JSON.parse(localStorage.getItem(LOCAL_KEY) || '[]'); }catch(e){ return []; } })();
 function savePending(){ try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(pending)); }catch(e){ } }
 function addPending(it){ pending.unshift(it); savePending(); }
@@ -87,13 +89,11 @@ function removePendingMatchedByServerItem(serverItem){ const sSnippet = (serverI
 function getStoredPseudo(){ return localStorage.getItem(PSEUDO_KEY) || '' }
 function setStoredPseudo(p){ try{ localStorage.setItem(PSEUDO_KEY,p); }catch(e){} }
 
-/* RENDER */
+/* RENDER helpers */
 function buildArticleHtml(obj, opts = {}){
   const badge = opts.pending ? `<span class="pending-badge">(en attente)</span>` : '';
   const contentHtml = obj.contentHtml ? sanitizeHtml(obj.contentHtml) : renderMarkdown(obj.content || '');
-  // attach path attribute for server items
   const dataAttrs = obj._tempId ? `data-temp="${escapeHtml(obj._tempId)}"` : (obj.path ? `data-path="${escapeHtml(obj.path)}"` : '');
-  // delete button visible if canDelete flag
   const deleteBtn = opts.canDelete ? `<button class="delete-btn" data-path="${escapeHtml(obj.path||'')}" data-temp="${escapeHtml(obj._tempId||'')}">Supprimer</button>` : '';
   return `<article ${dataAttrs}>
     <div style="display:flex;justify-content:space-between;align-items:center">
@@ -105,14 +105,14 @@ function buildArticleHtml(obj, opts = {}){
   </article>`;
 }
 
+function stripHtml(html){ const tmp = document.createElement('div'); tmp.innerHTML = html || ''; return tmp.textContent || tmp.innerText || ''; }
+
 function renderCombinedList(serverItems=[]){
   const serverMap = serverItems.map(si=>({ title: si.title, pseudo: si.pseudo, snippet: (si.content||'').trim().slice(0,120) }));
-  // pending not present on server
   const missingPending = pending.filter(p => {
     const pSnippet = (p.content||'').trim().slice(0,120);
     return !serverMap.some(sm => sm.title===p.title && sm.pseudo===p.pseudo && sm.snippet===pSnippet);
   });
-  // build HTML with delete button only for items matching stored pseudo (or pending items)
   const storedPseudo = getStoredPseudo();
   const pendingHtml = missingPending.map(p => buildArticleHtml(p, { pending:true, canDelete:true })).join('');
   const serverHtml = serverItems.map(si => {
@@ -122,7 +122,7 @@ function renderCombinedList(serverItems=[]){
   $('#proposals-list').innerHTML = (pendingHtml ? pendingHtml : '') + (serverHtml ? serverHtml : '') || 'Aucune proposition.';
 }
 
-/* NETWORK (Worker only) */
+/* NETWORK (worker only) */
 async function fetchIndex(){ const r = await fetch(WORKER_URL + '/index?t=' + Date.now(), { cache:'no-store' }); if(!r.ok) throw new Error('index fetch '+r.status); return await r.json(); }
 async function fetchMd(path){ const r = await fetch(WORKER_URL + '/md?path=' + encodeURIComponent(path) + '&t=' + Date.now(), { cache:'no-store' }); if(!r.ok) throw new Error('md fetch '+r.status); return await r.text(); }
 async function postDelete(path, pseudo){ const r = await fetch(WORKER_URL + '/delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ path, pseudo }) }); return r.json(); }
@@ -131,19 +131,17 @@ async function postDelete(path, pseudo){ const r = await fetch(WORKER_URL + '/de
 async function loadAndRenderNow(){
   try{
     const index = await fetchIndex();
-    const items = (index||[]).filter(i=>i.section==='films');
-    const serverItems = await Promise.all(items.map(async i=>{
+    const items = (index || []).filter(i => i.section === 'films');
+    const serverItems = await Promise.all(items.map(async i => {
       try{
-        const rawMd = await fetchMd((i.path||'').replace(/^\/+/,''));
-        const body = rawMd.replace(/^---[\s\S]*?---/, '');
-        return { title:i.title, pseudo:i.pseudo, path:i.path, contentHtml: marked.parse(body), content: body.replace(/<\/?[^>]+(>|$)/g,'') };
+        const rawMd = await fetchMd((i.path || '').replace(/^\/+/, ''));
+        const body = rawMd.replace(/^---[\\s\\S]*?---/, '');
+        return { title: i.title, pseudo: i.pseudo, path: i.path, contentHtml: marked.parse(body), content: stripHtml(body) };
       }catch(e){
-        return { title:i.title, pseudo:i.pseudo, path:i.path, contentHtml:'<div class="meta">Erreur lecture contenu</div>', content: '' };
+        return { title: i.title, pseudo: i.pseudo, path: i.path, contentHtml: '<div class="meta">Erreur lecture contenu</div>', content: '' };
       }
     }));
-    for(const si of serverItems){
-      removePendingMatchedByServerItem({ title: si.title, pseudo: si.pseudo, content: si.content||'' });
-    }
+    for(const si of serverItems) removePendingMatchedByServerItem({ title: si.title, pseudo: si.pseudo, content: si.content||'' });
     renderCombinedList(serverItems);
   }catch(e){
     console.warn('load failed', e);
@@ -152,7 +150,7 @@ async function loadAndRenderNow(){
   }
 }
 
-/* POLLING (backoff) */
+/* POLLING */
 let pollHandle = null, pollAttempts = 0;
 function startPolling(){ if(pollHandle) return; pollAttempts = 0; const once = async ()=>{ pollAttempts++; await loadAndRenderNow(); if(pending.length===0 || pollAttempts>=8){ clearTimeout(pollHandle); pollHandle=null; return; } const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(once, delay); }; pollHandle = setTimeout(once,0); }
 
@@ -162,82 +160,35 @@ $('#proposal-form').onsubmit = async function(e){
   $('#result').textContent = 'Envoi…';
   const data = Object.fromEntries(new FormData(e.target).entries());
   if(!data.title || !data.pseudo || !data.content){ $('#result').textContent = 'Remplis tous les champs.'; return; }
-  // save pseudo locally so delete is available
   setStoredPseudo(data.pseudo);
-
   try{
     const r = await fetch(WORKER_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
     const j = await r.json();
     if(j.success){
       $('#result').textContent = '✔ Proposition envoyée';
       const temp = Object.assign({}, data, { _tempId: 't'+Date.now()+Math.random().toString(36).slice(2,6), createdAt: Date.now() });
-      addPending(temp);
-      loadAndRenderNow();
-      e.target.reset();
-      if(j.item){
-        removePendingMatchedByServerItem(j.item);
-        setTimeout(()=>loadAndRenderNow(), 300);
-      }
+      addPending(temp); loadAndRenderNow(); e.target.reset();
+      if(j.item){ removePendingMatchedByServerItem(j.item); setTimeout(()=>loadAndRenderNow(), 300); }
       if(pending.length) startPolling();
-    } else {
-      $('#result').textContent = 'Erreur : ' + (j.error || 'inconnue');
-      debug(JSON.stringify(j));
-    }
-  }catch(err){
-    $('#result').textContent = 'Erreur réseau';
-    debug(String(err));
-  }
+    } else { $('#result').textContent = 'Erreur : ' + (j.error || 'inconnue'); debug(JSON.stringify(j)); }
+  }catch(err){ $('#result').textContent = 'Erreur réseau'; debug(String(err)); }
 };
 
-/* DELETE handling (event delegation) */
+/* DELETE handler */
 $('#proposals-list').addEventListener('click', async (ev) => {
-  const btn = ev.target.closest('.delete-btn');
-  if(!btn) return;
-  const path = btn.getAttribute('data-path'); // may be empty for pending
-  const temp = btn.getAttribute('data-temp');
-  const storedPseudo = getStoredPseudo();
-  // confirmation
+  const btn = ev.target.closest('.delete-btn'); if(!btn) return;
+  const path = btn.getAttribute('data-path'); const temp = btn.getAttribute('data-temp'); const storedPseudo = getStoredPseudo();
   if(!confirm('Confirmez-vous la suppression de cette proposition ?')) return;
-
-  // If temp present -> delete pending locally
-  if(temp){
-    removePendingByTempId(temp);
-    loadAndRenderNow();
-    return;
-  }
-
-  // else server deletion: require path & storedPseudo
-  if(!path){
-    alert('Impossible de supprimer : chemin manquant.');
-    return;
-  }
-  if(!storedPseudo){
-    alert('Pour supprimer une proposition, entrez d’abord le pseudo utilisé lors de la publication.');
-    return;
-  }
-
-  try{
-    const res = await postDelete(path, storedPseudo);
-    if(res && res.success){
-      // optimistic UI update: remove any matching pending and reload
-      removePendingMatchedByServerItem({ title: res.removed.title, pseudo: res.removed.pseudo, content: res.removed.content || '' });
-      setTimeout(()=>loadAndRenderNow(), 200);
-    } else {
-      alert('Suppression échouée: ' + (res && res.error ? res.error : 'inconnue'));
-      debug(JSON.stringify(res));
-    }
-  }catch(e){
-    alert('Erreur réseau lors de suppression');
-    debug(String(e));
-  }
+  if(temp){ removePendingByTempId(temp); loadAndRenderNow(); return; }
+  if(!path){ alert('Impossible de supprimer : chemin manquant.'); return; }
+  if(!storedPseudo){ alert('Pour supprimer une proposition, entrez d’abord le pseudo utilisé lors de la publication.'); return; }
+  try{ const res = await postDelete(path, storedPseudo); if(res && res.success){ removePendingMatchedByServerItem({ title: res.removed.title, pseudo: res.removed.pseudo, content: res.removed.content || '' }); setTimeout(()=>loadAndRenderNow(), 200); } else { alert('Suppression échouée: ' + (res && res.error ? res.error : 'inconnue')); debug(JSON.stringify(res)); } }catch(e){ alert('Erreur réseau lors de suppression'); debug(String(e)); }
 });
 
 /* INIT */
 $('#year').textContent = new Date().getFullYear();
-document.addEventListener('DOMContentLoaded', ()=>{
-  loadAndRenderNow().then(()=>{ if(pending.length) startPolling(); });
-  setInterval(()=>{ loadAndRenderNow().catch(()=>{}); }, 5*60*1000);
-});
+document.addEventListener('DOMContentLoaded', ()=>{ loadAndRenderNow().then(()=>{ if(pending.length) startPolling(); }); setInterval(()=>{ loadAndRenderNow().catch(()=>{}); }, 5*60*1000); });
 </script>
 </body>
 </html>
+
