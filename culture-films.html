@@ -23,7 +23,7 @@
     input,textarea{width:100%;padding:10px;margin-bottom:12px;border:1px solid #d1d5db;border-radius:4px}
     button{padding:10px 16px;background:#1f2937;color:#fff;border:none;border-radius:4px;cursor:pointer}
     #proposals-list article{border:1px solid #eee;padding:12px;border-radius:8px}
-    pre.debug{display:none;background:#111;color:#0f0;padding:10px;font-size:12px}
+    pre.debug{display:none;background:#111;color:#0f0;padding:10px;font-size:12px;white-space:pre-wrap}
   </style>
 </head>
 
@@ -52,7 +52,7 @@
 
 <hr>
 
-<h2>Proposer un film rzqr</h2>
+<h2>Proposer un film</h2>
 
 <form id="proposal-form">
   <input type="hidden" name="section" value="films">
@@ -76,7 +76,9 @@
   © <span id="year"></span>
 </footer>
 
+<!-- dépendances -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
 
 <script>
 /* ========= CONFIG ========= */
@@ -84,26 +86,52 @@ const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev";
 
 /* ========= HELPERS ========= */
 const $ = s => document.querySelector(s);
-function escapeHtml(s){ return s?.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') }
+function escapeHtml(s){ return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') }
 function debug(t){ $('#debug').style.display = t ? 'block' : 'none'; $('#debug').textContent = t || '' }
 
-/* ========= DOM HELPERS ========= */
-function createArticleFrom(data){
-  const article = document.createElement('article');
+/* ========= OPTIMISTIC STORAGE ========= */
+const optimistic = []; // propositions locales en attente de confirmation serveur
 
+function sameProposal(a, b){
+  if(!a || !b) return false;
+  const aC = (a.content||'').trim().slice(0,120);
+  const bC = (b.content||'').trim().slice(0,120);
+  return a.title === b.title && a.pseudo === b.pseudo && aC === bC;
+}
+
+/* ========= RENDER HELPERS ========= */
+function sanitizeHtml(html){
+  if(window.DOMPurify && typeof DOMPurify.sanitize === 'function'){
+    return DOMPurify.sanitize(html);
+  }
+  // fallback: escape (perd le rendu markdown mais reste sûr)
+  return escapeHtml(html);
+}
+
+function renderContentFromMarkdown(md){
+  try{
+    const raw = marked.parse(md || '');
+    return sanitizeHtml(raw);
+  }catch(e){
+    return sanitizeHtml(escapeHtml(md || ''));
+  }
+}
+
+function createArticleFrom(obj){
+  const article = document.createElement('article');
   const h3 = document.createElement('h3');
-  h3.innerHTML = escapeHtml(data.title || 'Sans titre');
+  h3.innerHTML = escapeHtml(obj.title || 'Sans titre');
 
   const meta = document.createElement('div');
   meta.className = 'meta';
-  meta.textContent = 'Par ' + (data.pseudo || 'Anonyme');
+  meta.textContent = 'Par ' + (obj.pseudo || 'Anonyme');
 
   const bodyDiv = document.createElement('div');
-  // Rend du markdown (attention : marked ne sanitise pas tout seul -> idéalement sanitize côté serveur)
-  try {
-    bodyDiv.innerHTML = marked.parse(data.content || '');
-  } catch(e) {
-    bodyDiv.textContent = data.content || '';
+  // si on a déjà le HTML (contentHtml), on l'utilise; sinon on génère depuis content
+  if(obj.contentHtml){
+    bodyDiv.innerHTML = sanitizeHtml(obj.contentHtml);
+  } else {
+    bodyDiv.innerHTML = renderContentFromMarkdown(obj.content || '');
   }
 
   article.appendChild(h3);
@@ -112,12 +140,11 @@ function createArticleFrom(data){
   return article;
 }
 
-function prependProposal(data){
+function prependProposal(obj){
   const list = $('#proposals-list');
   if(!list) return;
   if(list.textContent.trim() === 'Aucune proposition.' || list.textContent.trim().startsWith('Erreur')) list.innerHTML = '';
-  // insert at top
-  list.insertAdjacentElement('afterbegin', createArticleFrom(data));
+  list.insertAdjacentElement('afterbegin', createArticleFrom(obj));
 }
 
 /* ========= FORM ========= */
@@ -136,14 +163,33 @@ $('#proposal-form').onsubmit = async e => {
     const j = await r.json();
 
     if (j.success) {
-  $('#result').textContent = '✔ Proposition envoyée';
-  prependProposal(data);
-  e.target.reset();
-  setTimeout(()=>loadProposals('films'), 800);
-  setTimeout(()=>loadProposals('films'), 3000);
-}
+      $('#result').textContent = '✔ Proposition envoyée';
 
+      // optimistic : marque temporaire + insertion locale
+      const temp = Object.assign({}, data, { _tempId: 't'+Date.now() });
+      optimistic.unshift(temp);
+      prependProposal(temp);
 
+      e.target.reset();
+
+      // re-synchronisation forcée pour checker l'index serveur
+      setTimeout(()=>loadProposals('films'), 800);
+      setTimeout(()=>loadProposals('films'), 3000);
+
+      // si le worker renvoie l'item exact (j.item), on supprime l'optimistic correspondant
+      if(j.item){
+        for(let i=0;i<optimistic.length;i++){
+          if(sameProposal(optimistic[i], j.item)){
+            optimistic.splice(i,1);
+            break;
+          }
+        }
+        // et on force un reload pour intégrer la version serveur
+        setTimeout(()=>loadProposals('films'), 500);
+      }
+    } else {
+      $('#result').textContent = 'Erreur : ' + (j.error || 'inconnue');
+    }
   } catch(err){
     $('#result').textContent = 'Erreur réseau';
     debug(String(err));
@@ -153,36 +199,64 @@ $('#proposal-form').onsubmit = async e => {
 /* ========= LOAD PROPOSALS ========= */
 async function loadProposals(section){
   try{
-    // use no-store cache option to avoid stale cached responses
     const r = await fetch('content/index.json?t=' + Date.now(), { cache: 'no-store' });
-    if(!r.ok) throw new Error('status ' + r.status);
+    if(!r.ok){
+      if(r.status === 404){
+        $('#proposals-list').innerHTML = 'Aucune proposition.';
+        return;
+      }
+      throw new Error('status ' + r.status);
+    }
     const index = await r.json();
 
     const items = index.filter(i => i.section === section);
-    if(!items.length){ $('#proposals-list').innerHTML = 'Aucune proposition.'; return }
-
-    // fetch each md with no-store
+    // récupère le contenu markdown de chaque item (si possible)
     const htmlParts = await Promise.all(items.map(async i=>{
-      const path = i.path.replace(/^\/+/,'');
+      const path = (i.path || '').replace(/^\/+/, '');
       try{
-        const md = await (await fetch(path, { cache: 'no-store' })).text();
-        const body = md.replace(/^---[\s\S]*?---/, '');
-        return `<article>
-          <h3>${escapeHtml(i.title)}</h3>
-          <div class="meta">Par ${escapeHtml(i.pseudo)}</div>
-          ${marked.parse(body)}
-        </article>`;
+        const mdText = await (await fetch(path, { cache: 'no-store' })).text();
+        const body = mdText.replace(/^---[\s\S]*?---/, '');
+        return { title: i.title, pseudo: i.pseudo, contentHtml: marked.parse(body) };
       }catch(e){
-        // si lecture du fichier échoue, on retourne au moins le titre/pseudo
-        return `<article>
-          <h3>${escapeHtml(i.title)}</h3>
-          <div class="meta">Par ${escapeHtml(i.pseudo)}</div>
-          <div class="meta">Erreur lecture contenu</div>
-        </article>`;
+        return { title: i.title, pseudo: i.pseudo, contentHtml: '<div class="meta">Erreur lecture contenu</div>' };
       }
     }));
 
-    $('#proposals-list').innerHTML = htmlParts.join('');
+    // Construit l'HTML serveur
+    const serverHtml = htmlParts.map(h => {
+      return `
+      <article>
+        <h3>${escapeHtml(h.title)}</h3>
+        <div class="meta">Par ${escapeHtml(h.pseudo)}</div>
+        ${sanitizeHtml(h.contentHtml)}
+      </article>`;
+    }).join('');
+
+    // Détecte les optimistics manquantes dans l'index serveur (heuristique)
+    const missingOptimistic = optimistic.filter(opt => {
+      return !items.some(it =>
+        it.title === opt.title &&
+        it.pseudo === opt.pseudo &&
+        ((it.content||'').trim().slice(0,120) === (opt.content||'').trim().slice(0,120))
+      );
+    });
+
+    const optimisticHtml = missingOptimistic.map(o => {
+      const contentHtml = renderContentFromMarkdown(o.content || '');
+      return `<article data-temp="${o._tempId}">
+        <h3>${escapeHtml(o.title)}</h3>
+        <div class="meta">Par ${escapeHtml(o.pseudo)}</div>
+        ${contentHtml}
+      </article>`;
+    }).join('');
+
+    // Préfixe les optimistic (pour que l'utilisateur voie ses propositions immédiatement)
+    const combined = (optimisticHtml ? optimisticHtml : '') + (serverHtml ? serverHtml : '');
+    $('#proposals-list').innerHTML = combined || 'Aucune proposition.';
+
+    if(!items.length && !missingOptimistic.length){
+      $('#proposals-list').innerHTML = 'Aucune proposition.';
+    }
   } catch(e){
     $('#proposals-list').innerHTML = 'Erreur de chargement';
     debug(String(e));
@@ -191,11 +265,8 @@ async function loadProposals(section){
 
 /* ========= INIT ========= */
 $('#year').textContent = new Date().getFullYear();
-// appeler directement (le script est en bas de page)
 loadProposals('films');
 </script>
 
 </body>
 </html>
-
-
