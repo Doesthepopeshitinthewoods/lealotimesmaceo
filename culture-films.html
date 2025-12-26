@@ -4,148 +4,178 @@
   <meta charset="utf-8">
   <title>Culture — Films</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
-
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
-
   <style>
     :root{--maxw:760px;--bg:#fff;--text:#111827;--muted:#6b7280}
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui;line-height:1.7}
+    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px}
     header{background:#8b0000}
-    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px;display:flex;justify-content:space-between}
-    h1{margin:0;font-family:Merriweather,serif;font-size:20px;color:#fff}
-    nav a{color:#f3f4f6;text-decoration:none;margin-left:12px;font-size:14px}
-    main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
-    h2{font-family:Merriweather,serif;font-size:18px}
-    article{margin-bottom:20px}
-    .meta{color:var(--muted);font-size:13px}
-    form{margin-top:20px}
-    input,textarea{width:100%;padding:10px;margin-bottom:12px;border:1px solid #d1d5db;border-radius:4px}
-    button{padding:10px 16px;background:#1f2937;color:#fff;border:none;border-radius:4px;cursor:pointer}
-    proposals-list article{border:1px solid #eee;padding:12px;border-radius:8px}
-    pre.debug{display:none;background:#111;color:#0f0;padding:10px;font-size:12px}
+    h1{margin:0;font-family:Merriweather,serif;font-size:20px;color:#fff;padding:18px 20px}
+    main{max-width:var(--maxw);margin:24px auto;padding:0 20px}
+    input,textarea{width:100%;padding:10px;margin-bottom:12px;border:1px solid #d1d5db;border-radius:6px}
+    button{padding:8px 12px;background:#1f2937;color:white;border:none;border-radius:6px;cursor:pointer}
+    .meta{color:var(--muted);font-size:13px;margin-bottom:8px}
+    #proposals-list article{border:1px solid #eee;padding:12px;border-radius:8px;margin-bottom:12px}
+    .small{font-size:13px;color:var(--muted)}
+    pre.debug{display:none;background:#111;color:#0f0;padding:10px;border-radius:6px;white-space:pre-wrap}
   </style>
 </head>
-
 <body>
+  <header>
+    <div class="wrap">
+      <h1>Blog de l'intranquilité</h1>
+    </div>
+  </header>
 
-<header>
-  <div class="wrap">
-    <h1>Blog de l'intranquilité</h1>
-    <nav>
-      <a href="index.html">Accueil</a>
-      <a href="culture-films.html">Films</a>
-      <a href="culture-livres.html">Livres</a>
-      <a href="culture-musiques.html">Musiques</a>
-    </nav>
-  </div>
-</header>
+  <main>
+    <h2>Proposer un film</h2>
+    <form id="proposal-form" autocomplete="off">
+      <input type="hidden" name="section" value="films">
+      <input id="pseudo" name="pseudo" placeholder="Pseudo" required>
+      <input id="title" name="title" placeholder="Titre du film" required>
+      <textarea id="content" name="content" rows="5" placeholder="Pourquoi ce film ?" required></textarea>
+      <button type="submit">Envoyer</button>
+      <div class="small">Ton jeton de suppression (si renvoyé) sera stocké localement dans ton navigateur.</div>
+    </form>
 
-<main>
+    <p id="result" class="meta"></p>
 
-<h2>Films — Sélection</h2>
+    <hr>
 
-<article>
-  <h3>Stalker</h3>
-  <p class="meta">Andreï Tarkovski  — 1979</p>
-</article>
-<p>test</p>
-<hr>
+    <h2>Propositions récentes</h2>
+    <div id="proposals-list">Chargement…</div>
+    <pre id="debug" class="debug"></pre>
+  </main>
 
-<h2>Proposer un film</h2>
+  <footer style="text-align:center;color:#777;padding:18px">© <span id="year"></span></footer>
 
-<form id="proposal-form">
-  <input type="hidden" name="section" value="films">
-  <input name="pseudo" placeholder="Pseudo" required>
-  <input name="title" placeholder="Titre du film" required>
-  <textarea name="content" rows="5" placeholder="Commentaire" required></textarea>
-  <button>Envoyer</button>
-</form>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+  /* ====== CONFIG ====== */
+  const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev"; // <-- remplace par ton Worker
 
-<p id="result" class="meta"></p>
+  /* ====== HELPERS ====== */
+  const $ = sel => document.querySelector(sel);
+  function escapeHtml(s){ return s ? s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') : ''; }
+  function debug(msg){ const el = $('#debug'); el.style.display = msg ? 'block' : 'none'; el.textContent = msg || ''; }
 
-<hr>
+  /* ====== FORM SUBMIT ====== */
+  $('#proposal-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    $('#result').textContent = 'Envoi…';
+    debug('');
+    const data = Object.fromEntries(new FormData(e.target).entries());
 
-<h2>Propositions récentes</h2>
-<div id="proposals-list">Chargement…</div>
-<pre id="debug" class="debug"></pre>
-
-</main>
-
-<footer style="text-align:center;color:#777;padding:20px">
-  © <span id="year"></span>
-</footer>
-
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-<script>
-/* ========= CONFIG ========= */
-const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev";
-
-/* ========= HELPERS ========= */
-const $ = s => document.querySelector(s);
-function escapeHtml(s){return s?.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')}
-function debug(t){$('#debug').style.display=t?'block':'none';$('#debug').textContent=t||''}
-
-/* ========= FORM ========= */
-$('#proposal-form').onsubmit = async e => {
-  e.preventDefault();
-  $('#result').textContent = 'Envoi…';
-
-  const data = Object.fromEntries(new FormData(e.target).entries());
-
-  try {
-    const r = await fetch(WORKER_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(data)
-    });
-    const j = await r.json();
-
-    if(j.success){
-      $('#result').textContent = '✔ Proposition envoyée';
-      e.target.reset();
-      setTimeout(()=>loadProposals('films'),1000);
-    } else {
-      $('#result').textContent = 'Erreur : ' + j.error;
+    try {
+      const res = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const j = await res.json();
+      if (res.ok && j.success) {
+        // si le Worker renvoie deleteToken on le sauvegarde en localStorage
+        if (j.token) {
+          // on sauvegarde token et associated path (optionnel)
+          localStorage.setItem('deleteToken', j.token);
+          localStorage.setItem('lastPath', j.path || '');
+        }
+        $('#result').textContent = '✔ Proposition envoyée — ton jeton est stocké localement.';
+        e.target.reset();
+        setTimeout(()=>loadProposals('films'), 1200);
+      } else {
+        $('#result').textContent = 'Erreur : ' + (j.error || res.status);
+        debug(JSON.stringify(j, null, 2));
+      }
+    } catch(err) {
+      $('#result').textContent = 'Erreur réseau.';
+      debug(String(err));
     }
-  } catch(err){
-    $('#result').textContent = 'Erreur réseau';
-    debug(err);
+  });
+
+  /* ====== DELETE HANDLER (utilise token en localStorage) ====== */
+  async function tryDelete() {
+    const token = localStorage.getItem('deleteToken');
+    if (!token) return alert("Aucun token de suppression trouvé dans ton navigateur.");
+    if (!confirm("Supprimer ta proposition ? Cette action est définitive.")) return;
+    try {
+      const res = await fetch(WORKER_URL, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      });
+      const j = await res.json();
+      if (res.ok && j.success) {
+        localStorage.removeItem('deleteToken');
+        localStorage.removeItem('lastPath');
+        alert('Proposition supprimée.');
+        loadProposals('films');
+      } else {
+        alert('Erreur suppression : ' + (j.error || res.status));
+        debug(JSON.stringify(j, null, 2));
+      }
+    } catch(err) {
+      alert('Erreur réseau lors de la suppression.');
+      debug(String(err));
+    }
   }
-};
 
-/* ========= LOAD PROPOSALS ========= */
-async function loadProposals(section){
-  try{
-    const r = await fetch('content/index.json?t=' + Date.now());
-    const index = await r.json();
+  /* ====== LOAD PROPOSALS ====== */
+  async function loadProposals(section) {
+    const container = $('#proposals-list');
+    container.innerHTML = 'Chargement…';
+    debug('');
+    try {
+      const idxResp = await fetch('content/index.json?t=' + Date.now());
+      if (!idxResp.ok) throw new Error('index.json introuvable (status ' + idxResp.status + ')');
+      const idx = await idxResp.json();
+      const items = (Array.isArray(idx) ? idx : []).filter(i => String(i.section) === String(section));
+      if (!items.length) { container.innerHTML = '<p>Aucune proposition.</p>'; return; }
 
-    const items = index.filter(i=>i.section===section);
-    if(!items.length){$('proposals-list').innerHTML='Aucune proposition.';return}
+      // tri inverse si created_at présent
+      items.sort((a,b) => (b.created_at ? Date.parse(b.created_at) : 0) - (a.created_at ? Date.parse(a.created_at) : 0));
 
-    const html = await Promise.all(items.map(async i=>{
-      const path = i.path.replace(/^\/+/,'');
-      const md = await (await fetch(path)).text();
-      const body = md.replace(/^---[\s\S]*?---/, '');
-      return `<article>
-        <h3>${escapeHtml(i.title)}</h3>
-        <div class="meta">Par ${escapeHtml(i.pseudo)}</div>
-        ${marked.parse(body)}
-      </article>`;
-    }));
+      const html = await Promise.all(items.map(async item => {
+        try {
+          const relativePath = (item.path || '').replace(/^\/+/,'');
+          const mdResp = await fetch(relativePath + '?t=' + Date.now());
+          let md = mdResp.ok ? await mdResp.text() : '';
+          md = md.replace(/^---\s*[\s\S]*?\s*---\s*/m, '');
+          const contentHtml = md ? marked.parse(md) : '<em>Pas de contenu</em>';
+          const title = item.title || (md.match(/^#\s*(.+)$/m) ? md.match(/^#\s*(.+)$/m)[1].trim() : relativePath.split('/').pop());
+          const created = item.created_at ? new Date(item.created_at).toLocaleString() : '';
+          // bouton supprimer visible si token localStorage existe et lastPath correspond (optionnel)
+          const userToken = localStorage.getItem('deleteToken');
+          const lastPath = localStorage.getItem('lastPath') || '';
+          const showDeleteBtn = userToken && (lastPath === item.path || lastPath === relativePath);
+          return `<article>
+                    <h3>${escapeHtml(title)}</h3>
+                    <div class="meta">Par ${escapeHtml(item.pseudo || 'Anonyme')}${created ? ' — ' + escapeHtml(created) : ''}</div>
+                    <div class="content">${contentHtml}</div>
+                    ${showDeleteBtn ? '<div style="margin-top:8px"><button data-path="'+escapeHtml(relativePath)+'" class="btn-delete">Supprimer ma proposition</button></div>' : ''}
+                  </article>`;
+        } catch(e) {
+          console.error(e);
+          return `<article><h3>Erreur lecture</h3><div class="meta">Impossible de charger cette proposition</div></article>`;
+        }
+      }));
 
-    $('#proposals-list').innerHTML = html.join('');
-  } catch(e){
-    $('#proposals-list').innerHTML = 'Erreur de chargement';
-    debug(String(e));
+      container.innerHTML = html.join('\n');
+
+      // attacher listeners delete (après insertion)
+      document.querySelectorAll('.btn-delete').forEach(btn => btn.addEventListener('click', tryDelete));
+
+    } catch(err) {
+      container.innerHTML = '<p>Erreur de chargement.</p>';
+      debug(String(err));
+      console.error(err);
+    }
   }
-}
 
-/* ========= INIT ========= */
-$('#year').textContent = new Date().getFullYear();
-document.addEventListener('DOMContentLoaded',()=>loadProposals('films'));
-</script>
-
+  /* ====== INIT ====== */
+  document.getElementById('year').textContent = new Date().getFullYear();
+  document.addEventListener('DOMContentLoaded', ()=>loadProposals('films'));
+  </script>
 </body>
 </html>
