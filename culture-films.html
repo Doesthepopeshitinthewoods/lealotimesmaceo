@@ -25,6 +25,11 @@
     #proposals-list article{border:1px solid #eee;padding:12px;border-radius:8px}
     .pending-badge{font-size:12px;color:#9ca3af;margin-left:8px}
     pre.debug{display:none;background:#111;color:#0f0;padding:10px;font-size:12px;white-space:pre-wrap}
+
+    /* delete button style */
+    .delete-btn{background:transparent;border:1px solid #e5e7eb;color:#111;padding:6px 10px;border-radius:6px;cursor:pointer;margin-left:8px}
+    .delete-btn:disabled{opacity:0.6;cursor:not-allowed}
+    .actions{margin-top:10px}
   </style>
 </head>
 
@@ -143,16 +148,29 @@ function buildArticleHtml(obj, opts = {}){
   // opts.pending -> boolean: show badge
   const badge = opts.pending ? `<span class="pending-badge">(en attente)</span>` : '';
   const contentHtml = obj.contentHtml ? sanitizeHtml(obj.contentHtml) : renderMarkdown(obj.content || '');
-  return `<article ${obj._tempId ? 'data-temp="'+escapeHtml(obj._tempId)+'"' : ''}>
+
+  // delete button(s): pending items have a local delete; server items have a server delete if path known
+  const actions = [];
+  if(opts.pending && obj._tempId){
+    actions.push(`<button class="delete-btn pending-delete" data-temp="${escapeHtml(obj._tempId)}">Supprimer</button>`);
+  }
+  if(!opts.pending && obj.path){
+    actions.push(`<button class="delete-btn server-delete" data-path="${escapeHtml(obj.path)}">Supprimer</button>`);
+  }
+
+  const actionsHtml = actions.length ? `<div class="actions">${actions.join('')}</div>` : '';
+
+  return `<article ${obj._tempId ? 'data-temp="'+escapeHtml(obj._tempId)+'"' : ''} ${obj.path ? 'data-path="'+escapeHtml(obj.path)+'"' : ''}>
     <h3>${escapeHtml(obj.title || 'Sans titre')}${badge}</h3>
     <div class="meta">Par ${escapeHtml(obj.pseudo || 'Anonyme')}</div>
     ${contentHtml}
+    ${actionsHtml}
   </article>`;
 }
 
 /* ========= UI MUTATION ========= */
 function renderCombinedList(serverItems = []){
-  // serverItems: [{title,pseudo,contentHtml,...}, ...]
+  // serverItems: [{title,pseudo,contentHtml,path,...}, ...]
   // Build server map to detect matches
   const serverMap = serverItems.map(si => ({
     title: si.title,
@@ -264,9 +282,9 @@ async function loadAndRenderNow(forceServerOnly = false){
       try{
         const md = await fetchMarkdownNoCache(i.path);
         const body = md.replace(/^---[\s\S]*?---/, '');
-        return { title: i.title, pseudo: i.pseudo, contentHtml: marked.parse(body) };
+        return { title: i.title, pseudo: i.pseudo, contentHtml: marked.parse(body), path: i.path };
       }catch(e){
-        return { title: i.title, pseudo: i.pseudo, contentHtml: '<div class="meta">Erreur lecture contenu</div>' };
+        return { title: i.title, pseudo: i.pseudo, contentHtml: '<div class="meta">Erreur lecture contenu</div>', path: i.path };
       }
     }));
 
@@ -321,6 +339,59 @@ function clearPoll(){
   pollHandle = null;
   pollAttempts = 0;
 }
+
+/* ========= DELETE HANDLERS ========= */
+// event delegation: handle both pending (local) deletes and server deletes
+$('#proposals-list').addEventListener('click', async (e) => {
+  const btn = e.target.closest('button.delete-btn');
+  if(!btn) return;
+
+  // Local pending delete
+  if(btn.classList.contains('pending-delete')){
+    const temp = btn.dataset.temp;
+    if(!confirm('Supprimer cette proposition locale ?')) return;
+    if(removePendingByTempId(temp)){
+      $('#result').textContent = 'Proposition locale supprimée';
+      loadAndRenderNow();
+    } else {
+      $('#result').textContent = 'Introuvable';
+    }
+    return;
+  }
+
+  // Server delete (best-effort): requires your worker to expose a /delete endpoint that accepts { path }
+  if(btn.classList.contains('server-delete')){
+    const path = btn.dataset.path;
+    if(!path){ $('#result').textContent = 'Impossible : pas de chemin connu pour cette proposition.'; return; }
+    if(!confirm('Confirmer suppression sur le serveur ? Cette action est irréversible sur le serveur.')) return;
+
+    try{
+      btn.disabled = true;
+      $('#result').textContent = 'Suppression…';
+      // Many workers prefer POST for actions; try POST /delete with JSON
+      const r = await fetch(WORKER_URL + '/delete', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ path })
+      });
+      let j = {};
+      try{ j = await r.json(); }catch(e){ j = { success: r.ok } }
+
+      if(r.ok && j.success){
+        $('#result').textContent = '✔ Supprimé sur le serveur';
+        // reload to reflect change
+        await loadAndRenderNow(true);
+      } else {
+        $('#result').textContent = 'Erreur suppression: ' + (j.error || r.status || 'inconnue');
+        btn.disabled = false;
+      }
+    }catch(err){
+      $('#result').textContent = 'Erreur réseau';
+      btn.disabled = false;
+      debug(String(err));
+    }
+  }
+});
 
 /* ========= INIT ========= */
 $('#year').textContent = new Date().getFullYear();
