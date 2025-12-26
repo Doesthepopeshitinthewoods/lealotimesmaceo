@@ -163,54 +163,40 @@ trinta graus e uma humidade relativa de setenta por cento.</p>
     </div>
 
  <form id="contact-form">
-  <label>Nom / Name</label>
-  <input id="cf-name" name="name" placeholder="Ton nom (optionnel)">
-  <label>Email</label>
-  <input id="cf-email" name="email" placeholder="ton@exemple.com" required>
-  <label>Message</label>
-  <textarea id="cf-message" name="message" rows="5" required></textarea>
-  <button id="cf-submit" type="submit">Envoyer / Send</button>
-  <p id="cf-result" style="margin-top:8px;color:#333"></p>
+  <input id="cf-name" placeholder="Nom">
+  <input id="cf-email" placeholder="Email" required>
+  <textarea id="cf-message" placeholder="Message" required></textarea>
+  <button id="cf-submit">Envoyer</button>
+  <p id="cf-result"></p>
 </form>
 
-
 <script>
-const SENDMAIL_URL = WORKER_URL; // réutilise ta constante WORKER_URL ; si c'est un worker différent, mets l'URL correspondante
+const WORKER_URL = "https://TON-WORKER.workers.dev";
 
-document.getElementById('contact-form').addEventListener('submit', async function(e){
+document.getElementById('contact-form').addEventListener('submit', async e => {
   e.preventDefault();
-  const resEl = document.getElementById('cf-result');
-  resEl.textContent = 'Envoi…';
 
-  const name = document.getElementById('cf-name').value.trim();
-  const email = document.getElementById('cf-email').value.trim();
-  const message = document.getElementById('cf-message').value.trim();
+  const payload = {
+    title: "Contact",
+    pseudo: document.getElementById('cf-name').value || "Anonyme",
+    content:
+      document.getElementById('cf-message').value +
+      "\n\n---\nEmail: " +
+      document.getElementById('cf-email').value,
+    section: "contacts"
+  };
 
-  if(!email || !message){ resEl.textContent = 'Email et message requis.'; return; }
+  const res = await fetch(WORKER_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
 
-  try{
-    const r = await fetch(SENDMAIL_URL + '/sendmail', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ name, email, message })
-    });
-    const j = await r.json();
-    if(r.ok && j.success){
-      resEl.style.color = 'green';
-      resEl.textContent = 'Message envoyé — merci !';
-      e.target.reset();
-    } else {
-      resEl.style.color = 'crimson';
-      resEl.textContent = 'Erreur envoi : ' + (j.error || 'inconnue');
-      console.warn(j);
-    }
-  } catch(err){
-    resEl.style.color = 'crimson';
-    resEl.textContent = 'Erreur réseau.';
-    console.error(err);
-  }
+  document.getElementById('cf-result').textContent =
+    res.ok ? "Message enregistré ✔" : "Erreur ❌";
 });
 </script>
+
 
 
   </section>
