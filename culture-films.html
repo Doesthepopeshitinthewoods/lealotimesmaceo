@@ -60,6 +60,24 @@
     ➕ Proposer un film
   </a>
 </p>
+<h2>Proposer un film</h2>
+
+<form id="proposal-form">
+  <input type="hidden" name="section" value="films">
+
+  <label>Pseudo</label><br>
+  <input name="pseudo" required><br>
+
+  <label>Titre du film</label><br>
+  <input name="title" required><br>
+
+  <label>Commentaire</label><br>
+  <textarea name="content" rows="5" required></textarea><br>
+
+  <button type="submit">Envoyer</button>
+</form>
+
+<p id="result"></p>
 
 
 <!-- place this where you want the list to appear -->
@@ -124,6 +142,39 @@ loadProposals('films');
 </html>
 
   <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+<script>
+const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev"; // <-- ton URL ici
+
+const form = document.getElementById("proposal-form");
+const result = document.getElementById("result");
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  result.textContent = "Envoi en cours…";
+
+  const data = Object.fromEntries(new FormData(form).entries());
+
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+
+    const json = await res.json();
+
+    if (json.success) {
+      result.textContent = "Proposition envoyée ✔";
+      form.reset();
+    } else {
+      result.textContent = "Erreur : " + (json.error || "inconnue");
+    }
+  } catch (err) {
+    result.textContent = "Erreur réseau";
+  }
+});
+</script>
+
 </body>
 
 </html>
