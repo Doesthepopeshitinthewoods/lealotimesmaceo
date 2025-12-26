@@ -5,6 +5,7 @@
   <title>Culture — Films</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
+
   <style>
     :root{--maxw:760px;--bg:#fff;--text:#111827;--muted:#6b7280;--accent:#1f2937}
     *{box-sizing:border-box}
@@ -25,172 +26,198 @@
     input,textarea{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:4px;margin-bottom:12px;font-family:inherit}
     button{padding:10px 16px;background:#1f2937;color:white;border:none;border-radius:4px;cursor:pointer}
     #proposals-list article.proposal{border:1px solid #eee;padding:12px;border-radius:8px;margin-bottom:12px}
-    #proposals-list .meta{color:#666;font-size:13px;margin-bottom:8px}
     .muted{color:var(--muted)}
     .small{font-size:13px;color:var(--muted)}
-    pre.debug{background:#111;color:#fff;padding:8px;border-radius:6px;overflow:auto;display:none;}
+    pre.debug{background:#111;color:#fff;padding:8px;border-radius:6px;overflow:auto;display:none}
   </style>
 </head>
+
 <body>
-  <header>
-    <div class="wrap">
-      <h1>Blog de l'intranquilité</h1>
-      <nav aria-label="Navigation principale">
-        <a href="index.html">Accueil</a>
-        <a href="culture-films.html">Films</a>
-        <a href="culture-livres.html">Livres</a>
-        <a href="culture-musiques.html">Musiques</a>
-        <a href="projets-libres-pensees.html">Projets</a>
-      </nav>
+<header>
+  <div class="wrap">
+    <h1>Blog de l'intranquilité</h1>
+    <nav>
+      <a href="index.html">Accueil</a>
+      <a href="culture-films.html">Films</a>
+      <a href="culture-livres.html">Livres</a>
+      <a href="culture-musiques.html">Musiques</a>
+      <a href="projets-libres-pensees.html">Projets</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <h2>Films — Sélection</h2>
+
+  <article>
+    <h3>Stalker</h3>
+    <p class="meta">Andreï Tarkovski — 1979</p>
+    <p>Un film métaphysique et hypnotique qui interroge le désir, la foi et l’espace intérieur.</p>
+  </article>
+
+  <article>
+    <h3>Le Septième Sceau</h3>
+    <p class="meta">Ingmar Bergman — 1957</p>
+    <p>Une méditation sur la mort et le sens de l’existence à travers une partie d’échecs allégorique.</p>
+  </article>
+
+  <p>
+    <a href="https://github.com/Doesthepopeshitinthewoods/lealotimesmaceo/issues/new?template=film.md"
+       target="_blank" rel="noopener">➕ Proposer via GitHub (issue)</a>
+  </p>
+
+  <hr>
+
+  <h2>Proposer un film</h2>
+
+  <form id="proposal-form" autocomplete="off">
+    <input type="hidden" name="section" value="films">
+
+    <label for="pseudo">Pseudo</label>
+    <input id="pseudo" name="pseudo" required>
+
+    <label for="title">Titre du film</label>
+    <input id="title" name="title" required>
+
+    <label for="content">Commentaire</label>
+    <textarea id="content" name="content" rows="5" required></textarea>
+
+    <button type="submit">Envoyer</button>
+    <div class="small muted" style="margin-top:8px">
+      Ton jeton de suppression sera stocké localement dans ton navigateur.
     </div>
-  </header>
+  </form>
 
-  <main>
-    <h2>Films — Sélection</h2>
+  <p id="result" class="muted" aria-live="polite"></p>
 
-    <article>
-      <h3>Stalker</h3>
-      <p class="meta">Andreï Tarkovski — 1979</p>
-      <p>Un film métaphysique et hypnotique qui interroge le désir, la foi et l’espace intérieur.</p>
-    </article>
+  <hr>
 
-    <article>
-      <h3>Le Septième Sceau</h3>
-      <p class="meta">Ingmar Bergman — 1957</p>
-      <p>Une méditation sur la mort et le sens de l’existence à travers une partie d’échecs allégorique.</p>
-    </article>
+  <h2>Propositions récentes</h2>
+  <div id="proposals-list">Chargement…</div>
+  <pre id="debug" class="debug"></pre>
+</main>
 
-    <p>
-      <a href="https://github.com/Doesthepopeshitinthewoods/lealotimesmaceo/issues/new?template=film.md" target="_blank" rel="noopener">➕ Proposer via GitHub (issue)</a>
-    </p>
+<footer>
+  © <span id="year"></span> — Blog personnel
+</footer>
 
-    <hr>
+<!-- Markdown parser -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-    <h2>Proposer un film</h2>
+<script>
+/* ================= CONFIG ================= */
+const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev";
 
-    <form id="proposal-form" autocomplete="off" novalidate>
-      <input type="hidden" name="section" value="films">
-      <label for="pseudo">Pseudo</label>
-      <input id="pseudo" name="pseudo" required>
-      <label for="title">Titre du film</label>
-      <input id="title" name="title" required>
-      <label for="content">Commentaire</label>
-      <textarea id="content" name="content" rows="5" required></textarea>
-      <button type="submit">Envoyer</button>
-      <div class="small muted" style="margin-top:8px">Ton jeton de suppression sera stocké localement dans ton navigateur.</div>
-    </form>
+/* ================= HELPERS ================= */
+function escapeHtml(s){
+  return s ? s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') : '';
+}
+function extractTitle(md){
+  const m = md.match(/^#\s*(.+)$/m);
+  return m ? m[1].trim() : null;
+}
+function showDebug(text){
+  const el = document.getElementById('debug');
+  el.style.display = text ? 'block' : 'none';
+  el.textContent = text || '';
+}
 
-    <p id="result" class="muted" aria-live="polite"></p>
+/* ================= FORM ================= */
+(function initForm(){
+  const form = document.getElementById('proposal-form');
+  const result = document.getElementById('result');
 
-    <hr>
+  // pré-remplissage pseudo
+  try {
+    document.getElementById('pseudo').value =
+      localStorage.getItem('lastPseudo') || '';
+  } catch(e){}
 
-    <h2>Propositions récentes</h2>
-    <div id="proposals-list">Chargement…</div>
-    <pre id="debug" class="debug"></pre>
-  </main>
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    result.textContent = "Envoi en cours…";
+    showDebug('');
 
-  <footer>
-    © <span id="year"></span> — Blog personnel
-  </footer>
-
-  <!-- marked.js pour parser le markdown -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-  <script>
-  // ======= CONFIG =======
-  const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev"; // <-- ton URL Worker
-
-  // ======= Helpers =======
-  function escapeHtml(s){ return s ? s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') : ''; }
-  function extractTitle(md){ const m = md.match(/^#\s*(.+)$/m); return m ? m[1].trim() : null; }
-  function showDebug(text){ const el = document.getElementById('debug'); el.style.display = text ? 'block' : 'none'; el.textContent = text || ''; }
-
-  // ======= Form submission =======
-  (function initForm() {
-    const form = document.getElementById("proposal-form");
-    const result = document.getElementById("result");
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      result.textContent = "Envoi en cours…";
-      showDebug('');
-
-      const data = Object.fromEntries(new FormData(form).entries());
-      if (!data.pseudo || !data.title || !data.content) {
-        result.textContent = "Veuillez remplir tous les champs.";
-        return;
-      }
-
-      try {
-        const res = await fetch(WORKER_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        });
-
-        let json = null;
-        try { json = await res.json(); } catch(e){}
-
-        if (res.ok && json && json.success) {
-          if (json.token) {
-            localStorage.setItem("deleteToken", json.token);
-            localStorage.setItem("lastPseudo", data.pseudo);
-            localStorage.setItem("lastSection", data.section);
-          }
-          result.textContent = "Proposition envoyée ✔ Conservez votre clé de suppression.";
-          form.reset();
-          setTimeout(() => loadProposals('films'), 1500);
-        } else {
-          let msg = json?.error || `HTTP ${res.status}`;
-          result.textContent = "Erreur : " + msg;
-          showDebug(JSON.stringify({ status: res.status, body: json }, null, 2));
-          console.error("API error:", res.status, json);
-        }
-      } catch(err) {
-        result.textContent = "Erreur réseau (vérifie l'URL du Worker, CORS et que le Worker est déployé).";
-        showDebug(String(err));
-        console.error(err);
-      }
-    });
-  })();
-
-  // ======= Load proposals =======
-  async function loadProposals(section){
-    const container = document.getElementById('proposals-list');
-    container.innerHTML = 'Chargement…';
-    try {
-      const idxResp = await fetch('/content/index.json');
-      if (!idxResp.ok) throw new Error('index.json introuvable');
-      const idx = await idxResp.json();
-      const items = idx.filter(i=>i.section===section);
-      if (!items.length){ container.innerHTML='<p>Aucune proposition.</p>'; return; }
-
-      const htmlItems = await Promise.all(items.map(async it=>{
-        const mdResp = await fetch('/'+it.path);
-        const md = mdResp.ok ? await mdResp.text() : '';
-        const mdNoFm = md.replace(/^---[\s\S]*?---\n?/,'');
-        const html = marked.parse(mdNoFm);
-        const title = it.title || extractTitle(mdNoFm) || 'Sans titre';
-        const meta = `<div class="meta">Par: ${escapeHtml(it.pseudo || 'Anonyme')} — ${escapeHtml(it.created_at || '')}</div>`;
-        return `<article class="proposal">
-                  <h3>${escapeHtml(title)}</h3>
-                  ${meta}
-                  <div class="content">${html}</div>
-                </article>`;
-      }));
-
-      container.innerHTML = htmlItems.join('\n');
-
-    } catch(err) {
-      container.innerHTML = '<p>Erreur de chargement des propositions.</p>';
-      showDebug(String(err));
-      console.error(err);
+    const data = Object.fromEntries(new FormData(form).entries());
+    if(!data.pseudo || !data.title || !data.content){
+      result.textContent = "Veuillez remplir tous les champs.";
+      return;
     }
-  }
 
-  // ======= Init =======
-  document.getElementById('year').textContent = new Date().getFullYear();
-  document.addEventListener('DOMContentLoaded',()=>loadProposals('films'));
-  </script>
+    try {
+      const res = await fetch(WORKER_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      let json = null;
+      try { json = await res.json(); } catch(e){}
+
+      if(res.ok && json?.success){
+        if(json.token){
+          localStorage.setItem("deleteToken", json.token);
+          localStorage.setItem("lastPseudo", data.pseudo);
+        }
+        result.textContent = "Proposition envoyée ✔";
+        form.reset();
+        setTimeout(()=>loadProposals('films'), 1500);
+      } else {
+        result.textContent = "Erreur : " + (json?.error || res.status);
+        showDebug(JSON.stringify(json, null, 2));
+      }
+    } catch(err){
+      result.textContent = "Erreur réseau.";
+      showDebug(String(err));
+    }
+  });
+})();
+
+/* ================= LOAD PROPOSALS ================= */
+async function loadProposals(section){
+  const container = document.getElementById('proposals-list');
+  container.innerHTML = "Chargement…";
+
+  try {
+    const idxResp = await fetch('/content/index.json');
+    if(!idxResp.ok) throw new Error("index.json introuvable");
+    const idx = await idxResp.json();
+
+    const items = idx.filter(i => i.section === section);
+    if(!items.length){
+      container.innerHTML = "<p>Aucune proposition.</p>";
+      return;
+    }
+
+    const html = await Promise.all(items.map(async it => {
+      const mdResp = await fetch('/' + it.path);
+      const md = mdResp.ok ? await mdResp.text() : '';
+      const mdNoFm = md.replace(/^---[\s\S]*?---\n?/, '');
+      const content = marked.parse(mdNoFm);
+      const title = it.title || extractTitle(mdNoFm) || 'Sans titre';
+
+      return `
+        <article class="proposal">
+          <h3>${escapeHtml(title)}</h3>
+          <div class="meta">
+            Par ${escapeHtml(it.pseudo || 'Anonyme')} — ${escapeHtml(it.created_at || '')}
+          </div>
+          <div class="content">${content}</div>
+        </article>
+      `;
+    }));
+
+    container.innerHTML = html.join('\n');
+  } catch(err){
+    container.innerHTML = "<p>Erreur de chargement.</p>";
+    showDebug(String(err));
+  }
+}
+
+/* ================= INIT ================= */
+document.getElementById('year').textContent = new Date().getFullYear();
+document.addEventListener('DOMContentLoaded', () => loadProposals('films'));
+</script>
 </body>
 </html>
 
