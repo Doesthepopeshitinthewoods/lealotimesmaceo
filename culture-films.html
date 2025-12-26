@@ -135,19 +135,14 @@ $('#proposal-form').onsubmit = async e => {
     });
     const j = await r.json();
 
-    if (j.success) {
-      $('#result').textContent = '✔ Proposition envoyée';
-      // affichage optimiste immédiat (évite d'attendre l'index.json)
-      prependProposal({ title: data.title, pseudo: data.pseudo, content: data.content });
+    if(j.success){
+  $('#result').textContent = '✔ Proposition envoyée';
+  e.target.reset();
+  setTimeout(()=>loadProposals('films'),1000);
+} else {
+  $('#result').textContent = 'Erreur : ' + j.error;
+}
 
-      e.target.reset();
-
-      // puis resynchroniser avec le serveur (sans cache)
-      setTimeout(()=>loadProposals('films'), 1000);
-      setTimeout(()=>loadProposals('films'), 3000);
-    } else {
-      $('#result').textContent = 'Erreur : ' + (j.error || 'inconnue');
-    }
   } catch(err){
     $('#result').textContent = 'Erreur réseau';
     debug(String(err));
