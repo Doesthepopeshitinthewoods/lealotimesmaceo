@@ -1,16 +1,16 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8">
   <title>Culture — Films</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
   <style>
     :root{--maxw:760px;--bg:#fff;--text:#111827;--muted:#6b7280}
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui;line-height:1.7}
-    header{background:#8b0000}
     .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px}
+    header{background:#8b0000}
     h1{margin:0;font-family:Merriweather,serif;font-size:20px;color:#fff;padding:18px 20px}
     main{max-width:var(--maxw);margin:24px auto;padding:0 20px}
     input,textarea{width:100%;padding:10px;margin-bottom:12px;border:1px solid #d1d5db;border-radius:6px}
@@ -18,12 +18,15 @@
     .meta{color:var(--muted);font-size:13px;margin-bottom:8px}
     #proposals-list article{border:1px solid #eee;padding:12px;border-radius:8px;margin-bottom:12px}
     .small{font-size:13px;color:var(--muted)}
-    .btn-delete{background:#7f1d1d;margin-top:8px}
     pre.debug{display:none;background:#111;color:#0f0;padding:10px;border-radius:6px;white-space:pre-wrap}
   </style>
 </head>
 <body>
-  <header><div class="wrap"><h1>Blog de l'intranquilité</h1></div></header>
+  <header>
+    <div class="wrap">
+      <h1>Blog de l'intranquilité</h1>
+    </div>
+  </header>
 
   <main>
     <h2>Proposer un film</h2>
@@ -33,7 +36,7 @@
       <input id="title" name="title" placeholder="Titre du film" required>
       <textarea id="content" name="content" rows="5" placeholder="Pourquoi ce film ?" required></textarea>
       <button type="submit">Envoyer</button>
-      <div class="small">Ton jeton de suppression (reçu après envoi) sera stocké localement dans ton navigateur.</div>
+      <div class="small">Ton jeton de suppression (si renvoyé) sera stocké localement dans ton navigateur.</div>
     </form>
 
     <p id="result" class="meta"></p>
@@ -49,33 +52,15 @@
 
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
-  /* ===== CONFIG ===== */
-  const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev"; // <-- ton Worker
+  /* ====== CONFIG ====== */
+  const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev"; // <-- remplace par ton Worker
 
-  /* ===== HELPERS ===== */
-  const $ = s => document.querySelector(s);
+  /* ====== HELPERS ====== */
+  const $ = sel => document.querySelector(sel);
   function escapeHtml(s){ return s ? s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') : ''; }
   function debug(msg){ const el = $('#debug'); el.style.display = msg ? 'block' : 'none'; el.textContent = msg || ''; }
 
-  /* ===== Delete tokens storage helpers =====
-     stocke un objet { "content/films/xxx.md": "token", ... } sous 'deleteTokens' */
-  function loadDeleteTokens(){
-    try { return JSON.parse(localStorage.getItem('deleteTokens') || '{}'); } catch(e){ return {}; }
-  }
-  function saveDeleteTokens(map){
-    localStorage.setItem('deleteTokens', JSON.stringify(map || {}));
-  }
-  function setDeleteTokenForPath(path, token){
-    const m = loadDeleteTokens(); m[path] = token; saveDeleteTokens(m);
-  }
-  function removeDeleteTokenForPath(path){
-    const m = loadDeleteTokens(); delete m[path]; saveDeleteTokens(m);
-  }
-  function getDeleteTokenForPath(path){
-    const m = loadDeleteTokens(); return m[path] || null;
-  }
-
-  /* ===== FORM SUBMIT ===== */
+  /* ====== FORM SUBMIT ====== */
   $('#proposal-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     $('#result').textContent = 'Envoi…';
@@ -88,23 +73,20 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
-      // attempt to parse JSON even if res not ok (worker returns JSON errors)
-      let j = null;
-      try { j = await res.json(); } catch(e){}
-      if (res.ok && j && j.success) {
-        // worker devrait renvoyer token + path
-        if (j.token && j.path) {
-          // stocke token lié au path (clé = chemin tel qu'écrit dans index.json)
-          setDeleteTokenForPath(j.path, j.token);
-          // pour plus de robustesse on stocke aussi la version sans slash initial
-          setDeleteTokenForPath(j.path.replace(/^\/+/,''), j.token);
+      const j = await res.json();
+      if (res.ok && j.success) {
+        // si le Worker renvoie deleteToken on le sauvegarde en localStorage
+        if (j.token) {
+          // on sauvegarde token et associated path (optionnel)
+          localStorage.setItem('deleteToken', j.token);
+          localStorage.setItem('lastPath', j.path || '');
         }
-        $('#result').textContent = '✔ Proposition envoyée — le token de suppression est sauvegardé localement.';
+        $('#result').textContent = '✔ Proposition envoyée — ton jeton est stocké localement.';
         e.target.reset();
-        setTimeout(()=>loadProposals('films'), 1000);
+        setTimeout(()=>loadProposals('films'), 1200);
       } else {
-        $('#result').textContent = 'Erreur : ' + (j?.error || res.status);
-        debug(JSON.stringify(j || res.status, null, 2));
+        $('#result').textContent = 'Erreur : ' + (j.error || res.status);
+        debug(JSON.stringify(j, null, 2));
       }
     } catch(err) {
       $('#result').textContent = 'Erreur réseau.';
@@ -112,99 +94,77 @@
     }
   });
 
-  /* ===== DELETE handler (utilise le token correspondant au path) ===== */
-  async function deleteProposalByPath(path){
-    debug('');
-    const token = getDeleteTokenForPath(path) || getDeleteTokenForPath(path.replace(/^\/+/, ''));
-    if (!token) {
-      alert("Aucun token de suppression trouvé pour cette proposition (stocké localement).");
-      return;
-    }
-    if (!confirm("Supprimer définitivement cette proposition ?")) return;
-
+  /* ====== DELETE HANDLER (utilise token en localStorage) ====== */
+  async function tryDelete() {
+    const token = localStorage.getItem('deleteToken');
+    if (!token) return alert("Aucun token de suppression trouvé dans ton navigateur.");
+    if (!confirm("Supprimer ta proposition ? Cette action est définitive.")) return;
     try {
       const res = await fetch(WORKER_URL, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token })
       });
-      let j = null;
-      try { j = await res.json(); } catch(e){}
-      if (res.ok && j && j.success) {
-        // suppression côté serveur OK -> retirer token local et recharger
-        removeDeleteTokenForPath(path);
-        removeDeleteTokenForPath(path.replace(/^\/+/, ''));
+      const j = await res.json();
+      if (res.ok && j.success) {
+        localStorage.removeItem('deleteToken');
+        localStorage.removeItem('lastPath');
         alert('Proposition supprimée.');
         loadProposals('films');
       } else {
-        alert('Erreur suppression : ' + (j?.error || res.status));
-        debug(JSON.stringify(j || res.status, null, 2));
+        alert('Erreur suppression : ' + (j.error || res.status));
+        debug(JSON.stringify(j, null, 2));
       }
-    } catch(err){
+    } catch(err) {
       alert('Erreur réseau lors de la suppression.');
       debug(String(err));
     }
   }
 
-  /* ===== LOAD PROPOSALS (Option A: index.json + path) ===== */
-  async function loadProposals(section){
+  /* ====== LOAD PROPOSALS ====== */
+  async function loadProposals(section) {
     const container = $('#proposals-list');
     container.innerHTML = 'Chargement…';
     debug('');
     try {
       const idxResp = await fetch('content/index.json?t=' + Date.now());
       if (!idxResp.ok) throw new Error('index.json introuvable (status ' + idxResp.status + ')');
-
-      const idxText = await idxResp.text();
-      let idx;
-      try { idx = JSON.parse(idxText); } catch(e){ debug('index.json invalide — raw:\n\n' + idxText); throw new Error('index.json invalide'); }
-
+      const idx = await idxResp.json();
       const items = (Array.isArray(idx) ? idx : []).filter(i => String(i.section) === String(section));
       if (!items.length) { container.innerHTML = '<p>Aucune proposition.</p>'; return; }
 
-      // tri inverse (plus récent en premier)
+      // tri inverse si created_at présent
       items.sort((a,b) => (b.created_at ? Date.parse(b.created_at) : 0) - (a.created_at ? Date.parse(a.created_at) : 0));
 
-      const htmlParts = await Promise.all(items.map(async item => {
+      const html = await Promise.all(items.map(async item => {
         try {
-          const rawPath = item.path || '';
-          const relativePath = rawPath.replace(/^\/+/, '');
-          // fetch markdown (relatif)
-          let md = '';
-          try {
-            const mdResp = await fetch(relativePath + '?t=' + Date.now());
-            if (mdResp.ok) md = await mdResp.text();
-          } catch(e){
-            // ignore, on affichera un message si no content
-          }
+          const relativePath = (item.path || '').replace(/^\/+/,'');
+          const mdResp = await fetch(relativePath + '?t=' + Date.now());
+          let md = mdResp.ok ? await mdResp.text() : '';
           md = md.replace(/^---\s*[\s\S]*?\s*---\s*/m, '');
           const contentHtml = md ? marked.parse(md) : '<em>Pas de contenu</em>';
-          const title = item.title || (md.match(/^#\s*(.+)$/m) ? md.match(/^#\s*(.+)$/m)[1].trim() : (relativePath.split('/').pop() || 'Sans titre'));
+          const title = item.title || (md.match(/^#\s*(.+)$/m) ? md.match(/^#\s*(.+)$/m)[1].trim() : relativePath.split('/').pop());
           const created = item.created_at ? new Date(item.created_at).toLocaleString() : '';
-          // decide to show delete button if we have a token saved for this path
-          const hasToken = Boolean(getDeleteTokenForPath(rawPath) || getDeleteTokenForPath(relativePath));
-          const deleteBtnHtml = hasToken ? `<div style="margin-top:8px"><button class="btn-delete" data-path="${escapeHtml(rawPath || relativePath)}">Supprimer ma proposition</button></div>` : '';
+          // bouton supprimer visible si token localStorage existe et lastPath correspond (optionnel)
+          const userToken = localStorage.getItem('deleteToken');
+          const lastPath = localStorage.getItem('lastPath') || '';
+          const showDeleteBtn = userToken && (lastPath === item.path || lastPath === relativePath);
           return `<article>
                     <h3>${escapeHtml(title)}</h3>
                     <div class="meta">Par ${escapeHtml(item.pseudo || 'Anonyme')}${created ? ' — ' + escapeHtml(created) : ''}</div>
                     <div class="content">${contentHtml}</div>
-                    ${deleteBtnHtml}
+                    ${showDeleteBtn ? '<div style="margin-top:8px"><button data-path="'+escapeHtml(relativePath)+'" class="btn-delete">Supprimer ma proposition</button></div>' : ''}
                   </article>`;
-        } catch(e){
-          console.error('Erreur item', e);
+        } catch(e) {
+          console.error(e);
           return `<article><h3>Erreur lecture</h3><div class="meta">Impossible de charger cette proposition</div></article>`;
         }
       }));
 
-      container.innerHTML = htmlParts.join('\n');
+      container.innerHTML = html.join('\n');
 
-      // attach delete handlers
-      document.querySelectorAll('.btn-delete').forEach(btn => {
-        btn.addEventListener('click', (ev) => {
-          const p = ev.currentTarget.getAttribute('data-path') || '';
-          deleteProposalByPath(p);
-        });
-      });
+      // attacher listeners delete (après insertion)
+      document.querySelectorAll('.btn-delete').forEach(btn => btn.addEventListener('click', tryDelete));
 
     } catch(err) {
       container.innerHTML = '<p>Erreur de chargement.</p>';
@@ -213,9 +173,10 @@
     }
   }
 
-  /* ===== INIT ===== */
+  /* ====== INIT ====== */
   document.getElementById('year').textContent = new Date().getFullYear();
   document.addEventListener('DOMContentLoaded', ()=>loadProposals('films'));
   </script>
 </body>
 </html>
+
