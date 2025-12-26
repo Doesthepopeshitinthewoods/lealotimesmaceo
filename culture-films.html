@@ -5,7 +5,9 @@
   <title>Culture — Films</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta http-equiv="Cache-Control" content="no-store">
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
+
   <style>
     :root{--maxw:760px;--bg:#fff;--text:#111827;--muted:#6b7280}
     *{box-sizing:border-box}
@@ -16,18 +18,19 @@
     nav a{color:#f3f4f6;text-decoration:none;margin-left:12px;font-size:14px}
     main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
     h2{font-family:Merriweather,serif;font-size:18px}
-    article{margin-bottom:20px;position:relative}
+    article{margin-bottom:20px}
     .meta{color:var(--muted);font-size:13px}
     form{margin-top:20px}
     input,textarea{width:100%;padding:10px;margin-bottom:12px;border:1px solid #d1d5db;border-radius:4px}
-    button{padding:8px 12px;background:#1f2937;color:#fff;border:none;border-radius:4px;cursor:pointer}
-    .delete-btn{background:#991b1b;margin-left:8px;padding:6px 10px;border-radius:6px}
-    .pending-badge{font-size:12px;color:#9ca3af;margin-left:8px}
+    button{padding:10px 16px;background:#1f2937;color:#fff;border:none;border-radius:4px;cursor:pointer}
     #proposals-list article{border:1px solid #eee;padding:12px;border-radius:8px}
+    .pending-badge{font-size:12px;color:#9ca3af;margin-left:8px}
     pre.debug{display:none;background:#111;color:#0f0;padding:10px;font-size:12px;white-space:pre-wrap}
   </style>
 </head>
+
 <body>
+
 <header>
   <div class="wrap">
     <h1>Blog de l'intranquilité</h1>
@@ -41,11 +44,18 @@
 </header>
 
 <main>
+
 <h2>Films — Sélection</h2>
-<article><h3>Stalker</h3><p class="meta">Andreï Tarkovski — 1979</p></article>
+
+<article>
+  <h3>Stalker</h3>
+  <p class="meta">Andreï Tarkovski — 1979</p>
+</article>
+
 <hr>
 
 <h2>Proposer un film</h2>
+
 <form id="proposal-form">
   <input type="hidden" name="section" value="films">
   <input name="pseudo" placeholder="Pseudo" required>
@@ -55,140 +65,211 @@
 </form>
 
 <p id="result" class="meta"></p>
+
 <hr>
 
 <h2>Propositions récentes</h2>
 <div id="proposals-list">Chargement…</div>
 <pre id="debug" class="debug"></pre>
+
 </main>
 
-<footer style="text-align:center;color:#777;padding:20px">© <span id="year"></span></footer>
+<footer style="text-align:center;color:#777;padding:20px">
+  © <span id="year"></span>
+</footer>
 
+<!-- dépendances -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
 
 <script>
-/* CONFIG */
-const WORKER_URL = 'https://steep-dawn-b94d.ettae634.workers.dev'; // <- TON WORKER
+/* ================= CONFIG ================= */
+const WORKER_URL = 'https://ton-worker.example.workers.dev'; // <- remplace par ton Worker
 const LOCAL_KEY = 'films_pending_v1';
-const PSEUDO_KEY = 'films_user_pseudo';
 
-/* HELPERS */
+/* ================= HELPERS ================= */
 const $ = s => document.querySelector(s);
 function escapeHtml(s){ return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') }
 function debug(t){ $('#debug').style.display = t ? 'block' : 'none'; $('#debug').textContent = t || '' }
-function sanitizeHtml(html){ return window.DOMPurify ? DOMPurify.sanitize(html) : escapeHtml(html) }
-function renderMarkdown(md){ try{ return sanitizeHtml(marked.parse(md||'')); }catch(e){ return sanitizeHtml(escapeHtml(md||'')); } }
+function sanitizeHtml(html){
+  if(window.DOMPurify && typeof DOMPurify.sanitize === 'function') return DOMPurify.sanitize(html);
+  return escapeHtml(html);
+}
+function renderMarkdown(md){
+  try{ return sanitizeHtml(marked.parse(md || '')); } catch(e){ return sanitizeHtml(escapeHtml(md || '')); }
+}
 
-/* PENDING storage */
-let pending = (() => { try{ return JSON.parse(localStorage.getItem(LOCAL_KEY) || '[]'); }catch(e){ return []; } })();
-function savePending(){ try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(pending)); }catch(e){ } }
-function addPending(it){ pending.unshift(it); savePending(); }
-function removePendingByTempId(tempId){ const i = pending.findIndex(p=>p._tempId===tempId); if(i!==-1){ pending.splice(i,1); savePending(); return true } return false }
-function removePendingMatchedByServerItem(serverItem){ const sSnippet = (serverItem.content||'').trim().slice(0,120); const i = pending.findIndex(p => p.title===serverItem.title && p.pseudo===serverItem.pseudo && (p.content||'').trim().slice(0,120)===sSnippet); if(i!==-1){ pending.splice(i,1); savePending(); return true } return false }
-function getStoredPseudo(){ return localStorage.getItem(PSEUDO_KEY) || '' }
-function setStoredPseudo(p){ try{ localStorage.setItem(PSEUDO_KEY,p); }catch(e){} }
+/* ================= PENDING (localStorage) ================= */
+let pending = (() => {
+  try { return JSON.parse(localStorage.getItem(LOCAL_KEY) || '[]'); } catch(e) { return []; }
+})();
 
-/* RENDER helpers */
+function savePending(){ try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(pending)); } catch(e){ console.warn('localStorage failed', e); } }
+function addPending(item){ pending.unshift(item); savePending(); }
+function removePendingByTempId(tempId){
+  const i = pending.findIndex(p => p._tempId === tempId);
+  if(i !== -1){ pending.splice(i,1); savePending(); return true; }
+  return false;
+}
+function removePendingMatchedByServerItem(serverItem){
+  const sSnippet = (serverItem.content||'').trim().slice(0,120);
+  const i = pending.findIndex(p => p.title === serverItem.title && p.pseudo === serverItem.pseudo && (p.content||'').trim().slice(0,120) === sSnippet);
+  if(i !== -1){ pending.splice(i,1); savePending(); return true; }
+  return false;
+}
+
+/* ================= RENDER ================= */
 function buildArticleHtml(obj, opts = {}){
   const badge = opts.pending ? `<span class="pending-badge">(en attente)</span>` : '';
   const contentHtml = obj.contentHtml ? sanitizeHtml(obj.contentHtml) : renderMarkdown(obj.content || '');
-  const dataAttrs = obj._tempId ? `data-temp="${escapeHtml(obj._tempId)}"` : (obj.path ? `data-path="${escapeHtml(obj.path)}"` : '');
-  const deleteBtn = opts.canDelete ? `<button class="delete-btn" data-path="${escapeHtml(obj.path||'')}" data-temp="${escapeHtml(obj._tempId||'')}">Supprimer</button>` : '';
-  return `<article ${dataAttrs}>
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <h3 style="margin:0">${escapeHtml(obj.title||'Sans titre')}${badge}</h3>
-      <div>${deleteBtn}</div>
-    </div>
-    <div class="meta">Par ${escapeHtml(obj.pseudo||'Anonyme')}</div>
+  return `<article ${obj._tempId ? 'data-temp="'+escapeHtml(obj._tempId)+'"' : ''}>
+    <h3>${escapeHtml(obj.title || 'Sans titre')}${badge}</h3>
+    <div class="meta">Par ${escapeHtml(obj.pseudo || 'Anonyme')}</div>
     ${contentHtml}
   </article>`;
 }
 
-function stripHtml(html){ const tmp = document.createElement('div'); tmp.innerHTML = html || ''; return tmp.textContent || tmp.innerText || ''; }
+function renderCombinedList(serverItems = []){
+  // build server simplified map/snippets
+  const serverMap = serverItems.map(si => ({
+    title: si.title,
+    pseudo: si.pseudo,
+    snippet: (si.contentHtml ? stripHtml(si.contentHtml) : (si.content||'')).trim().slice(0,120)
+  }));
 
-function renderCombinedList(serverItems=[]){
-  const serverMap = serverItems.map(si=>({ title: si.title, pseudo: si.pseudo, snippet: (si.content||'').trim().slice(0,120) }));
+  // pending items not present on server
   const missingPending = pending.filter(p => {
     const pSnippet = (p.content||'').trim().slice(0,120);
-    return !serverMap.some(sm => sm.title===p.title && sm.pseudo===p.pseudo && sm.snippet===pSnippet);
+    return !serverMap.some(sm => sm.title === p.title && sm.pseudo === p.pseudo && sm.snippet === pSnippet);
   });
-  const storedPseudo = getStoredPseudo();
-  const pendingHtml = missingPending.map(p => buildArticleHtml(p, { pending:true, canDelete:true })).join('');
-  const serverHtml = serverItems.map(si => {
-    const canDelete = storedPseudo && si.pseudo === storedPseudo;
-    return buildArticleHtml(si, { pending:false, canDelete });
-  }).join('');
+
+  const pendingHtml = missingPending.map(p => buildArticleHtml(p, { pending: true })).join('');
+  const serverHtml = serverItems.map(si => buildArticleHtml(si, { pending: false })).join('');
+
   $('#proposals-list').innerHTML = (pendingHtml ? pendingHtml : '') + (serverHtml ? serverHtml : '') || 'Aucune proposition.';
 }
 
-/* NETWORK (worker only) */
-async function fetchIndex(){ const r = await fetch(WORKER_URL + '/index?t=' + Date.now(), { cache:'no-store' }); if(!r.ok) throw new Error('index fetch '+r.status); return await r.json(); }
-async function fetchMd(path){ const r = await fetch(WORKER_URL + '/md?path=' + encodeURIComponent(path) + '&t=' + Date.now(), { cache:'no-store' }); if(!r.ok) throw new Error('md fetch '+r.status); return await r.text(); }
-async function postDelete(path, pseudo){ const r = await fetch(WORKER_URL + '/delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ path, pseudo }) }); return r.json(); }
+function stripHtml(html){
+  const tmp = document.createElement('div'); tmp.innerHTML = html || ''; return tmp.textContent || tmp.innerText || '';
+}
 
-/* LOAD & SYNC */
+/* ================= NETWORK: lire via Worker UNIQUEMENT ================= */
+async function fetchIndexFromWorker(){
+  const r = await fetch(WORKER_URL + '/index?t=' + Date.now(), { cache: 'no-store' });
+  if(!r.ok) throw new Error('index fetch status ' + r.status);
+  return await r.json();
+}
+
+async function fetchMdFromWorker(path){
+  // path attendu sans slash de tête, ex: "content/123-title.md"
+  const r = await fetch(WORKER_URL + '/md?path=' + encodeURIComponent(path) + '&t=' + Date.now(), { cache: 'no-store' });
+  if(!r.ok) throw new Error('md fetch ' + r.status + ' ' + path);
+  return await r.text();
+}
+
+/* ================= LOAD & SYNC ================= */
 async function loadAndRenderNow(){
   try{
-    const index = await fetchIndex();
+    const index = await fetchIndexFromWorker();
     const items = (index || []).filter(i => i.section === 'films');
+
+    // fetch markdowns via Worker
     const serverItems = await Promise.all(items.map(async i => {
       try{
-        const rawMd = await fetchMd((i.path || '').replace(/^\/+/, ''));
-        const body = rawMd.replace(/^---[\\s\\S]*?---/, '');
-        return { title: i.title, pseudo: i.pseudo, path: i.path, contentHtml: marked.parse(body), content: stripHtml(body) };
+        const rawMd = await fetchMdFromWorker((i.path || '').replace(/^\/+/, ''));
+        const body = rawMd.replace(/^---[\s\S]*?---/, '');
+        return { title: i.title, pseudo: i.pseudo, contentHtml: marked.parse(body) , content: stripHtml(body) };
       }catch(e){
-        return { title: i.title, pseudo: i.pseudo, path: i.path, contentHtml: '<div class="meta">Erreur lecture contenu</div>', content: '' };
+        return { title: i.title, pseudo: i.pseudo, contentHtml: '<div class="meta">Erreur lecture contenu</div>', content: '' };
       }
     }));
-    for(const si of serverItems) removePendingMatchedByServerItem({ title: si.title, pseudo: si.pseudo, content: si.content||'' });
+
+    // remove any pending that now appear server-side
+    for(const si of serverItems){
+      removePendingMatchedByServerItem({ title: si.title, pseudo: si.pseudo, content: si.content || '' });
+    }
+
     renderCombinedList(serverItems);
-  }catch(e){
-    console.warn('load failed', e);
+  }catch(err){
+    // fallback: show pending only
+    console.warn('load failed', err);
     renderCombinedList([]);
-    debug(String(e));
+    debug(String(err));
   }
 }
 
-/* POLLING */
+/* ================= POLLING (backoff) ================= */
 let pollHandle = null, pollAttempts = 0;
-function startPolling(){ if(pollHandle) return; pollAttempts = 0; const once = async ()=>{ pollAttempts++; await loadAndRenderNow(); if(pending.length===0 || pollAttempts>=8){ clearTimeout(pollHandle); pollHandle=null; return; } const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(once, delay); }; pollHandle = setTimeout(once,0); }
+function startPolling(){
+  if(pollHandle) return;
+  pollAttempts = 0;
+  const once = async () => {
+    pollAttempts++;
+    await loadAndRenderNow();
+    if(pending.length === 0 || pollAttempts >= 8){ clearTimeout(pollHandle); pollHandle = null; return; }
+    const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000);
+    pollHandle = setTimeout(once, delay);
+  };
+  pollHandle = setTimeout(once, 0);
+}
 
-/* FORM submit */
+/* ================= FORM: envoi + optimistic ================= */
 $('#proposal-form').onsubmit = async function(e){
   e.preventDefault();
   $('#result').textContent = 'Envoi…';
   const data = Object.fromEntries(new FormData(e.target).entries());
+
   if(!data.title || !data.pseudo || !data.content){ $('#result').textContent = 'Remplis tous les champs.'; return; }
-  setStoredPseudo(data.pseudo);
+
   try{
-    const r = await fetch(WORKER_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+    const r = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
     const j = await r.json();
+
     if(j.success){
       $('#result').textContent = '✔ Proposition envoyée';
-      const temp = Object.assign({}, data, { _tempId: 't'+Date.now()+Math.random().toString(36).slice(2,6), createdAt: Date.now() });
-      addPending(temp); loadAndRenderNow(); e.target.reset();
-      if(j.item){ removePendingMatchedByServerItem(j.item); setTimeout(()=>loadAndRenderNow(), 300); }
+
+      // optimistic: add pending item (with temp id) and render immediately
+      const temp = Object.assign({}, data, { _tempId: 't' + Date.now() + Math.random().toString(36).slice(2,6), createdAt: Date.now() });
+      addPending(temp);
+      loadAndRenderNow();
+
+      e.target.reset();
+
+      // if worker returned item with content, remove pending immediately and insert server item
+      if(j.item){
+        // remove matching pending
+        removePendingMatchedByServerItem(j.item);
+        // show server version immediately by reloading (fast)
+        setTimeout(()=>loadAndRenderNow(), 300);
+      }
+
+      // start polling for any remaining pending
       if(pending.length) startPolling();
-    } else { $('#result').textContent = 'Erreur : ' + (j.error || 'inconnue'); debug(JSON.stringify(j)); }
-  }catch(err){ $('#result').textContent = 'Erreur réseau'; debug(String(err)); }
+    } else {
+      $('#result').textContent = 'Erreur : ' + (j.error || 'inconnue');
+      debug(JSON.stringify(j));
+    }
+  }catch(err){
+    $('#result').textContent = 'Erreur réseau';
+    debug(String(err));
+  }
 };
 
-/* DELETE handler */
-$('#proposals-list').addEventListener('click', async (ev) => {
-  const btn = ev.target.closest('.delete-btn'); if(!btn) return;
-  const path = btn.getAttribute('data-path'); const temp = btn.getAttribute('data-temp'); const storedPseudo = getStoredPseudo();
-  if(!confirm('Confirmez-vous la suppression de cette proposition ?')) return;
-  if(temp){ removePendingByTempId(temp); loadAndRenderNow(); return; }
-  if(!path){ alert('Impossible de supprimer : chemin manquant.'); return; }
-  if(!storedPseudo){ alert('Pour supprimer une proposition, entrez d’abord le pseudo utilisé lors de la publication.'); return; }
-  try{ const res = await postDelete(path, storedPseudo); if(res && res.success){ removePendingMatchedByServerItem({ title: res.removed.title, pseudo: res.removed.pseudo, content: res.removed.content || '' }); setTimeout(()=>loadAndRenderNow(), 200); } else { alert('Suppression échouée: ' + (res && res.error ? res.error : 'inconnue')); debug(JSON.stringify(res)); } }catch(e){ alert('Erreur réseau lors de suppression'); debug(String(e)); }
-});
-
-/* INIT */
+/* ================= INIT ================= */
 $('#year').textContent = new Date().getFullYear();
-document.addEventListener('DOMContentLoaded', ()=>{ loadAndRenderNow().then(()=>{ if(pending.length) startPolling(); }); setInterval(()=>{ loadAndRenderNow().catch(()=>{}); }, 5*60*1000); });
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  loadAndRenderNow().then(()=>{
+    if(pending.length) startPolling();
+  });
+  // refresh in background every 5 minutes
+  setInterval(()=>{ loadAndRenderNow().catch(()=>{}); }, 5*60*1000);
+});
 </script>
+
 </body>
 </html>
-
