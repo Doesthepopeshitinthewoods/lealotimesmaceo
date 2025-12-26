@@ -162,14 +162,18 @@ trinta graus e uma humidade relativa de setenta por cento.</p>
       <p class="muted">Os leitores podem enviar artigos, projetos ou sugestões culturais através do formulário abaixo.</p>
     </div>
 
-<form id="contact-form">
+<h2>Contactez-nous</h2>
+
+<form id="contact-form" class="proposal-form">
   <input type="hidden" name="section" value="contacts">
   <input name="pseudo" id="cf-name" placeholder="Nom" required>
   <input name="email" id="cf-email" type="email" placeholder="Email" required>
   <textarea name="message" id="cf-message" rows="5" placeholder="Message" required></textarea>
-  <button id="cf-submit">Envoyer</button>
+  <button type="submit" id="cf-submit">Envoyer</button>
 </form>
+
 <p id="cf-result" class="meta"></p>
+
 
 <script>
 const WORKER_URL = "https://TON-WORKER.workers.dev";
