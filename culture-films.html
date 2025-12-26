@@ -256,26 +256,45 @@ $('#proposal-form').onsubmit = async e => {
 /* ---------- MODIFIED: use Worker for index + md ---------- */
 async function fetchIndexNoCache(){
   const url = WORKER_URL + '/index?t=' + Date.now();
-  const r = await fetch(url, { cache: 'no-store' });
-  if(!r.ok) throw new Error('status ' + r.status);
-  return await r.json();
+  try {
+    const r = await fetch(url, { cache: 'no-store' });
+    const text = await r.text();
+
+    if(!r.ok){
+      // serveur a répondu une erreur HTTP : log pour debug et retourne tableau vide
+      console.warn('fetchIndexNoCache: non-ok response', r.status, text);
+      // show debug info if present
+      try{ debug(text); }catch(e){}
+      return [];
+    }
+
+    // parse JSON defensivement
+    try {
+      const parsed = JSON.parse(text);
+      if(Array.isArray(parsed)) return parsed;
+      // not an array -> log and return empty
+      console.warn('fetchIndexNoCache: parsed payload is not an array', parsed);
+      try{ debug(JSON.stringify(parsed)); }catch(e){ debug(String(parsed)); }
+      return [];
+    } catch(parseErr){
+      console.warn('fetchIndexNoCache: invalid JSON', text);
+      try{ debug(text); }catch(e){}
+      return [];
+    }
+  } catch (err){
+    console.warn('fetchIndexNoCache: network error', err);
+    try{ debug(String(err)); }catch(e){}
+    return [];
+  }
 }
 
-async function fetchMarkdownNoCache(path){
-  const p = (path || '').replace(/^\/+/, '');
-  const url = WORKER_URL + '/md?path=' + encodeURIComponent(p) + '&t=' + Date.now();
-  const r = await fetch(url, { cache: 'no-store' });
-  if(!r.ok) throw new Error('md status ' + r.status + ' ' + p);
-  return await r.text();
-}
 /* --------------------------------------------------------- */
 
 async function loadAndRenderNow(forceServerOnly = false){
-  // forceServerOnly: when true, still render pending but prefer server content update (used after j.item)
   try{
-    // 1) fetch index
+    // 1) fetch index (fetchIndexNoCache now always returns an array or [])
     const index = await fetchIndexNoCache();
-    const items = (index || []).filter(i => i.section === 'films');
+    const items = (Array.isArray(index) ? index : []).filter(i => i.section === 'films');
 
     // 2) fetch md content for each item
     const serverItems = await Promise.all(items.map(async i => {
@@ -287,6 +306,22 @@ async function loadAndRenderNow(forceServerOnly = false){
         return { title: i.title, pseudo: i.pseudo, contentHtml: '<div class="meta">Erreur lecture contenu</div>', path: i.path };
       }
     }));
+
+    // 3) remove pending items that now appear in serverItems
+    for(const si of serverItems){
+      removePendingMatchedByServerItem({ title: si.title, pseudo: si.pseudo, content: stripHtml(si.contentHtml) });
+    }
+
+    // 4) render combined
+    renderCombinedList(serverItems);
+  }catch(e){
+    console.warn('loadAndRenderNow failed', e);
+    const fallbackServerItems = [];
+    renderCombinedList(fallbackServerItems);
+    debug(String(e));
+  }
+}
+
 
     // 3) remove pending items that now appear in serverItems
     // Convert serverItems to simplified items with content text for matching
