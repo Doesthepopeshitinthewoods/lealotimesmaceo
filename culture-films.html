@@ -87,112 +87,16 @@
 
   <hr>
 
-  /* ================= LOAD PROPOSALS (remplacer l'ancienne fonction) ================= */
-async function loadProposals(section) {
-  const container = document.getElementById('proposals-list');
-  const dbg = document.getElementById('debug');
-  container.innerHTML = 'Chargement…';
-  showDebug(''); // vide l'ancien debug
-
-  try {
-    // anti-cache pour s'assurer d'avoir la dernière version
-    const idxResp = await fetch('/content/index.json?t=' + Date.now());
-    if (!idxResp.ok) throw new Error('index.json introuvable (status ' + idxResp.status + ')');
-
-    const idxText = await idxResp.text();
-    let idx;
-    try {
-      idx = JSON.parse(idxText);
-    } catch (e) {
-      // affiche le texte brute si ce n'est pas du JSON valide
-      showDebug('index.json is not valid JSON — raw content:\n\n' + idxText);
-      throw new Error('index.json invalide');
-    }
-
-    // debug: montre un extrait de index.json
-    showDebug('index.json chargé — ' + (Array.isArray(idx) ? idx.length : 'non-array') + ' entrées\n\n' + JSON.stringify(idx.slice(0, 10), null, 2));
-
-    // filtre et trie (les plus récents en tête si created_at présent)
-    let items = (Array.isArray(idx) ? idx : []).filter(i => String(i.section) === String(section));
-    items.sort((a, b) => {
-      const ta = a.created_at ? Date.parse(a.created_at) : 0;
-      const tb = b.created_at ? Date.parse(b.created_at) : 0;
-      return tb - ta;
-    });
-
-    if (!items.length) {
-      container.innerHTML = '<p>Aucune proposition.</p>';
-      return;
-    }
-
-    // charge chaque proposition, tolère les erreurs par item
-    const htmlItems = await Promise.all(items.map(async it => {
-      try {
-        // calcule l'URL du fichier markdown
-        let fileUrl = it.path || it.url || '';
-        if (!fileUrl) throw new Error('path manquant dans index.json pour cette entrée');
-
-        // si path n'est pas une URL absolue, rendre relatif au site
-        if (!/^https?:\/\//i.test(fileUrl)) {
-          fileUrl = fileUrl.startsWith('/') ? fileUrl : '/' + fileUrl;
-        }
-
-        // anti-cache pour le fetch du md
-        const mdResp = await fetch(fileUrl + '?t=' + Date.now());
-        if (!mdResp.ok) {
-          throw new Error(`Fichier introuvable (${mdResp.status}) -> ${fileUrl}`);
-        }
-        let md = await mdResp.text();
-
-        // supprime frontmatter YAML si présent (robuste)
-        md = md.replace(/^---\s*[\s\S]*?\s*---\s*/m, '');
-
-        // parse markdown en HTML (avec gestion d'erreur)
-        let contentHtml = '';
-        try {
-          contentHtml = marked.parse(md);
-        } catch (e) {
-          console.error('Erreur parse markdown:', e);
-          contentHtml = '<pre>Erreur de parsing markdown</pre>';
-        }
-
-        // titre prioritaire : it.title, sinon titre extrait du markdown, sinon basename du path
-        const title = it.title || (md.match(/^#\s*(.+)$/m) ? md.match(/^#\s*(.+)$/m)[1].trim() : (fileUrl.split('/').pop() || 'Sans titre'));
-
-        // format date lisible
-        const created = it.created_at ? new Date(it.created_at).toLocaleString() : '';
-
-        return `<article class="proposal">
-                  <h3>${escapeHtml(title)}</h3>
-                  <div class="meta">Par ${escapeHtml(it.pseudo || 'Anonyme')}${created ? ' — ' + escapeHtml(created) : ''}</div>
-                  <div class="content">${contentHtml}</div>
-                </article>`;
-      } catch (itemErr) {
-        console.warn('Erreur item:', itemErr);
-        // on retourne un message visible pour cet item (plutôt que de casser toute la page)
-        return `<article class="proposal">
-                  <h3>Proposition invalide</h3>
-                  <div class="meta">Erreur: ${escapeHtml(String(itemErr.message || itemErr))}</div>
-                </article>`;
-      }
-    }));
-
-    container.innerHTML = htmlItems.join('\n');
-  } catch (err) {
-    container.innerHTML = '<p>Erreur de chargement.</p>';
-    // affiche l'erreur dans le debug pour que tu puisses copier/coller
-    showDebug((document.getElementById('debug').textContent || '') + '\n\nErreur globale: ' + String(err));
-    console.error('loadProposals error', err);
-  }
-}
-
+  <h2>Propositions récentes</h2>
+  <div id="proposals-list">Chargement…</div>
+  <pre id="debug" class="debug"></pre>
 </main>
 
 <footer>
   © <span id="year"></span> — Blog personnel
 </footer>
 
-<!-- Markdown parser -->
+<!-- Markdown parser (doit être chargé avant le script principal) -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <script>
@@ -220,8 +124,7 @@ function showDebug(text){
 
   // pré-remplissage pseudo
   try {
-    document.getElementById('pseudo').value =
-      localStorage.getItem('lastPseudo') || '';
+    document.getElementById('pseudo').value = localStorage.getItem('lastPseudo') || '';
   } catch(e){}
 
   form.addEventListener('submit', async e => {
@@ -252,7 +155,8 @@ function showDebug(text){
         }
         result.textContent = "Proposition envoyée ✔";
         form.reset();
-        setTimeout(()=>loadProposals('films'), 1500);
+        // recharge les propositions après un court délai (s'assurer que index.json a été mis à jour)
+        setTimeout(()=>loadProposals('films'), 1200);
       } else {
         result.textContent = "Erreur : " + (json?.error || res.status);
         showDebug(JSON.stringify(json, null, 2));
@@ -264,44 +168,89 @@ function showDebug(text){
   });
 })();
 
-/* ================= LOAD PROPOSALS ================= */
-async function loadProposals(section){
+/* ================= LOAD PROPOSALS (robuste) ================= */
+async function loadProposals(section) {
   const container = document.getElementById('proposals-list');
-  container.innerHTML = "Chargement…";
+  container.innerHTML = 'Chargement…';
+  showDebug('');
 
   try {
-    const idxResp = await fetch('/content/index.json');
-    if(!idxResp.ok) throw new Error("index.json introuvable");
-    const idx = await idxResp.json();
+    // anti-cache pour s'assurer d'avoir la dernière version
+    const idxResp = await fetch('/content/index.json?t=' + Date.now());
+    if (!idxResp.ok) throw new Error('index.json introuvable (status ' + idxResp.status + ')');
 
-    const items = idx.filter(i => i.section === section);
-    if(!items.length){
-      container.innerHTML = "<p>Aucune proposition.</p>";
+    const idxText = await idxResp.text();
+    let idx;
+    try {
+      idx = JSON.parse(idxText);
+    } catch (e) {
+      showDebug('index.json is not valid JSON — raw content:\n\n' + idxText);
+      throw new Error('index.json invalide');
+    }
+
+    showDebug('index.json chargé — ' + (Array.isArray(idx) ? idx.length : 'non-array') + ' entrées\n\n' + JSON.stringify((Array.isArray(idx) ? idx : []).slice(0, 10), null, 2));
+
+    // filtre et trie (les plus récents en tête si created_at présent)
+    let items = (Array.isArray(idx) ? idx : []).filter(i => String(i.section) === String(section));
+    items.sort((a, b) => {
+      const ta = a.created_at ? Date.parse(a.created_at) : 0;
+      const tb = b.created_at ? Date.parse(b.created_at) : 0;
+      return tb - ta;
+    });
+
+    if (!items.length) {
+      container.innerHTML = '<p>Aucune proposition.</p>';
       return;
     }
 
-    const html = await Promise.all(items.map(async it => {
-      const mdResp = await fetch('/' + it.path);
-      const md = mdResp.ok ? await mdResp.text() : '';
-      const mdNoFm = md.replace(/^---[\s\S]*?---\n?/, '');
-      const content = marked.parse(mdNoFm);
-      const title = it.title || extractTitle(mdNoFm) || 'Sans titre';
+    const htmlItems = await Promise.all(items.map(async it => {
+      try {
+        let fileUrl = it.path || it.url || '';
+        if (!fileUrl) throw new Error('path manquant dans index.json pour cette entrée');
 
-      return `
-        <article class="proposal">
-          <h3>${escapeHtml(title)}</h3>
-          <div class="meta">
-            Par ${escapeHtml(it.pseudo || 'Anonyme')} — ${escapeHtml(it.created_at || '')}
-          </div>
-          <div class="content">${content}</div>
-        </article>
-      `;
+        if (!/^https?:\/\//i.test(fileUrl)) {
+          fileUrl = fileUrl.startsWith('/') ? fileUrl : '/' + fileUrl;
+        }
+
+        const mdResp = await fetch(fileUrl + '?t=' + Date.now());
+        if (!mdResp.ok) {
+          throw new Error(`Fichier introuvable (${mdResp.status}) -> ${fileUrl}`);
+        }
+        let md = await mdResp.text();
+
+        // supprime frontmatter YAML si présent
+        md = md.replace(/^---\s*[\s\S]*?\s*---\s*/m, '');
+
+        let contentHtml = '';
+        try {
+          contentHtml = marked.parse(md);
+        } catch (e) {
+          console.error('Erreur parse markdown:', e);
+          contentHtml = '<pre>Erreur de parsing markdown</pre>';
+        }
+
+        const title = it.title || (md.match(/^#\s*(.+)$/m) ? md.match(/^#\s*(.+)$/m)[1].trim() : (fileUrl.split('/').pop() || 'Sans titre'));
+        const created = it.created_at ? new Date(it.created_at).toLocaleString() : '';
+
+        return `<article class="proposal">
+                  <h3>${escapeHtml(title)}</h3>
+                  <div class="meta">Par ${escapeHtml(it.pseudo || 'Anonyme')}${created ? ' — ' + escapeHtml(created) : ''}</div>
+                  <div class="content">${contentHtml}</div>
+                </article>`;
+      } catch (itemErr) {
+        console.warn('Erreur item:', itemErr);
+        return `<article class="proposal">
+                  <h3>Proposition invalide</h3>
+                  <div class="meta">Erreur: ${escapeHtml(String(itemErr.message || itemErr))}</div>
+                </article>`;
+      }
     }));
 
-    container.innerHTML = html.join('\n');
-  } catch(err){
-    container.innerHTML = "<p>Erreur de chargement.</p>";
-    showDebug(String(err));
+    container.innerHTML = htmlItems.join('\n');
+  } catch (err) {
+    container.innerHTML = '<p>Erreur de chargement.</p>';
+    showDebug('Erreur globale: ' + String(err));
+    console.error('loadProposals error', err);
   }
 }
 
@@ -311,6 +260,7 @@ document.addEventListener('DOMContentLoaded', () => loadProposals('films'));
 </script>
 </body>
 </html>
+
 
 
 
