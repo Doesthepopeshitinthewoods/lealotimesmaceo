@@ -163,12 +163,31 @@ trinta graus e uma humidade relativa de setenta por cento.</p>
     </div>
 
  <form id="contact-form">
-  <input id="cf-name" placeholder="Nom">
-  <input id="cf-email" placeholder="Email" required>
-  <textarea id="cf-message" placeholder="Message" required></textarea>
-  <button id="cf-submit">Envoyer</button>
+  <label>
+    Nom<br>
+    <input id="cf-name" type="text" placeholder="Votre nom">
+  </label>
+  <br><br>
+
+  <label>
+    Email *<br>
+    <input id="cf-email" type="email" placeholder="votre@email.com" required>
+  </label>
+  <br><br>
+
+  <label>
+    Message *<br>
+    <textarea id="cf-message" rows="6" required></textarea>
+  </label>
+  <br><br>
+
+  <button id="cf-submit" type="submit">
+    📩 Envoyer
+  </button>
+
   <p id="cf-result"></p>
 </form>
+
 
 <script>
 const WORKER_URL = "https://TON-WORKER.workers.dev";
