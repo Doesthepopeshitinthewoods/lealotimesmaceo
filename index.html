@@ -14,6 +14,7 @@
       --muted:#6b7280;
       --accent:#1f2937;
       --maxw:760px;
+      --accent-cta:#8b0000;
     }
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.7}
@@ -21,11 +22,11 @@
     a:hover{text-decoration:underline}
 
     header{
-      background:#8b0000; /* bandeau rouge sobre */
+      background:var(--accent-cta); /* bandeau rouge sobre */
       border-bottom:1px solid #7a0000;
     }
     .wrap{max-width:var(--maxw);margin:0 auto;padding:24px 20px}
-    .top{display:flex;align-items:er;justify-content:space-between;gap:16px}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:16px}
     h1{
       margin:0;
       font-family:Merriweather,serif;
@@ -37,7 +38,7 @@
     nav{
       display:flex;
       gap:14px;
-      align-items:er;
+      align-items:center;
     }
     nav>a,
     nav .culture-btn,
@@ -70,7 +71,7 @@
     .menu-culture:hover .culture-dropdown,.menu-projets:hover .projets-dropdown{display:block}
 
     /* Language flags — affichage pour mobile & desktop */
-    .langs { display:flex; gap:6px; align-items:er; }
+    .langs { display:flex; gap:6px; align-items:center; }
     .langs img.flag { width:22px; height:14px; cursor:pointer; display:inline-block; border-radius:2px; border:1px solid transparent; }
     .langs img.flag:focus { outline:2px solid #fff; outline-offset:2px; }
     .langs img.flag.active { outline:2px solid rgba(255,255,255,0.85); box-shadow:0 0 0 2px rgba(0,0,0,0.06) inset; border-color:rgba(0,0,0,0.06); }
@@ -84,10 +85,23 @@
     form{margin-top:20px}
     label{display:block;font-size:14px;margin-bottom:4px}
     input,textarea{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:4px;margin-bottom:12px;font-family:inherit}
-    button{padding:10px 16px;background:var(--ac);color:white;border:none;border-radius:4px;cursor:pointer}
+    .controls{display:flex;gap:8px;align-items:center}
+    .btn {
+      display:inline-flex;align-items:center;gap:8px;
+      padding:10px 16px;border-radius:6px;border:none;
+      cursor:pointer;font-weight:600;
+    }
+    .btn-primary{background:var(--accent-cta);color:#fff}
+    .btn-secondary{background:#f3f4f6;color:#111;border:1px solid #e5e7eb}
+    .btn[disabled]{opacity:0.6;cursor:default}
 
-    footer{border-top:1px solid #e5e7eb;text-align:er;font-size:14px;color:var(--muted);padding:24px 20px}
+    .meta{margin-top:8px;color:var(--muted);font-size:14px}
+
+    footer{border-top:1px solid #e5e7eb;text-align:center;font-size:14px;color:var(--muted);padding:24px 20px}
     .hidden{display:none}
+    @media (max-width:520px){
+      .controls{flex-direction:column;align-items:stretch}
+    }
   </style>
 </head>
 <body>
@@ -162,47 +176,33 @@ trinta graus e uma humidade relativa de setenta por cento.</p>
       <p class="muted">Os leitores podem enviar artigos, projetos ou sugestões culturais através do formulário abaixo.</p>
     </div>
 
-<h2>Contactez-nous</h2>
+    <h2>Contactez-nous</h2>
 
-<form id="contact-form" class="proposal-form">
-  <input type="hidden" name="section" value="contacts">
-  <input name="pseudo" id="cf-name" placeholder="Nom" required>
-  <input name="email" id="cf-email" type="email" placeholder="Email" required>
-  <textarea name="message" id="cf-message" rows="5" placeholder="Message" required></textarea>
-  <button type="submit" id="cf-submit">Envoyer</button>
-</form>
+    <form id="contact-form" class="proposal-form" aria-label="Formulaire de contact">
+      <input type="hidden" name="section" value="contacts">
+      <label for="cf-name" class="hidden">Nom</label>
+      <input name="pseudo" id="cf-name" placeholder="Nom" required aria-required="true">
 
-<p id="cf-result" class="meta"></p>
+      <label for="cf-email" class="hidden">Email</label>
+      <input name="email" id="cf-email" type="email" placeholder="Email" required aria-required="true">
 
+      <label for="cf-message" class="hidden">Message</label>
+      <textarea name="message" id="cf-message" rows="5" placeholder="Message" required aria-required="true"></textarea>
 
-<script>
-const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev";
+      <div class="controls">
+        <!-- Bouton principal : envoi / sauvegarde -->
+        <button type="submit" id="cf-submit" class="btn btn-primary" aria-live="polite">
+          Envoyer
+        </button>
 
-document.getElementById('contact-form').addEventListener('submit', async e => {
-  e.preventDefault();
+        <!-- Bouton secondaire : ouvre le client mail de l'utilisateur -->
+        <button type="button" id="cf-mailto" class="btn btn-secondary" title="Ouvrir votre client mail pour m'envoyer un message">
+          Me contacter
+        </button>
+      </div>
 
-  const payload = {
-    title: "Contact",
-    pseudo: document.getElementById('cf-name').value || "Anonyme",
-    content:
-      document.getElementById('cf-message').value +
-      "\n\n---\nEmail: " +
-      document.getElementById('cf-email').value,
-    section: "contacts"
-  };
-
-  const res = await fetch(WORKER_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
-
-  document.getElementById('cf-result').textContent =
-    res.ok ? "Message enregistré ✔" : "Erreur ❌";
-});
-</script>
-
-
+      <p id="cf-result" class="meta" role="status" aria-live="polite"></p>
+    </form>
 
   </section>
 </main>
@@ -223,34 +223,20 @@ document.getElementById('contact-form').addEventListener('submit', async e => {
     const LANG_KEY = 'blog_lang';
 
     function setLang(lang) {
-      // Affiche / cache les blocs de contenu (on vise uniquement .lang-block)
       document.querySelectorAll('.lang-block').forEach(el => {
         el.classList.toggle('hidden', el.dataset.lang !== lang);
       });
-
-      // Met à jour l'état des drapeaux
       document.querySelectorAll('.langs img[data-lang]').forEach(img => {
         const isActive = (img.dataset.lang === lang);
         img.classList.toggle('active', isActive);
         img.setAttribute('aria-pressed', isActive ? 'true' : 'false');
       });
-
-      // Met à jour l'attribut lang du document
       document.documentElement.lang = lang;
-
-      // Sauvegarde la préférence
-      try {
-        localStorage.setItem(LANG_KEY, lang);
-      } catch (e) {
-        // si localStorage indisponible, on ignore proprement
-        console.warn('localStorage inaccessible :', e);
-      }
+      try { localStorage.setItem(LANG_KEY, lang); } catch (e) { console.warn('localStorage inaccessible :', e); }
     }
 
-    // Initialise les écouteurs sur les drapeaux
     function initFlagListeners() {
       document.querySelectorAll('.langs img[data-lang]').forEach(img => {
-        // click et interaction clavier (Enter, Space)
         img.addEventListener('click', () => setLang(img.dataset.lang));
         img.addEventListener('keydown', (e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -261,23 +247,23 @@ document.getElementById('contact-form').addEventListener('submit', async e => {
       });
     }
 
-    // Initialisation au chargement
     document.addEventListener('DOMContentLoaded', () => {
       initFlagListeners();
-      const stored = (function(){
-        try { return localStorage.getItem(LANG_KEY); } catch(e){ return null; }
-      })();
+      const stored = (function(){ try { return localStorage.getItem(LANG_KEY); } catch(e){ return null; } })();
       const initial = stored || document.documentElement.lang || 'fr';
       setLang(initial);
     });
   })();
 </script>
+
 <script>
 /* === Configuration ===
-   Mettez l'URL de votre endpoint si vous en avez un (ex: Cloudflare Worker).
-   Si vous laissez la valeur par défaut, l'envoi serveur sera ignoré et seule la sauvegarde locale sera proposée.
+   Remplacez ces valeurs par les vôtres :
+   - WORKER_URL : (optionnel) endpoint serveur qui accepte POST JSON pour stocker les messages
+   - OWNER_EMAIL : adresse email du propriétaire pour le bouton "Me contacter"
 */
-const WORKER_URL = "https://TON-WORKER.workers.dev"; // changez si besoin
+const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev"; // <-- remplacez par votre Worker si vous en avez un, sinon laissez vide
+const OWNER_EMAIL = "maceo@example.com"; // <-- remplacez par votre adresse email réelle
 
 // Utilitaire : formate un timestamp lisible pour le nom de fichier
 function filenameTimestamp() {
@@ -288,12 +274,12 @@ function filenameTimestamp() {
 function saveLocally(payload) {
   try {
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-    const filename = `contact-${payload.pseudo.replace(/\s+/g, "_")}-${filenameTimestamp()}.json`;
+    const safeName = (payload.pseudo || "anonyme").replace(/[^\w\-]/g, "_").slice(0, 60) || "anonyme";
+    const filename = `contact-${safeName}-${filenameTimestamp()}.json`;
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = filename;
-    // Insérer temporairement pour que certains navigateurs acceptent le click
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -307,7 +293,9 @@ function saveLocally(payload) {
 
 // Envoi vers le serveur avec timeout
 async function postToWorker(url, payload, timeout = 8000) {
-  if (!url || url.includes("TON-WORKER")) return { ok: false, reason: "no-worker-configured" };
+  if (!url || url.includes("TON-WORKER") || url.trim() === "") {
+    return { ok: false, reason: "no-worker-configured" };
+  }
 
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
@@ -320,79 +308,118 @@ async function postToWorker(url, payload, timeout = 8000) {
       signal: controller.signal
     });
     clearTimeout(id);
-    return { ok: res.ok, status: res.status, text: await res.text().catch(()=>"") };
+    const text = await res.text().catch(()=>"");
+    return { ok: res.ok, status: res.status, text };
   } catch (err) {
     clearTimeout(id);
     return { ok: false, reason: err.name === "AbortError" ? "timeout" : err.message };
   }
 }
 
-// Gestion du formulaire
-document.getElementById("contact-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
+// Encodage mailto
+function buildMailtoLink(email, subject, body) {
+  const s = encodeURIComponent(subject || "");
+  const b = encodeURIComponent(body || "");
+  return `mailto:${encodeURIComponent(email)}?subject=${s}&body=${b}`;
+}
 
+// Gestion du formulaire
+(function() {
+  const form = document.getElementById("contact-form");
   const nameEl = document.getElementById("cf-name");
   const emailEl = document.getElementById("cf-email");
   const msgEl = document.getElementById("cf-message");
+  const submitBtn = document.getElementById("cf-submit");
+  const mailBtn = document.getElementById("cf-mailto");
   const resultEl = document.getElementById("cf-result");
 
-  const pseudo = (nameEl.value || "Anonyme").trim();
-  const email = (emailEl.value || "").trim();
-  const message = (msgEl.value || "").trim();
+  // action du bouton "Me contacter" : ouvre le client mail local avec le contenu du formulaire
+  mailBtn.addEventListener("click", () => {
+    const pseudo = (nameEl.value || "Anonyme").trim();
+    const email = (emailEl.value || "").trim();
+    const message = (msgEl.value || "").trim();
+    const subject = `Message depuis votre blog — ${pseudo}`;
+    const body = `Nom: ${pseudo}\nEmail de l'expéditeur: ${email}\n\nMessage:\n${message}`;
+    const mailto = buildMailtoLink(OWNER_EMAIL, subject, body);
+    // ouvrir le client mail
+    window.location.href = mailto;
+  });
 
-  // Validation simple (HTML required attr est présent, mais double-check côté script)
-  if (!email || !message) {
-    resultEl.textContent = "Veuillez renseigner au minimum l'email et le message.";
-    return;
-  }
+  // soumission principale
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    // lecture & trim
+    const pseudo = (nameEl.value || "Anonyme").trim();
+    const email = (emailEl.value || "").trim();
+    const message = (msgEl.value || "").trim();
 
-  const payload = {
-    title: "Contact",
-    pseudo,
-    email,
-    content: message + "\n\n---\nEmail: " + email,
-    section: "contacts",
-    timestamp: new Date().toISOString()
-  };
+    // simple validation côté client
+    if (!email || !message) {
+      resultEl.textContent = "Veuillez renseigner au minimum l'email et le message.";
+      resultEl.style.color = "var(--accent-cta)";
+      return;
+    }
 
-  // Indiquer à l'utilisateur que l'envoi est en cours
-  resultEl.textContent = "Envoi…";
+    const payload = {
+      title: "Contact",
+      pseudo,
+      email,
+      content: message,
+      section: "contacts",
+      timestamp: new Date().toISOString()
+    };
 
-  // Tenter l'envoi au serveur si configuré
-  const serverResp = await postToWorker(WORKER_URL, payload);
+    // Mise à jour UI : disable boutons
+    submitBtn.disabled = true;
+    mailBtn.disabled = true;
+    const prevSubmitText = submitBtn.textContent;
+    submitBtn.textContent = "Envoi…";
+    resultEl.textContent = "";
 
-  if (serverResp.ok) {
-    resultEl.textContent = "Message envoyé et enregistré sur le serveur ✔";
-    // Optionnel : effacer le formulaire
-    nameEl.value = "";
-    emailEl.value = "";
-    msgEl.value = "";
-    return;
-  }
+    // Tentative d'envoi serveur (si WORKER_URL fourni)
+    const serverResp = await postToWorker(WORKER_URL, payload);
 
-  // Si envoi serveur échoue (ou pas configuré) : proposer / effectuer la sauvegarde locale
-  const saved = saveLocally(payload);
+    if (serverResp.ok) {
+      resultEl.textContent = "Message envoyé et enregistré sur le serveur ✔";
+      resultEl.style.color = "green";
+      // vider le formulaire
+      nameEl.value = "";
+      emailEl.value = "";
+      msgEl.value = "";
+      submitBtn.disabled = false;
+      mailBtn.disabled = false;
+      submitBtn.textContent = prevSubmitText;
+      return;
+    }
 
-  if (serverResp.reason && serverResp.reason !== "no-worker-configured") {
-    console.warn("Envoi au serveur échoué :", serverResp);
-  }
+    // Si envoi serveur échoue ou non configuré -> sauvegarde locale
+    const saved = saveLocally(payload);
 
-  if (saved) {
-    resultEl.textContent = serverResp.ok
-      ? "Message envoyé et sauvegardé localement ✔"
-      : "Aucun serveur joignable — votre message a été sauvegardé en local (fichier téléchargé).";
-    // Optionnel : vider le formulaire
-    nameEl.value = "";
-    emailEl.value = "";
-    msgEl.value = "";
-  } else {
-    resultEl.textContent = "Erreur : impossible d'enregistrer le message localement.";
-  }
-});
+    if (serverResp.reason && serverResp.reason !== "no-worker-configured") {
+      console.warn("Envoi au serveur échoué :", serverResp);
+    }
+
+    if (saved) {
+      resultEl.textContent = (serverResp.reason === "no-worker-configured")
+        ? "Aucun serveur configuré — votre message a été téléchargé en local (fichier JSON)."
+        : "Le serveur est indisponible — votre message a été sauvegardé en local (fichier JSON).";
+      resultEl.style.color = "orange";
+      // vider le formulaire
+      nameEl.value = "";
+      emailEl.value = "";
+      msgEl.value = "";
+    } else {
+      resultEl.textContent = "Erreur : impossible d'enregistrer le message localement.";
+      resultEl.style.color = "crimson";
+    }
+
+    submitBtn.disabled = false;
+    mailBtn.disabled = false;
+    submitBtn.textContent = prevSubmitText;
+  });
+})();
 </script>
 
 </body>
 </html>
-
-
 
