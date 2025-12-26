@@ -207,6 +207,66 @@
   document.getElementById('year').textContent = new Date().getFullYear();
   document.addEventListener('DOMContentLoaded', () => loadProposals('films'));
   </script>
+  <!-- Propositions récentes -->
+<div id="proposals-list">Chargement…</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+async function loadProposals(section) {
+  const container = document.getElementById('proposals-list');
+  container.innerHTML = 'Chargement…';
+
+  try {
+    // 1️⃣ Récupère l'index
+    const idxResp = await fetch('/content/index.json');
+    if (!idxResp.ok) throw new Error('index.json introuvable');
+    const idx = await idxResp.json();
+
+    // 2️⃣ Filtre par section (films)
+    const items = idx.filter(item => item.section === section);
+    if (items.length === 0) { container.innerHTML = '<p>Aucune proposition.</p>'; return; }
+
+    // 3️⃣ Récupère chaque fichier markdown et transforme en HTML
+    const htmlItems = await Promise.all(items.map(async item => {
+      const mdResp = await fetch('/' + item.path);
+      const md = mdResp.ok ? await mdResp.text() : '';
+      const mdNoFrontMatter = md.replace(/^---[\s\S]*?---\n?/, '');
+      const html = marked.parse(mdNoFrontMatter);
+      const title = item.title || mdNoFrontMatter.match(/^#\s*(.+)$/m)?.[1] || 'Sans titre';
+      const meta = `<div class="meta">Par: ${item.pseudo || 'Anonyme'} — ${item.created_at?.split('T')[0] || ''}</div>`;
+      return `<article class="proposal">
+                <h3>${title}</h3>
+                ${meta}
+                <div class="content">${html}</div>
+              </article>`;
+    }));
+
+    container.innerHTML = htmlItems.join('\n');
+
+  } catch (err) {
+    container.innerHTML = '<p>Erreur de chargement des propositions.</p>';
+    console.error(err);
+  }
+}
+
+// lance la récupération
+document.addEventListener('DOMContentLoaded', () => loadProposals('films'));
+</script>
+
+<style>
+#proposals-list article.proposal {
+  border:1px solid #eee;
+  padding:12px;
+  border-radius:8px;
+  margin-bottom:12px;
+}
+#proposals-list .meta {
+  color:#666;
+  font-size:13px;
+  margin-bottom:8px;
+}
+</style>
+
 </body>
 </html>
 
