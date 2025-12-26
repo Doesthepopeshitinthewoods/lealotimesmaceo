@@ -162,24 +162,13 @@ trinta graus e uma humidade relativa de setenta por cento.</p>
       <p class="muted">Os leitores podem enviar artigos, projetos ou sugestões culturais através do formulário abaixo.</p>
     </div>
 
- <form id="contact-form">
-  <label>Nom</label>
-  <input id="cf-name" type="text" placeholder="Votre nom">
-
-  <label>Email *</label>
-  <input id="cf-email" type="email" required placeholder="votre@email.com">
-
-  <label>Message *</label>
-  <textarea id="cf-message" rows="5" required></textarea>
-
-  <!-- ✅ LE BOUTON EST ICI -->
-  <button id="cf-submit" type="submit">
-    Envoyer
-  </button>
-
-  <p id="cf-result"></p>
+<form id="contact-form">
+  <input type="hidden" name="section" value="contacts">
+  <input name="pseudo" id="cf-name" placeholder="Nom" required>
+  <input name="email" id="cf-email" type="email" placeholder="Email" required>
+  <textarea name="message" id="cf-message" rows="5" placeholder="Message" required></textarea>
+  <button id="cf-submit">Envoyer</button>
 </form>
-
 
 
 <script>
