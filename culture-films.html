@@ -97,6 +97,25 @@ container.innerHTML = '<p>Erreur de chargement.</p>';
 console.error(err);
 }
 }
+
+
+function extractTitle(md) {
+const m = md.match(/^#\s*(.+)$/m);
+return m ? m[1].trim() : null;
+}
+function escapeHtml(s){ return s ? s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') : ''; }
+
+
+// call it for films
+loadProposals('films');
+</script>
+
+
+<style>
+/* minimal styling */
+#proposals-list article.proposal{border:1px solid #eee;padding:12px;border-radius:8px;margin-bottom:12px}
+#proposals-list .meta{color:#666;font-size:13px;margin-bottom:8px}
+</style>
   <footer>
     © <span id="year"></span> — Blog personnel
   </footer>
