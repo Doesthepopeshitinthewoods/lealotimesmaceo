@@ -122,7 +122,7 @@ async function loadProposals(section){
     const index = await r.json();
 
     const items = index.filter(i=>i.section===section);
-    if(!items.length){$('#proposals-list').innerHTML='Aucune proposition.';return}
+    if(!items.length){$('proposals-list').innerHTML='Aucune proposition.';return}
 
     const html = await Promise.all(items.map(async i=>{
       const path = i.path.replace(/^\/+/,'');
