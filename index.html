@@ -162,16 +162,17 @@ trinta graus e uma humidade relativa de setenta por cento.</p>
       <p class="muted">Os leitores podem enviar artigos, projetos ou sugestões culturais através do formulário abaixo.</p>
     </div>
 
-    <form id="contact-form">
+ <form id="contact-form">
   <label>Nom / Name</label>
-  <input id="cf-name" name="name">
+  <input id="cf-name" name="name" placeholder="Ton nom (optionnel)">
   <label>Email</label>
-  <input id="cf-email" name="email" required>
+  <input id="cf-email" name="email" placeholder="ton@exemple.com" required>
   <label>Message</label>
   <textarea id="cf-message" name="message" rows="5" required></textarea>
-  <button type="submit">Envoyer / Send</button>
-  <p id="cf-result" class="meta"></p>
+  <button id="cf-submit" type="submit">Envoyer / Send</button>
+  <p id="cf-result" style="margin-top:8px;color:#333"></p>
 </form>
+
 
 <script>
 const SENDMAIL_URL = WORKER_URL; // réutilise ta constante WORKER_URL ; si c'est un worker différent, mets l'URL correspondante
