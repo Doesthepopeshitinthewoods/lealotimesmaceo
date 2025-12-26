@@ -162,15 +162,55 @@ trinta graus e uma humidade relativa de setenta por cento.</p>
       <p class="muted">Os leitores podem enviar artigos, projetos ou sugestões culturais através do formulário abaixo.</p>
     </div>
 
-    <form action="mailto:toi@example.com" method="post" enctype="text/plain">
-      <label>Nom / Name</label>
-      <input name="name">
-      <label>Email</label>
-      <input name="email">
-      <label>Message</label>
-      <textarea name="message" rows="5"></textarea>
-      <button type="submit">Envoyer / Send</button>
-    </form>
+    <form id="contact-form">
+  <label>Nom / Name</label>
+  <input id="cf-name" name="name">
+  <label>Email</label>
+  <input id="cf-email" name="email" required>
+  <label>Message</label>
+  <textarea id="cf-message" name="message" rows="5" required></textarea>
+  <button type="submit">Envoyer / Send</button>
+  <p id="cf-result" class="meta"></p>
+</form>
+
+<script>
+const SENDMAIL_URL = WORKER_URL; // réutilise ta constante WORKER_URL ; si c'est un worker différent, mets l'URL correspondante
+
+document.getElementById('contact-form').addEventListener('submit', async function(e){
+  e.preventDefault();
+  const resEl = document.getElementById('cf-result');
+  resEl.textContent = 'Envoi…';
+
+  const name = document.getElementById('cf-name').value.trim();
+  const email = document.getElementById('cf-email').value.trim();
+  const message = document.getElementById('cf-message').value.trim();
+
+  if(!email || !message){ resEl.textContent = 'Email et message requis.'; return; }
+
+  try{
+    const r = await fetch(SENDMAIL_URL + '/sendmail', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ name, email, message })
+    });
+    const j = await r.json();
+    if(r.ok && j.success){
+      resEl.style.color = 'green';
+      resEl.textContent = 'Message envoyé — merci !';
+      e.target.reset();
+    } else {
+      resEl.style.color = 'crimson';
+      resEl.textContent = 'Erreur envoi : ' + (j.error || 'inconnue');
+      console.warn(j);
+    }
+  } catch(err){
+    resEl.style.color = 'crimson';
+    resEl.textContent = 'Erreur réseau.';
+    console.error(err);
+  }
+});
+</script>
+
 
   </section>
 </main>
