@@ -4,31 +4,35 @@
   <meta charset="utf-8">
   <title>Culture — Films</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
-
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
 
   <style>
-    :root{--maxw:760px;--bg:#fff;--text:#111827;--muted:#6b7280}
+    :root{--maxw:760px;--bg:#fff;--text:#111827;--muted:#6b7280;--accent:#1f2937}
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui;line-height:1.7}
-    header{background:#8b0000}
-    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px;display:flex;justify-content:space-between}
-    h1{margin:0;font-family:Merriweather,serif;font-size:20px;color:#fff}
-    nav a{color:#f3f4f6;text-decoration:none;margin-left:12px;font-size:14px}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.7}
+    header{background:#8b0000;border-bottom:1px solid #7a0000}
+    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between}
+    h1{margin:0;font-family:Merriweather,serif;font-size:20px;font-weight:700;color:#fff}
+    nav{display:flex;gap:12px;align-items:center}
+    nav a{color:#f3f4f6;text-decoration:none;font-size:14px}
+    nav a:hover{text-decoration:underline}
     main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
-    h2{font-family:Merriweather,serif;font-size:18px}
+    h2{font-family:Merriweather,serif;font-size:18px;margin:0 0 8px}
     article{margin-bottom:20px}
-    .meta{color:var(--muted);font-size:13px}
-    form{margin-top:20px}
-    input,textarea{width:100%;padding:10px;margin-bottom:12px;border:1px solid #d1d5db;border-radius:4px}
-    button{padding:10px 16px;background:#1f2937;color:#fff;border:none;border-radius:4px;cursor:pointer}
-    #proposals-list article{border:1px solid #eee;padding:12px;border-radius:8px}
-    pre.debug{display:none;background:#111;color:#0f0;padding:10px;font-size:12px}
+    .meta{color:var(--muted);font-size:13px;margin-bottom:6px}
+    footer{border-top:1px solid #e5e7eb;text-align:center;font-size:14px;color:var(--muted);padding:18px 20px}
+    form{margin-top:18px}
+    label{display:block;font-size:14px;margin-bottom:4px}
+    input,textarea{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:4px;margin-bottom:12px;font-family:inherit}
+    button{padding:10px 16px;background:#1f2937;color:white;border:none;border-radius:4px;cursor:pointer}
+    #proposals-list article.proposal{border:1px solid #eee;padding:12px;border-radius:8px;margin-bottom:12px}
+    .muted{color:var(--muted)}
+    .small{font-size:13px;color:var(--muted)}
+    pre.debug{background:#111;color:#fff;padding:8px;border-radius:6px;overflow:auto;display:none}
   </style>
 </head>
 
 <body>
-
 <header>
   <div class="wrap">
     <h1>Blog de l'intranquilité</h1>
@@ -37,115 +41,222 @@
       <a href="culture-films.html">Films</a>
       <a href="culture-livres.html">Livres</a>
       <a href="culture-musiques.html">Musiques</a>
+      <a href="projets-libres-pensees.html">Projets</a>
     </nav>
   </div>
 </header>
 
 <main>
+  <h2>Films — Sélection</h2>
 
-<h2>Films — Sélection</h2>
+  <article>
+    <h3>Stalker</h3>
+    <p class="meta">Andreï Tarkovski — 1979</p>
+    <p>Un film métaphysique et hypnotique qui interroge le désir, la foi et l’espace intérieur.</p>
+  </article>
 
-<article>
-  <h3>Stalker</h3>
-  <p class="meta">Andreï Tarkovski — 1979</p>
-</article>
+  <article>
+    <h3>Le Septième Sceau</h3>
+    <p class="meta">Ingmar Bergman — 1957</p>
+    <p>Une méditation sur la mort et le sens de l’existence à travers une partie d’échecs allégorique.</p>
+  </article>
 
-<hr>
+  <hr>
 
-<h2>Proposer un film</h2>
+  <h2>Proposer un film</h2>
 
-<form id="proposal-form">
-  <input type="hidden" name="section" value="films">
-  <input name="pseudo" placeholder="Pseudo" required>
-  <input name="title" placeholder="Titre du film" required>
-  <textarea name="content" rows="5" placeholder="Commentaire" required></textarea>
-  <button>Envoyer</button>
-</form>
+  <form id="proposal-form" autocomplete="off">
+    <input type="hidden" name="section" value="films">
 
-<p id="result" class="meta"></p>
+    <label for="pseudo">Pseudo</label>
+    <input id="pseudo" name="pseudo" required>
 
-<hr>
+    <label for="title">Titre du film</label>
+    <input id="title" name="title" required>
 
-<h2>Propositions récentes</h2>
-<div id="proposals-list">Chargement…</div>
-<pre id="debug" class="debug"></pre>
+    <label for="content">Commentaire</label>
+    <textarea id="content" name="content" rows="5" required></textarea>
 
+    <button type="submit">Envoyer</button>
+    <div class="small muted" style="margin-top:8px">
+      Ton jeton de suppression sera stocké localement dans ton navigateur.
+    </div>
+  </form>
+
+  <p id="result" class="muted" aria-live="polite"></p>
+
+  <hr>
+
+  <h2>Propositions récentes</h2>
+  <div id="proposals-list">Chargement…</div>
+  <pre id="debug" class="debug"></pre>
 </main>
 
-<footer style="text-align:center;color:#777;padding:20px">
-  © <span id="year"></span>
+<footer>
+  © <span id="year"></span> — Blog personnel
 </footer>
 
+<!-- Markdown parser (doit être chargé avant le script principal) -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <script>
-/* ========= CONFIG ========= */
+/* ================= CONFIG ================= */
 const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev";
 
-/* ========= HELPERS ========= */
-const $ = s => document.querySelector(s);
-function escapeHtml(s){return s?.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')}
-function debug(t){$('#debug').style.display=t?'block':'none';$('#debug').textContent=t||''}
+/* ================= HELPERS ================= */
+function escapeHtml(s){
+  return s ? s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') : '';
+}
+function extractTitle(md){
+  const m = md.match(/^#\s*(.+)$/m);
+  return m ? m[1].trim() : null;
+}
+function showDebug(text){
+  const el = document.getElementById('debug');
+  el.style.display = text ? 'block' : 'none';
+  el.textContent = text || '';
+}
 
-/* ========= FORM ========= */
-$('#proposal-form').onsubmit = async e => {
-  e.preventDefault();
-  $('#result').textContent = 'Envoi…';
+/* ================= FORM ================= */
+(function initForm(){
+  const form = document.getElementById('proposal-form');
+  const result = document.getElementById('result');
 
-  const data = Object.fromEntries(new FormData(e.target).entries());
+  // pré-remplissage pseudo
+  try {
+    document.getElementById('pseudo').value = localStorage.getItem('lastPseudo') || '';
+  } catch(e){}
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    result.textContent = "Envoi en cours…";
+    showDebug('');
+
+    const data = Object.fromEntries(new FormData(form).entries());
+    if(!data.pseudo || !data.title || !data.content){
+      result.textContent = "Veuillez remplir tous les champs.";
+      return;
+    }
+
+    try {
+      const res = await fetch(WORKER_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      let json = null;
+      try { json = await res.json(); } catch(e){}
+
+      if(res.ok && json?.success){
+        if(json.token){
+          localStorage.setItem("deleteToken", json.token);
+          localStorage.setItem("lastPseudo", data.pseudo);
+        }
+        result.textContent = "Proposition envoyée ✔";
+        form.reset();
+        // recharge les propositions après un court délai (s'assurer que index.json a été mis à jour)
+        setTimeout(()=>loadProposals('films'), 1200);
+      } else {
+        result.textContent = "Erreur : " + (json?.error || res.status);
+        showDebug(JSON.stringify(json, null, 2));
+      }
+    } catch(err){
+      result.textContent = "Erreur réseau.";
+      showDebug(String(err));
+    }
+  });
+})();
+
+/* ================= LOAD PROPOSALS (robuste) ================= */
+async function loadProposals(section) {
+  const container = document.getElementById('proposals-list');
+  container.innerHTML = 'Chargement…';
+  showDebug('');
 
   try {
-    const r = await fetch(WORKER_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(data)
-    });
-    const j = await r.json();
+    // anti-cache pour s'assurer d'avoir la dernière version
+    const idxResp = await fetch('/content/index.json?t=' + Date.now());
+    if (!idxResp.ok) throw new Error('index.json introuvable (status ' + idxResp.status + ')');
 
-    if(j.success){
-      $('#result').textContent = '✔ Proposition envoyée';
-      e.target.reset();
-      setTimeout(()=>loadProposals('films'),1000);
-    } else {
-      $('#result').textContent = 'Erreur : ' + j.error;
+    const idxText = await idxResp.text();
+    let idx;
+    try {
+      idx = JSON.parse(idxText);
+    } catch (e) {
+      showDebug('index.json is not valid JSON — raw content:\n\n' + idxText);
+      throw new Error('index.json invalide');
     }
-  } catch(err){
-    $('#result').textContent = 'Erreur réseau';
-    debug(err);
-  }
-};
 
-/* ========= LOAD PROPOSALS ========= */
-async function loadProposals(section){
-  try{
-    const r = await fetch('content/index.json?t=' + Date.now());
-    const index = await r.json();
+    showDebug('index.json chargé — ' + (Array.isArray(idx) ? idx.length : 'non-array') + ' entrées\n\n' + JSON.stringify((Array.isArray(idx) ? idx : []).slice(0, 10), null, 2));
 
-    const items = index.filter(i=>i.section===section);
-    if(!items.length){$('#proposals-list').innerHTML='Aucune proposition.';return}
+    // filtre et trie (les plus récents en tête si created_at présent)
+    let items = (Array.isArray(idx) ? idx : []).filter(i => String(i.section) === String(section));
+    items.sort((a, b) => {
+      const ta = a.created_at ? Date.parse(a.created_at) : 0;
+      const tb = b.created_at ? Date.parse(b.created_at) : 0;
+      return tb - ta;
+    });
 
-    const html = await Promise.all(items.map(async i=>{
-      const path = i.path.replace(/^\/+/,'');
-      const md = await (await fetch(path)).text();
-      const body = md.replace(/^---[\s\S]*?---/, '');
-      return `<article>
-        <h3>${escapeHtml(i.title)}</h3>
-        <div class="meta">Par ${escapeHtml(i.pseudo)}</div>
-        ${marked.parse(body)}
-      </article>`;
+    if (!items.length) {
+      container.innerHTML = '<p>Aucune proposition.</p>';
+      return;
+    }
+
+    const htmlItems = await Promise.all(items.map(async it => {
+      try {
+        let fileUrl = it.path || it.url || '';
+        if (!fileUrl) throw new Error('path manquant dans index.json pour cette entrée');
+
+        if (!/^https?:\/\//i.test(fileUrl)) {
+          fileUrl = fileUrl.startsWith('/') ? fileUrl : '/' + fileUrl;
+        }
+
+        const mdResp = await fetch(fileUrl + '?t=' + Date.now());
+        if (!mdResp.ok) {
+          throw new Error(`Fichier introuvable (${mdResp.status}) -> ${fileUrl}`);
+        }
+        let md = await mdResp.text();
+
+        // supprime frontmatter YAML si présent
+        md = md.replace(/^---\s*[\s\S]*?\s*---\s*/m, '');
+
+        let contentHtml = '';
+        try {
+          contentHtml = marked.parse(md);
+        } catch (e) {
+          console.error('Erreur parse markdown:', e);
+          contentHtml = '<pre>Erreur de parsing markdown</pre>';
+        }
+
+        const title = it.title || (md.match(/^#\s*(.+)$/m) ? md.match(/^#\s*(.+)$/m)[1].trim() : (fileUrl.split('/').pop() || 'Sans titre'));
+        const created = it.created_at ? new Date(it.created_at).toLocaleString() : '';
+
+        return `<article class="proposal">
+                  <h3>${escapeHtml(title)}</h3>
+                  <div class="meta">Par ${escapeHtml(it.pseudo || 'Anonyme')}${created ? ' — ' + escapeHtml(created) : ''}</div>
+                  <div class="content">${contentHtml}</div>
+                </article>`;
+      } catch (itemErr) {
+        console.warn('Erreur item:', itemErr);
+        return `<article class="proposal">
+                  <h3>Proposition invalide</h3>
+                  <div class="meta">Erreur: ${escapeHtml(String(itemErr.message || itemErr))}</div>
+                </article>`;
+      }
     }));
 
-    $('#proposals-list').innerHTML = html.join('');
-  } catch(e){
-    $('#proposals-list').innerHTML = 'Erreur de chargement';
-    debug(String(e));
+    container.innerHTML = htmlItems.join('\n');
+  } catch (err) {
+    container.innerHTML = '<p>Erreur de chargement.</p>';
+    showDebug('Erreur globale: ' + String(err));
+    console.error('loadProposals error', err);
   }
 }
 
-/* ========= INIT ========= */
-$('#year').textContent = new Date().getFullYear();
-document.addEventListener('DOMContentLoaded',()=>loadProposals('films'));
+/* ================= INIT ================= */
+document.getElementById('year').textContent = new Date().getFullYear();
+document.addEventListener('DOMContentLoaded', () => loadProposals('films'));
 </script>
-
 </body>
 </html>
