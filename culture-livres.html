@@ -37,11 +37,11 @@
     <div class="wrap">
       <h1>Blog de l'intranquilité</h1>
       <nav aria-label="Navigation principale">
-        <a href="/index.html">Accueil</a>
-        <a href="/culture-films.html">Films</a>
-        <a href="/culture-livres.html">Livres</a>
-        <a href="/culture-musiques.html">Musiques</a>
-        <a href="/projets-libres-pensees.html">Projets</a>
+        <a href="index.html">Accueil</a>
+        <a href="culture-films.html">Films</a>
+        <a href="culture-livres.html">Livres</a>
+        <a href="culture-musiques.html">Musiques</a>
+        <a href="projets-libres-pensees.html">Projets</a>
       </nav>
     </div>
   </header>
@@ -77,11 +77,6 @@
 
   <script>
   /* ========= CONFIG ========= */
-  // NOTE: this page will now request the worker to save new proposals under the
-  // site path `content/livres/`. The worker must support receiving a `savePath`
-  // (e.g. 'content/livres/2025-12-27-mon-livre.md') in the POST body and create
-  // the file at that location. If the worker ignores savePath you'll still
-  // get the previous behavior (worker-chosen path).
   const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev"; // change si nécessaire
   const LOCAL_KEY = 'livres_pending_v1'; // localStorage key spécifique "livres"
 
@@ -90,28 +85,8 @@
   function escapeHtml(s){ return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') }
   function debug(t){ $('#debug').style.display = t ? 'block' : 'none'; $('#debug').textContent = t || '' }
 
-  function slugify(s){
-    return String(s || '')
-      .normalize('NFD')                // split accents from letters
-      .replace(/\p{Diacritic}/gu, '') // remove diacritics (requires modern browsers)
-      .replace(/[^a-zA-Z0-9]+/g, '-')  // non-alnum to dashes
-      .replace(/^-+|-+$/g, '')         // trim dashes
-      .toLowerCase();
-  }
-
-  /* fallback for environments where \p{Diacritic} isn't supported */
-  try{ 'é'.normalize('NFD').replace(/\p{Diacritic}/gu,''); }catch(e){
-    // redefine slugify without \p{Diacritic}
-    slugify = s => String(s || '')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-zA-Z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .toLowerCase();
-  }
-
   /* ========= PENDING STORAGE ========= */
-  let pending = loadPendingFromStorage(); // array of objects {title,pseudo,author,content,_tempId,createdAt,savePath}
+  let pending = loadPendingFromStorage(); // array of objects {title,pseudo,author,content,_tempId,createdAt}
 
   function loadPendingFromStorage(){
     try{
@@ -155,6 +130,7 @@
     const badge = opts.pending ? `<span class="pending-badge">(en attente)</span>` : '';
     const contentHtml = obj.contentHtml ? sanitizeHtml(obj.contentHtml) : renderMarkdown(obj.content || '');
 
+    // show author if present
     const authorLine = obj.author ? `<div class="meta">Auteur : ${escapeHtml(obj.author)}</div>` : '';
 
     const actions = [];
@@ -162,14 +138,10 @@
     if(!opts.pending && obj.path){ actions.push(`<button class="delete-btn server-delete" data-path="${escapeHtml(obj.path)}">Supprimer</button>`); }
     const actionsHtml = actions.length ? `<div class="actions">${actions.join('')}</div>` : '';
 
-    // show savePath for debugging if present
-    const debugPath = obj.savePath ? `<div class="meta">Chemin proposé : ${escapeHtml(obj.savePath)}</div>` : '';
-
     return `<article ${obj._tempId ? 'data-temp="'+escapeHtml(obj._tempId)+'"' : ''} ${obj.path ? 'data-path="'+escapeHtml(obj.path)+'"' : ''}>
       <h3>${escapeHtml(obj.title || 'Sans titre')}${badge}</h3>
       <div class="meta">Par ${escapeHtml(obj.pseudo || 'Anonyme')}</div>
       ${authorLine}
-      ${debugPath}
       ${contentHtml}
       ${actionsHtml}
     </article>`;
@@ -207,18 +179,6 @@
 
     if(!data.title || !data.content || !data.pseudo){ $('#result').textContent = 'Remplis tous les champs.'; return; }
 
-    // build a suggested save path under content/livres/
-    try{
-      const slug = slugify(data.title || data.pseudo || 'proposal');
-      const date = new Date().toISOString().slice(0,10);
-      const filename = `${date}-${slug}.md`;
-      const savePath = `content/livres/${filename}`;
-      data.savePath = savePath; // send hint to worker
-    }catch(err){
-      // fallback if slugify fails
-      data.savePath = `content/livres/${Date.now()}.md`;
-    }
-
     try {
       const r = await fetch(WORKER_URL, {
         method: 'POST',
@@ -239,8 +199,6 @@
         if(j.item){
           removePendingMatchedByServerItem(j.item);
           setTimeout(()=>loadAndRenderNow(true), 300);
-        } else if (j.path) {
-          // server reports actual path where it stored the file
         }
 
         ensurePolling();
@@ -272,7 +230,10 @@
   async function loadAndRenderNow(forceServerOnly = false){
     try{
       const index = await fetchIndexNoCache();
-      const items = (index || []).filter(i => i.section === 'livres' || (i.path && i.path.startsWith('content/livres/')) );
+      const BASE_PATH = 'lealotimesmaceo/content/livres/';
+      const items = (index || []).filter(i =>
+        i.section === 'livres' || (i.path && i.path.startsWith(BASE_PATH))
+      );
 
       const serverItems = await Promise.all(items.map(async i => {
         try{
