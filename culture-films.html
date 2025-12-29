@@ -98,11 +98,11 @@
       <section>
         <article class="card simple-item" aria-labelledby="simple-title">
           <div style="padding:12px">
-            <h2 id="simple-title" class="item-title">Fenêtre sur Cour </h2>
-            <p class="meta"><span id="simple-pseudo">Pseudo : L'Homme Vert</span> &nbsp; • &nbsp; <span id="simple-author">Réalisateur : Hitchcock —</span></p>
+            <h2 id="simple-title" class="item-title">Le film de référence</h2>
+            <p class="meta"><span id="simple-pseudo">Pseudo : Cinephile</span> &nbsp; • &nbsp; <span id="simple-author">Réalisateur : —</span></p>
 
             <h3 style="font-size:14px;margin-top:10px;color:var(--muted)">Description</h3>
-            <p id="simple-description" class="description">Super film de suspens. J'ai lu une interview du dernier pris Nobel de physique dans laquelle il expliquait qu'il faisait regarder ce film a ses étudiants car il y avait beaucoup d'analogies à la mécanique quantique.</p>
+            <p id="simple-description" class="description">description : exemple d'un film marquant — texte d'exemple.</p>
 
             <div style="margin-top:12px"><span class="badge">fiche film</span></div>
           </div>
@@ -120,7 +120,7 @@
             <input name="pseudo" placeholder="Pseudo" required>
             <input name="title" placeholder="Titre du film" required>
             <input name="author" placeholder="Réalisateur / année (optionnel)">
-            <textarea name="content" rows="5" placeholder="Pourquoi ce film ? " required></textarea>
+            <textarea name="content" rows="5" placeholder="Pourquoi ce film ? (commentaire en Markdown possible)" required></textarea>
             <button class="primary">Envoyer</button>
           </form>
 
@@ -194,17 +194,81 @@
 
   function stripHtml(html){ const tmp = document.createElement('div'); tmp.innerHTML = html || ''; return tmp.textContent || tmp.innerText || ''; }
 
-  // ---------- RENDER COMBINED ----------
-  function renderCombinedList(serverItems = []){
-    const serverMap = serverItems.map(si => ({ title: si.title, pseudo: si.pseudo, snippet: (si.contentHtml ? stripHtml(si.contentHtml) : (si.content||'')).trim().slice(0,120) }));
-    const serverHtml = serverItems.map(si => buildArticleHtml(si, {pending:false})).join('');
-    const missingPending = pending.filter(p => { const pSnippet = (p.content||'').trim().slice(0,120); return !serverMap.some(sm => sm.title === p.title && sm.pseudo === p.pseudo && sm.snippet === pSnippet); });
-    const pendingHtml = missingPending.map(p => buildArticleHtml(p, {pending:true})).join('');
-    const combined = (pendingHtml ? pendingHtml : '') + (serverHtml ? serverHtml : '');
-    $('#proposals-list').innerHTML = combined || '<div class="muted">Aucune proposition.</div>';
+  // ---------- MARKDOWN / FILENAME GENERATION ----------
+  function slugify(s){
+    return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70);
   }
 
-  // ---------- FORM SUBMIT ----------
+  function generateMarkdown(item){
+    const now = new Date().toISOString();
+    const frontmatter = [
+      '---',
+      `title: "${(item.title||'').replace(/"/g,'\\"')}"`,
+      `pseudo: "${(item.pseudo||'').replace(/"/g,'\\"')}"`,
+      item.author ? `author: "${(item.author||'').replace(/"/g,'\\"')}"` : '',
+      `date: "${now}"`,
+      '---',
+      ''
+    ].filter(Boolean).join('\n');
+
+    const body = (item.content || '').trim();
+    return frontmatter + '\n' + body + '\n';
+  }
+
+  function generateFilename(item){
+    const base = slugify(item.title || (item.pseudo ? item.pseudo + '-film' : 'proposition'));
+    const uniq = Date.now().toString(36).slice(-6);
+    return `${base}-${uniq}.md`;
+  }
+
+  // ---------- SYNC PENDING ----------
+  async function syncPending(){
+    if(!pending || pending.length === 0) return;
+    // try to send each pending item to the worker
+    // iterate copy because sync will modify pending
+    const toTry = pending.slice();
+    for(const p of toTry){
+      // prepare payload
+      const md = generateMarkdown(p);
+      const filename = p.filename || generateFilename(p);
+      const payload = { path: BASE_PATH + filename, content: md, title: p.title, pseudo: p.pseudo, author: p.author || '' };
+      try{
+        const r = await fetch(WORKER_URL + '/create', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+        let j = {};
+        try{ j = await r.json(); }catch(e){ j = { success: r.ok }; }
+        if(r.ok && j.success){
+          // consider it's been saved on server
+          // remove by matching either returned item or temp id
+          if(j.item){
+            removePendingMatchedByServerItem(j.item);
+          } else {
+            // fallback remove by temp id if path matches
+            if(j.path){
+              // attempt to remove the matching pending by checking title/pseudo/content
+              removePendingMatchedByServerItem({ title: p.title, pseudo: p.pseudo, content: stripHtml(renderMarkdown(p.content || '')) });
+            } else {
+              // best-effort: remove by temp id
+              removePendingByTempId(p._tempId);
+            }
+          }
+        } else {
+          // server returned error — keep it pending
+          console.warn('syncPending: server error for', p.title, j.error || r.status);
+        }
+      }catch(err){
+        // network error — stop trying (we'll try next poll)
+        console.warn('syncPending network error', err);
+        debug(String(err));
+        return;
+      }
+    }
+  }
+
+  // ---------- FORM SUBMIT (now using /create + markdown) ----------
   document.getElementById('proposal-form').onsubmit = async e => {
     e.preventDefault();
     $('#result').textContent = 'Envoi…';
@@ -212,20 +276,46 @@
     const data = Object.fromEntries(new FormData(e.target).entries());
     if(!data.title || !data.content || !data.pseudo){ $('#result').textContent = 'Remplis tous les champs.'; return; }
 
-    try{
-      const r = await fetch(WORKER_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
-      const j = await r.json();
+    // Prepare markdown + filename
+    const item = { title: data.title, pseudo: data.pseudo, author: data.author || '', content: data.content };
+    const md = generateMarkdown(item);
+    const filename = generateFilename(item);
+    const payload = { path: BASE_PATH + filename, content: md, title: item.title, pseudo: item.pseudo, author: item.author };
 
-      if(j.success){
-        $('#result').textContent = '✔ Proposition envoyée';
-        const temp = Object.assign({}, data, { _tempId: 't'+Date.now()+Math.random().toString(36).slice(2,6), createdAt: Date.now() });
+    try{
+      const r = await fetch(WORKER_URL + '/create', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+      let j = {};
+      try{ j = await r.json(); }catch(e){ j = { success: r.ok }; }
+
+      if(r.ok && j.success){
+        $('#result').textContent = '✔ Proposition enregistrée sur le serveur';
+        // If server returned the item, attempt to remove any duplicate pending
+        if(j.item) removePendingMatchedByServerItem(j.item);
+        // force reload to show server item
+        setTimeout(()=>loadAndRenderNow(true), 300);
+      } else {
+        // server responded but with error -> save locally as pending
+        $('#result').textContent = 'Proposition enregistrée localement (erreur serveur)';
+        const temp = Object.assign({}, item, { _tempId: 't'+Date.now()+Math.random().toString(36).slice(2,6), createdAt: Date.now(), filename, content: item.content });
         addPending(temp);
         loadAndRenderNow();
-        e.target.reset();
-        if(j.item){ removePendingMatchedByServerItem(j.item); setTimeout(()=>loadAndRenderNow(true), 300); }
         ensurePolling();
-      } else { $('#result').textContent = 'Erreur : ' + (j.error || 'inconnue'); }
-    }catch(err){ $('#result').textContent = 'Erreur réseau'; debug(String(err)); }
+      }
+    }catch(err){
+      // network error -> save locally and schedule sync
+      $('#result').textContent = 'Hors-ligne : proposition sauvegardée localement (en attente)';
+      const temp = Object.assign({}, item, { _tempId: 't'+Date.now()+Math.random().toString(36).slice(2,6), createdAt: Date.now(), filename, content: item.content });
+      addPending(temp);
+      loadAndRenderNow();
+      debug(String(err));
+      ensurePolling();
+    } finally {
+      e.target.reset();
+    }
   };
 
   // ---------- FETCH FUNCTIONS ----------
@@ -241,7 +331,6 @@
       const serverItems = await Promise.all(items.map(async i => {
         try{
           let md = await fetchMarkdownNoCache(i.path);
-          // remove YAML frontmatter if present
           md = md.replace(/^---[\s\S]*?---\s*/, '');
           const body = md;
           return { title: i.title, pseudo: i.pseudo, author: i.author || '', contentHtml: marked.parse(body), path: i.path };
@@ -261,9 +350,17 @@
     }catch(e){ console.warn('loadAndRenderNow failed', e); renderCombinedList([]); debug(String(e)); }
   }
 
-  // ---------- POLLING ----------
+  // ---------- POLLING (backoff) with syncPending ----------
   let pollHandle = null; let pollAttempts = 0; const POLL_MAX_ATTEMPTS = 8;
-  function pollOnce(){ pollAttempts++; loadAndRenderNow().then(()=>{ if(pending.length === 0 || pollAttempts >= POLL_MAX_ATTEMPTS){ clearPoll(); } else { const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); } }).catch(()=>{ const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); }); }
+  function pollOnce(){
+    pollAttempts++;
+    // first try to sync pending items, then refresh index
+    syncPending().then(()=> {
+      return loadAndRenderNow();
+    }).then(()=> {
+      if(pending.length === 0 || pollAttempts >= POLL_MAX_ATTEMPTS){ clearPoll(); } else { const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); }
+    }).catch(()=>{ const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); });
+  }
   function ensurePolling(){ if(pollHandle) return; pollAttempts = 0; pollOnce(); }
   function clearPoll(){ if(pollHandle) clearTimeout(pollHandle); pollHandle = null; pollAttempts = 0; }
 
@@ -319,7 +416,6 @@ ${desc}`;
     navigator.clipboard?.writeText(md).then(()=>{ alert('Markdown copié dans le presse-papiers.'); },()=>{ alert('Impossible de copier — autorisez le presse-papiers.'); });
   }
 
-  // attach copy/print if buttons exist (kept for parity)
   document.addEventListener('click', (e) => {
     if(e.target && e.target.id === 'print-simple') window.print();
     if(e.target && e.target.id === 'copy-simple') copyMarkdown();
