@@ -1,33 +1,37 @@
+
+Vous avez dit :
 <!doctype html>
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Culture — Livres (propositions)</title>
+  <title>Culture — Livres</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
   <style>
     :root{--maxw:760px;--bg:#fff;--text:#111827;--muted:#6b7280;--accent:#1f2937}
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.6}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.7}
     header{background:#8b0000;border-bottom:1px solid #7a0000}
     .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between}
     h1{margin:0;font-family:Merriweather,serif;font-size:20px;font-weight:700;color:#fff}
     nav{display:flex;gap:12px;align-items:center}
     nav a{color:#f3f4f6;text-decoration:none;font-size:14px}
+    nav a:hover{text-decoration:underline}
     main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
     h2{font-family:Merriweather,serif;font-size:18px;margin:0 0 8px}
-    article{margin-bottom:16px}
+    article{margin-bottom:20px}
     .meta{color:var(--muted);font-size:13px;margin-bottom:6px}
+
+    /* form + list styles (inspired from films page) */
     form{margin-top:14px}
-    input,textarea{width:100%;padding:10px;margin-bottom:12px;border:1px solid #d1d5db;border-radius:6px;font-size:15px}
-    button.primary{padding:10px 16px;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:15px}
-    #proposals-list article{border:1px solid #eee;padding:12px;border-radius:8px;background:#fafafa}
+    input,textarea{width:100%;padding:10px;margin-bottom:12px;border:1px solid #d1d5db;border-radius:4px}
+    button.primary{padding:10px 16px;background:var(--accent);color:#fff;border:none;border-radius:4px;cursor:pointer}
+    #proposals-list article{border:1px solid #eee;padding:12px;border-radius:8px}
     .pending-badge{font-size:12px;color:#9ca3af;margin-left:8px}
-    pre.debug{display:none;background:#111;color:#0f0;padding:10px;font-size:12px;white-space:pre-wrap;border-radius:6px}
+    pre.debug{display:none;background:#111;color:#0f0;padding:10px;font-size:12px;white-space:pre-wrap}
     .delete-btn{background:transparent;border:1px solid #e5e7eb;color:#111;padding:6px 10px;border-radius:6px;cursor:pointer;margin-left:8px}
     .delete-btn:disabled{opacity:0.6;cursor:not-allowed}
     .actions{margin-top:10px}
-    footer{max-width:var(--maxw);margin:24px auto;padding:0 20px;color:var(--muted);font-size:13px}
   </style>
 </head>
 <body>
@@ -35,16 +39,17 @@
     <div class="wrap">
       <h1>Blog de l'intranquilité</h1>
       <nav aria-label="Navigation principale">
-        <a href="#">Accueil</a>
-        <a href="#">Films</a>
-        <a href="#">Livres</a>
-        <a href="#">Musiques</a>
-        <a href="#">Projets</a>
+        <a href="index.html">Accueil</a>
+        <a href="culture-films.html">Films</a>
+        <a href="culture-livres.html">Livres</a>
+        <a href="culture-musiques.html">Musiques</a>
+        <a href="projets-libres-pensees.html">Projets</a>
       </nav>
     </div>
   </header>
 
   <main>
+    
     <h2>Proposer un livre</h2>
 
     <form id="proposal-form">
@@ -53,7 +58,7 @@
       <input name="title" placeholder="Titre du livre" required>
       <input name="author" placeholder="Auteur (optionnel)">
       <textarea name="content" rows="5" placeholder="Pourquoi ce livre ? (commentaire)" required></textarea>
-      <button class="primary" type="submit">Envoyer</button>
+      <button class="primary">Envoyer</button>
     </form>
 
     <p id="result" class="meta"></p>
@@ -74,24 +79,17 @@
   <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
 
   <script>
-  /*************************************************************************
-   * Configuration
-   * - WORKER_URL : changer si besoin (endpoint qui accepte POST / index / md / delete)
-   * - LOCAL_KEY  : clé localStorage pour stocker les propositions "en attente"
-   *************************************************************************/
-  const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev"; // adapte si nécessaire
-  const LOCAL_KEY = 'livres_pending_v1';
+  /* ========= CONFIG ========= */
+  const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev"; // change si nécessaire
+  const LOCAL_KEY = 'livres_pending_v1'; // localStorage key spécifique "livres"
 
-  /* ========== Helpers DOM ========== */
+  /* ========= HELPERS ========= */
   const $ = s => document.querySelector(s);
   function escapeHtml(s){ return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') }
-  function debugShow(text){ const el = $('#debug'); if(!text){ el.style.display='none'; el.textContent=''; } else { el.style.display='block'; el.textContent = text } }
+  function debug(t){ $('#debug').style.display = t ? 'block' : 'none'; $('#debug').textContent = t || '' }
 
-  /* ========== Local pending storage ==========
-     pending items shape:
-     { title, pseudo, author, content, _tempId, createdAt }
-  */
-  let pending = loadPendingFromStorage();
+  /* ========= PENDING STORAGE ========= */
+  let pending = loadPendingFromStorage(); // array of objects {title,pseudo,author,content,_tempId,createdAt}
 
   function loadPendingFromStorage(){
     try{
@@ -99,11 +97,13 @@
       if(!raw) return [];
       return JSON.parse(raw);
     }catch(e){
-      console.warn('Impossible de parser le localStorage', e);
+      console.error('failed parse pending', e);
       return [];
     }
   }
-  function savePendingToStorage(){ try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(pending)); }catch(e){ console.warn('localStorage full?'); } }
+  function savePendingToStorage(){
+    try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(pending)); }catch(e){console.warn('localStorage full?');}
+  }
   function addPending(item){ pending.unshift(item); savePendingToStorage(); }
   function removePendingByTempId(tempId){
     const idx = pending.findIndex(p => p._tempId === tempId);
@@ -111,13 +111,14 @@
     return false;
   }
   function removePendingMatchedByServerItem(serverItem){
+    // heuristic: title + pseudo + prefix-of-content
     const sContent = (serverItem.content||'').trim().slice(0,120);
     const idx = pending.findIndex(p => p.title === serverItem.title && p.pseudo === serverItem.pseudo && (p.content||'').trim().slice(0,120) === sContent);
     if(idx!==-1){ pending.splice(idx,1); savePendingToStorage(); return true; }
     return false;
   }
 
-  /* ========== Rendering helpers ========== */
+  /* ========= RENDER HELPERS ========= */
   function sanitizeHtml(html){
     if(window.DOMPurify && typeof DOMPurify.sanitize === 'function'){
       return DOMPurify.sanitize(html);
@@ -127,28 +128,30 @@
   function renderMarkdown(md){
     try{ return sanitizeHtml(marked.parse(md || '')); }catch(e){ return sanitizeHtml(escapeHtml(md || '')); }
   }
-  function stripHtml(html){ const tmp = document.createElement('div'); tmp.innerHTML = html || ''; return tmp.textContent || tmp.innerText || ''; }
 
   function buildArticleHtml(obj, opts = {}){
-    const badge = opts.pending ? `<span class="pending-badge">(en attente)</span>` : '';
+    const badge = opts.pending ? <span class="pending-badge">(en attente)</span> : '';
     const contentHtml = obj.contentHtml ? sanitizeHtml(obj.contentHtml) : renderMarkdown(obj.content || '');
-    const authorLine = obj.author ? `<div class="meta">Auteur : ${escapeHtml(obj.author)}</div>` : '';
-    const actions = [];
-    if(opts.pending && obj._tempId){ actions.push(`<button class="delete-btn pending-delete" data-temp="${escapeHtml(obj._tempId)}">Supprimer</button>`); }
-    if(!opts.pending && obj.path){ actions.push(`<button class="delete-btn server-delete" data-path="${escapeHtml(obj.path)}">Supprimer</button>`); }
-    const actionsHtml = actions.length ? `<div class="actions">${actions.join('')}</div>` : '';
 
-    return `<article ${obj._tempId ? 'data-temp="'+escapeHtml(obj._tempId)+'"' : ''} ${obj.path ? 'data-path="'+escapeHtml(obj.path)+'"' : ''}>
+    // show author if present
+    const authorLine = obj.author ? <div class="meta">Auteur : ${escapeHtml(obj.author)}</div> : '';
+
+    const actions = [];
+    if(opts.pending && obj._tempId){ actions.push(<button class="delete-btn pending-delete" data-temp="${escapeHtml(obj._tempId)}">Supprimer</button>); }
+    if(!opts.pending && obj.path){ actions.push(<button class="delete-btn server-delete" data-path="${escapeHtml(obj.path)}">Supprimer</button>); }
+    const actionsHtml = actions.length ? <div class="actions">${actions.join('')}</div> : '';
+
+    return <article ${obj._tempId ? 'data-temp="'+escapeHtml(obj._tempId)+'"' : ''} ${obj.path ? 'data-path="'+escapeHtml(obj.path)+'"' : ''}>
       <h3>${escapeHtml(obj.title || 'Sans titre')}${badge}</h3>
       <div class="meta">Par ${escapeHtml(obj.pseudo || 'Anonyme')}</div>
       ${authorLine}
       ${contentHtml}
       ${actionsHtml}
-    </article>`;
+    </article>;
   }
 
+  /* ========= UI MUTATION ========= */
   function renderCombinedList(serverItems = []){
-    // create quick map of server items (title+pseudo+snippet) to detect duplicates
     const serverMap = serverItems.map(si => ({
       title: si.title,
       pseudo: si.pseudo,
@@ -168,70 +171,9 @@
     $('#proposals-list').innerHTML = combined || 'Aucune proposition.';
   }
 
-  /* ========== Fetch server endpoints (no-cache) ========= */
-  async function fetchIndexNoCache(){
-    const url = WORKER_URL + '/index?t=' + Date.now();
-    const r = await fetch(url, { cache: 'no-store' });
-    if(!r.ok) throw new Error('status ' + r.status);
-    return await r.json();
-  }
-  async function fetchMarkdownNoCache(path){
-    const p = (path || '').replace(/^\/+/, '');
-    const url = WORKER_URL + '/md?path=' + encodeURIComponent(p) + '&t=' + Date.now();
-    const r = await fetch(url, { cache: 'no-store' });
-    if(!r.ok) throw new Error('md status ' + r.status + ' ' + p);
-    return await r.text();
-  }
+  function stripHtml(html){ const tmp = document.createElement('div'); tmp.innerHTML = html || ''; return tmp.textContent || tmp.innerText || ''; }
 
-  /* ========== Chargement + fusion des éléments locaux & serveur ========= */
-  async function loadAndRenderNow(forceServerOnly = false){
-    try{
-      const index = await fetchIndexNoCache();
-      // base path d'après le code serveur hypothétique
-      const BASE_PATH = 'lealotimesmaceo/content/livres/';
-      const items = (index || []).filter(i =>
-        i.section === 'livres' || (i.path && i.path.startsWith(BASE_PATH))
-      );
-
-      const serverItems = await Promise.all(items.map(async i => {
-        try{
-          const md = await fetchMarkdownNoCache(i.path);
-          const body = md.replace(/^---[\s\S]*?---/, ''); // retire frontmatter si présent
-          return { title: i.title, pseudo: i.pseudo, author: i.author || '', contentHtml: marked.parse(body), path: i.path };
-        }catch(e){
-          return { title: i.title, pseudo: i.pseudo, contentHtml: '<div class="meta">Erreur lecture contenu</div>', path: i.path };
-        }
-      }));
-
-      // retire des pendings ceux qui sont présents sur le serveur
-      for(const si of serverItems){
-        removePendingMatchedByServerItem({ title: si.title, pseudo: si.pseudo, content: stripHtml(si.contentHtml) });
-      }
-
-      renderCombinedList(serverItems);
-    }catch(e){
-      console.warn('loadAndRenderNow failed', e);
-      // si échec serveur, affiche juste le local pending
-      renderCombinedList([]);
-      debugShow(String(e));
-    }
-  }
-
-  /* ========== Polling exponentiel pour vérifier synchronisation ========= */
-  let pollHandle = null;
-  let pollAttempts = 0;
-  const POLL_MAX_ATTEMPTS = 8;
-  function pollOnce(){
-    pollAttempts++;
-    loadAndRenderNow().then(()=>{
-      if(pending.length === 0 || pollAttempts >= POLL_MAX_ATTEMPTS){ clearPoll(); }
-      else { const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); }
-    }).catch(()=>{ const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); });
-  }
-  function ensurePolling(){ if(pollHandle) return; pollAttempts = 0; pollOnce(); }
-  function clearPoll(){ if(pollHandle) clearTimeout(pollHandle); pollHandle = null; pollAttempts = 0; }
-
-  /* ========== Form submit ========= */
+  /* ========= FORM ========= */
   $('#proposal-form').onsubmit = async e => {
     e.preventDefault();
     $('#result').textContent = 'Envoi…';
@@ -246,19 +188,17 @@
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify(data)
       });
-      const j = await r.json().catch(()=>({ success: r.ok }));
+      const j = await r.json();
 
-      if (j && j.success) {
+      if (j.success) {
         $('#result').textContent = '✔ Proposition envoyée';
 
-        // ajoute en local pending pour l'affichage immédiat
         const temp = Object.assign({}, data, { _tempId: 't'+Date.now() + Math.random().toString(36).slice(2,6), createdAt: Date.now() });
         addPending(temp);
 
         loadAndRenderNow();
         e.target.reset();
 
-        // si le serveur renvoie l'item concret, retire le pending correspondant
         if(j.item){
           removePendingMatchedByServerItem(j.item);
           setTimeout(()=>loadAndRenderNow(true), 300);
@@ -266,19 +206,76 @@
 
         ensurePolling();
       } else {
-        $('#result').textContent = 'Erreur : ' + (j && j.error ? j.error : 'inconnue');
+        $('#result').textContent = 'Erreur : ' + (j.error || 'inconnue');
       }
     } catch(err){
-      $('#result').textContent = 'Erreur réseau — proposition enregistrée localement';
-      // si erreur réseau, stocke localement quand même
-      const temp = Object.assign({}, data, { _tempId: 't'+Date.now() + Math.random().toString(36).slice(2,6), createdAt: Date.now() });
-      addPending(temp);
-      loadAndRenderNow();
-      debugShow(String(err));
+      $('#result').textContent = 'Erreur réseau';
+      debug(String(err));
     }
   };
 
-  /* ========== Delete handlers (local & serveur) ========= */
+  /* ========= FETCH + MERGE ========= */
+  async function fetchIndexNoCache(){
+    const url = WORKER_URL + '/index?t=' + Date.now();
+    const r = await fetch(url, { cache: 'no-store' });
+    if(!r.ok) throw new Error('status ' + r.status);
+    return await r.json();
+  }
+
+  async function fetchMarkdownNoCache(path){
+    const p = (path || '').replace(/^\/+/, '');
+    const url = WORKER_URL + '/md?path=' + encodeURIComponent(p) + '&t=' + Date.now();
+    const r = await fetch(url, { cache: 'no-store' });
+    if(!r.ok) throw new Error('md status ' + r.status + ' ' + p);
+    return await r.text();
+  }
+
+  async function loadAndRenderNow(forceServerOnly = false){
+    try{
+      const index = await fetchIndexNoCache();
+      const BASE_PATH = 'lealotimesmaceo/content/livres/';
+      const items = (index || []).filter(i =>
+        i.section === 'livres' || (i.path && i.path.startsWith(BASE_PATH))
+      );
+
+      const serverItems = await Promise.all(items.map(async i => {
+        try{
+          const md = await fetchMarkdownNoCache(i.path);
+          const body = md.replace(/^---[\s\S]*?---/, '');
+          return { title: i.title, pseudo: i.pseudo, author: i.author || '', contentHtml: marked.parse(body), path: i.path };
+        }catch(e){
+          return { title: i.title, pseudo: i.pseudo, contentHtml: '<div class="meta">Erreur lecture contenu</div>', path: i.path };
+        }
+      }));
+
+      for(const si of serverItems){
+        removePendingMatchedByServerItem({ title: si.title, pseudo: si.pseudo, content: stripHtml(si.contentHtml) });
+      }
+
+      renderCombinedList(serverItems);
+    }catch(e){
+      console.warn('loadAndRenderNow failed', e);
+      const fallbackServerItems = [];
+      renderCombinedList(fallbackServerItems);
+      debug(String(e));
+    }
+  }
+
+  /* ========= POLLING (backoff) ========= */
+  let pollHandle = null;
+  let pollAttempts = 0;
+  const POLL_MAX_ATTEMPTS = 8;
+  function pollOnce(){
+    pollAttempts++;
+    loadAndRenderNow().then(()=>{
+      if(pending.length === 0 || pollAttempts >= POLL_MAX_ATTEMPTS){ clearPoll(); }
+      else { const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); }
+    }).catch(()=>{ const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); });
+  }
+  function ensurePolling(){ if(pollHandle) return; pollAttempts = 0; pollOnce(); }
+  function clearPoll(){ if(pollHandle) clearTimeout(pollHandle); pollHandle = null; pollAttempts = 0; }
+
+  /* ========= DELETE HANDLERS ========= */
   $('#proposals-list').addEventListener('click', async (e) => {
     const btn = e.target.closest('button.delete-btn');
     if(!btn) return;
@@ -317,18 +314,16 @@
       }catch(err){
         $('#result').textContent = 'Erreur réseau';
         btn.disabled = false;
-        debugShow(String(err));
+        debug(String(err));
       }
     }
   });
 
-  /* ========== Init ========= */
+  /* ========= INIT ========= */
   document.getElementById('year').textContent = new Date().getFullYear();
 
-  // premier rendu puis mises à jour périodiques
   loadAndRenderNow().then(()=>{ if(pending.length) ensurePolling(); });
-  setInterval(()=>{ loadAndRenderNow(); }, 5*60*1000); // rafraîchit toutes les 5 minutes
+  setInterval(()=>{ loadAndRenderNow(); }, 5*60*1000);
   </script>
 </body>
 </html>
-
