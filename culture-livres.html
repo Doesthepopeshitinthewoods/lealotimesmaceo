@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="fr">
 <head>
@@ -7,36 +6,83 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
   <style>
-    :root{--maxw:760px;--bg:#fff;--text:#111827;--muted:#6b7280;--accent:#1f2937}
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.7}
-    header{background:#8b0000;border-bottom:1px solid #7a0000}
-    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between}
-    h1{margin:0;font-family:Merriweather,serif;font-size:20px;font-weight:700;color:#fff}
-    nav{display:flex;gap:12px;align-items:center}
-    nav a{color:#f3f4f6;text-decoration:none;font-size:14px}
-    nav a:hover{text-decoration:underline}
-    main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
-    h2{font-family:Merriweather,serif;font-size:18px;margin:0 0 8px}
-    article{margin-bottom:20px}
-    .meta{color:var(--muted);font-size:13px;margin-bottom:6px}
+    :root{
+      --maxw:980px;
+      --bg:#fbfcfe;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --text:#0f172a;
+      --accent:#8b0000;
+      --accent-600:#7a0000;
+      --glass:rgba(15,23,42,0.04);
+      --radius:12px;
+      --gap:18px;
+    }
 
-    /* form + list styles (inspired from films page) */
-    form{margin-top:14px}
-    input,textarea{width:100%;padding:10px;margin-bottom:12px;border:1px solid #d1d5db;border-radius:4px}
-    button.primary{padding:10px 16px;background:var(--accent);color:#fff;border:none;border-radius:4px;cursor:pointer}
-    #proposals-list article{border:1px solid #eee;padding:12px;border-radius:8px}
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+      background:linear-gradient(180deg,var(--bg),#eef2f6);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.6;
+    }
+
+    header{
+      background:linear-gradient(90deg,var(--accent),var(--accent-600));
+      color:#fff;
+      border-bottom:1px solid rgba(0,0,0,0.06);
+    }
+    .wrap{
+      max-width:var(--maxw);
+      margin:0 auto;
+      padding:18px 20px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    h1.site-title{margin:0;font-family:Merriweather,serif;font-size:20px;font-weight:700}
+    nav{display:flex;gap:12px;align-items:center}
+    nav a{color:rgba(255,255,255,0.92);text-decoration:none;font-size:14px}
+    nav a:hover{text-decoration:underline}
+
+    main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:28px}
+    @media (max-width:980px){ .grid{grid-template-columns:1fr} }
+
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:0 8px 30px rgba(16,24,40,0.06);padding:18px;display:flex;gap:18px;align-items:flex-start}
+    .cover{width:120px;height:160px;border-radius:8px;background:linear-gradient(135deg,#fff,#f3f7ff);display:flex;align-items:center;justify-content:center;font-weight:700;color:#0b1220;padding:10px;text-align:center}
+    .meta{color:var(--muted);font-size:13px;margin:6px 0}
+    h2.book-title{margin:0;font-size:20px}
+    .description{margin-top:8px;color:#111827}
+
+    .panel{background:var(--card);border-radius:12px;padding:16px;box-shadow:0 6px 20px rgba(16,24,40,0.04)}
+    form{display:flex;flex-direction:column;gap:10px}
+    input,textarea,select{width:100%;padding:10px;border:1px solid #e6e9ef;border-radius:8px;font-size:14px}
+    button.primary{padding:10px 14px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer}
+    .muted{color:var(--muted);font-size:13px}
+
+    #proposals-list article{border:1px solid #f1f5f9;padding:14px;border-radius:10px;margin-bottom:12px;background:linear-gradient(180deg,#fff,#fbfdff)}
+    .badge{display:inline-block;background:var(--glass);padding:6px 8px;border-radius:999px;font-size:12px}
     .pending-badge{font-size:12px;color:#9ca3af;margin-left:8px}
-    pre.debug{display:none;background:#111;color:#0f0;padding:10px;font-size:12px;white-space:pre-wrap}
-    .delete-btn{background:transparent;border:1px solid #e5e7eb;color:#111;padding:6px 10px;border-radius:6px;cursor:pointer;margin-left:8px}
-    .delete-btn:disabled{opacity:0.6;cursor:not-allowed}
     .actions{margin-top:10px}
+    .delete-btn{background:transparent;border:1px solid #e5e7eb;color:var(--text);padding:6px 10px;border-radius:8px;cursor:pointer}
+    .delete-btn:disabled{opacity:0.6;cursor:not-allowed}
+
+    footer.site-footer{max-width:var(--maxw);margin:48px auto 30px;padding:0 20px;color:var(--muted);font-size:13px}
+    pre.debug{display:none}
+
+    @media print{ body{background:#fff} header,footer.site-footer{display:none} .card{box-shadow:none;border-radius:0} }
   </style>
 </head>
 <body>
   <header>
     <div class="wrap">
-      <h1>Blog de l'intranquilité</h1>
+      <h1 class="site-title">Blog de l'intranquilité</h1>
       <nav aria-label="Navigation principale">
         <a href="index.html">Accueil</a>
         <a href="culture-films.html">Films</a>
@@ -48,317 +94,226 @@
   </header>
 
   <main>
-     
+    <div class="grid">
+      <section>
+        <article class="card simple-book" aria-labelledby="simple-title">
+  <div style="padding:12px">
+    <h2 id="simple-title" class="book-title">Le meilleur des mondes</h2>
+    <p class="meta"><span id="simple-pseudo">Pseudo : TimmotX</span> &nbsp; • &nbsp; <span id="simple-author">Auteur : —</span></p>
 
+    <h3 style="font-size:14px;margin-top:10px;color:var(--muted)">Description</h3>
+    <p id="simple-description" class="description">description</p>
 
-  <article>
-    
-    
-    <div>
-<header>
-<h1 id="book-title">Le meilleur des mondes</h1>
-<p class="meta"><strong>Pseudo</strong> : TimmotX &nbsp; • &nbsp; <strong>Auteur</strong> : —</p>
-</header>
+    <div style="margin-top:12px"><span class="badge">fiche livre</span></div>
 
+    <div style="margin-top:8px;display:flex;gap:8px">
+      <button id="print-simple" class="delete-btn">Imprimer</button>
+      <button id="copy-simple" class="delete-btn">Copier (Markdown)</button>
+    </div>
+  </div>
+</article>
 
-<section>
-<h2 style="font-size:14px;margin:0 0 8px 0;color:var(--muted)">Description</h2>
-<p class="description">description</p>
-</section>
+        <h2 style="margin-top:26px">Propositions récentes</h2>
+        <div id="proposals-list" class="panel">Chargement…</div>
+      </section>
 
+      <aside>
+        <div class="panel">
+          <h3 style="margin:0 0 8px 0">Proposer un livre</h3>
+          <form id="proposal-form">
+            <input type="hidden" name="section" value="livres">
+            <input name="pseudo" placeholder="Pseudo" required>
+            <input name="title" placeholder="Titre du livre" required>
+            <input name="author" placeholder="Auteur (optionnel)">
+            <textarea name="content" rows="5" placeholder="Pourquoi ce livre ? (commentaire)" required></textarea>
+            <button class="primary">Envoyer</button>
+          </form>
 
-<footer style="margin-top:18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
-<div class="row">
-<span class="badge">fiche livre</span>
-<small style="color:var(--muted);font-size:13px">Mise en page propre</small>
-</div>
+          <p id="result" class="muted" style="margin-top:10px"></p>
+        </div>
+      </aside>
+    </div>
 
-
-<div class="controls">
-<button class="btn" onclick="window.print()">Imprimer</button>
-<button class="btn" onclick="copyMarkdown()">Copier (Markdown)</button>
-</div>
-</footer>
-</div>
-    
-     
-  </article>
-  
-  
-    <h2>Proposer un livre</h2>
-
-    <form id="proposal-form">
-      <input type="hidden" name="section" value="livres">
-      <input name="pseudo" placeholder="Pseudo" required>
-      <input name="title" placeholder="Titre du livre" required>
-      <input name="author" placeholder="Auteur (optionnel)">
-      <textarea name="content" rows="5" placeholder="Pourquoi ce livre ? (commentaire)" required></textarea>
-      <button class="primary">Envoyer</button>
-    </form>
-
-    <p id="result" class="meta"></p>
-
-    <hr>
-
-    <h2>Propositions récentes</h2>
-    <div id="proposals-list">Chargement…</div>
     <pre id="debug" class="debug"></pre>
   </main>
 
-  <footer>
+  <footer class="site-footer">
     © <span id="year"></span> — Blog personnel
   </footer>
 
-  <!-- dépendances -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
 
   <script>
-  /* ========= CONFIG ========= */
-  const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev"; // change si nécessaire
-  const LOCAL_KEY = 'livres_pending_v1'; // localStorage key spécifique "livres"
+  const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev";
+  const LOCAL_KEY = 'livres_pending_v1';
 
-  /* ========= HELPERS ========= */
   const $ = s => document.querySelector(s);
   function escapeHtml(s){ return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') }
-  function debug(t){ $('#debug').style.display = t ? 'block' : 'none'; $('#debug').textContent = t || '' }
+  function debug(t){ const el = $('#debug'); if(!el) return; el.style.display = t ? 'block' : 'none'; el.textContent = t || '' }
 
-  /* ========= PENDING STORAGE ========= */
-  let pending = loadPendingFromStorage(); // array of objects {title,pseudo,author,content,_tempId,createdAt}
+  let pending = loadPendingFromStorage();
 
   function loadPendingFromStorage(){
-    try{
-      const raw = localStorage.getItem(LOCAL_KEY);
-      if(!raw) return [];
-      return JSON.parse(raw);
-    }catch(e){
-      console.error('failed parse pending', e);
-      return [];
-    }
+    try{ const raw = localStorage.getItem(LOCAL_KEY); if(!raw) return []; return JSON.parse(raw); }catch(e){ console.error('failed parse pending', e); return []; }
   }
-  function savePendingToStorage(){
-    try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(pending)); }catch(e){console.warn('localStorage full?');}
-  }
+  function savePendingToStorage(){ try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(pending)); }catch(e){ console.warn('localStorage full?'); } }
   function addPending(item){ pending.unshift(item); savePendingToStorage(); }
-  function removePendingByTempId(tempId){
-    const idx = pending.findIndex(p => p._tempId === tempId);
-    if(idx !== -1){ pending.splice(idx,1); savePendingToStorage(); return true; }
-    return false;
-  }
+  function removePendingByTempId(tempId){ const idx = pending.findIndex(p => p._tempId === tempId); if(idx !== -1){ pending.splice(idx,1); savePendingToStorage(); return true;} return false; }
   function removePendingMatchedByServerItem(serverItem){
-    // heuristic: title + pseudo + prefix-of-content
     const sContent = (serverItem.content||'').trim().slice(0,120);
     const idx = pending.findIndex(p => p.title === serverItem.title && p.pseudo === serverItem.pseudo && (p.content||'').trim().slice(0,120) === sContent);
     if(idx!==-1){ pending.splice(idx,1); savePendingToStorage(); return true; }
     return false;
   }
 
-  /* ========= RENDER HELPERS ========= */
-  function sanitizeHtml(html){
-    if(window.DOMPurify && typeof DOMPurify.sanitize === 'function'){
-      return DOMPurify.sanitize(html);
-    }
-    return escapeHtml(html);
-  }
-  function renderMarkdown(md){
-    try{ return sanitizeHtml(marked.parse(md || '')); }catch(e){ return sanitizeHtml(escapeHtml(md || '')); }
-  }
+  function sanitizeHtml(html){ if(window.DOMPurify && typeof DOMPurify.sanitize === 'function') return DOMPurify.sanitize(html); return escapeHtml(html); }
+  function renderMarkdown(md){ try{ return sanitizeHtml(marked.parse(md || '')); }catch(e){ return sanitizeHtml(escapeHtml(md || '')); } }
 
   function buildArticleHtml(obj, opts = {}){
-    const badge = opts.pending ? <span class="pending-badge">(en attente)</span> : '';
+    const isPending = !!opts.pending;
+    const badge = isPending ? '<span class="pending-badge">(en attente)</span>' : '';
     const contentHtml = obj.contentHtml ? sanitizeHtml(obj.contentHtml) : renderMarkdown(obj.content || '');
+    const authorLine = obj.author ? '<div class="meta">Auteur : '+escapeHtml(obj.author)+'</div>' : '';
 
-    // show author if present
-    const authorLine = obj.author ? <div class="meta">Auteur : ${escapeHtml(obj.author)}</div> : '';
+    let actionsHtml = '';
+    if(isPending && obj._tempId){ actionsHtml = '<div class="actions"><button class="delete-btn pending-delete" data-temp="'+escapeHtml(obj._tempId)+'">Supprimer</button></div>'; }
+    if(!isPending && obj.path){ actionsHtml = '<div class="actions"><button class="delete-btn server-delete" data-path="'+escapeHtml(obj.path)+'">Supprimer</button></div>'; }
 
-    const actions = [];
-    if(opts.pending && obj._tempId){ actions.push(<button class="delete-btn pending-delete" data-temp="${escapeHtml(obj._tempId)}">Supprimer</button>); }
-    if(!opts.pending && obj.path){ actions.push(<button class="delete-btn server-delete" data-path="${escapeHtml(obj.path)}">Supprimer</button>); }
-    const actionsHtml = actions.length ? <div class="actions">${actions.join('')}</div> : '';
+    const articleAttrs = (obj._tempId ? 'data-temp="'+escapeHtml(obj._tempId)+'"' : '') + (obj.path ? ' data-path="'+escapeHtml(obj.path)+'"' : '');
 
-    return <article ${obj._tempId ? 'data-temp="'+escapeHtml(obj._tempId)+'"' : ''} ${obj.path ? 'data-path="'+escapeHtml(obj.path)+'"' : ''}>
-      <h3>${escapeHtml(obj.title || 'Sans titre')}${badge}</h3>
-      <div class="meta">Par ${escapeHtml(obj.pseudo || 'Anonyme')}</div>
-      ${authorLine}
-      ${contentHtml}
-      ${actionsHtml}
-    </article>;
-  }
-
-  /* ========= UI MUTATION ========= */
-  function renderCombinedList(serverItems = []){
-    const serverMap = serverItems.map(si => ({
-      title: si.title,
-      pseudo: si.pseudo,
-      snippet: (si.contentHtml ? stripHtml(si.contentHtml) : (si.content||'')).trim().slice(0,120)
-    }));
-
-    const serverHtml = serverItems.map(si => buildArticleHtml(si, {pending:false})).join('');
-
-    const missingPending = pending.filter(p => {
-      const pSnippet = (p.content||'').trim().slice(0,120);
-      return !serverMap.some(sm => sm.title === p.title && sm.pseudo === p.pseudo && sm.snippet === pSnippet);
-    });
-
-    const pendingHtml = missingPending.map(p => buildArticleHtml(p, {pending:true})).join('');
-
-    const combined = (pendingHtml ? pendingHtml : '') + (serverHtml ? serverHtml : '');
-    $('#proposals-list').innerHTML = combined || 'Aucune proposition.';
+    return '<article '+articleAttrs+'>
+'
+      +'<h3>'+escapeHtml(obj.title || 'Sans titre')+' '+badge+'</h3>
+'
+      +'<div class="meta">Par '+escapeHtml(obj.pseudo || 'Anonyme')+'</div>
+'
+      +authorLine+'
+'
+      +'<div class="content">'+contentHtml+'</div>
+'
+      +actionsHtml+'
+'
+      +'</article>';
   }
 
   function stripHtml(html){ const tmp = document.createElement('div'); tmp.innerHTML = html || ''; return tmp.textContent || tmp.innerText || ''; }
 
-  /* ========= FORM ========= */
-  $('#proposal-form').onsubmit = async e => {
+  function renderCombinedList(serverItems = []){
+    const serverMap = serverItems.map(si => ({ title: si.title, pseudo: si.pseudo, snippet: (si.contentHtml ? stripHtml(si.contentHtml) : (si.content||'')).trim().slice(0,120) }));
+    const serverHtml = serverItems.map(si => buildArticleHtml(si, {pending:false})).join('');
+    const missingPending = pending.filter(p => { const pSnippet = (p.content||'').trim().slice(0,120); return !serverMap.some(sm => sm.title === p.title && sm.pseudo === p.pseudo && sm.snippet === pSnippet); });
+    const pendingHtml = missingPending.map(p => buildArticleHtml(p, {pending:true})).join('');
+    const combined = (pendingHtml ? pendingHtml : '') + (serverHtml ? serverHtml : '');
+    $('#proposals-list').innerHTML = combined || '<div class="muted">Aucune proposition.</div>';
+  }
+
+  document.getElementById('proposal-form').onsubmit = async e => {
     e.preventDefault();
     $('#result').textContent = 'Envoi…';
 
     const data = Object.fromEntries(new FormData(e.target).entries());
-
     if(!data.title || !data.content || !data.pseudo){ $('#result').textContent = 'Remplis tous les champs.'; return; }
 
-    try {
-      const r = await fetch(WORKER_URL, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify(data)
-      });
+    try{
+      const r = await fetch(WORKER_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
       const j = await r.json();
 
-      if (j.success) {
+      if(j.success){
         $('#result').textContent = '✔ Proposition envoyée';
-
-        const temp = Object.assign({}, data, { _tempId: 't'+Date.now() + Math.random().toString(36).slice(2,6), createdAt: Date.now() });
+        const temp = Object.assign({}, data, { _tempId: 't'+Date.now()+Math.random().toString(36).slice(2,6), createdAt: Date.now() });
         addPending(temp);
-
         loadAndRenderNow();
         e.target.reset();
-
-        if(j.item){
-          removePendingMatchedByServerItem(j.item);
-          setTimeout(()=>loadAndRenderNow(true), 300);
-        }
-
+        if(j.item){ removePendingMatchedByServerItem(j.item); setTimeout(()=>loadAndRenderNow(true), 300); }
         ensurePolling();
-      } else {
-        $('#result').textContent = 'Erreur : ' + (j.error || 'inconnue');
-      }
-    } catch(err){
-      $('#result').textContent = 'Erreur réseau';
-      debug(String(err));
-    }
+      } else { $('#result').textContent = 'Erreur : ' + (j.error || 'inconnue'); }
+    }catch(err){ $('#result').textContent = 'Erreur réseau'; debug(String(err)); }
   };
 
-  /* ========= FETCH + MERGE ========= */
-  async function fetchIndexNoCache(){
-    const url = WORKER_URL + '/index?t=' + Date.now();
-    const r = await fetch(url, { cache: 'no-store' });
-    if(!r.ok) throw new Error('status ' + r.status);
-    return await r.json();
-  }
-
-  async function fetchMarkdownNoCache(path){
-    const p = (path || '').replace(/^\/+/, '');
-    const url = WORKER_URL + '/md?path=' + encodeURIComponent(p) + '&t=' + Date.now();
-    const r = await fetch(url, { cache: 'no-store' });
-    if(!r.ok) throw new Error('md status ' + r.status + ' ' + p);
-    return await r.text();
-  }
+  async function fetchIndexNoCache(){ const url = WORKER_URL + '/index?t=' + Date.now(); const r = await fetch(url, { cache: 'no-store' }); if(!r.ok) throw new Error('status ' + r.status); return await r.json(); }
+  async function fetchMarkdownNoCache(path){ let p = path || ''; while(p.charAt(0) === '/') p = p.slice(1); const url = WORKER_URL + '/md?path=' + encodeURIComponent(p) + '&t=' + Date.now(); const r = await fetch(url, { cache: 'no-store' }); if(!r.ok) throw new Error('md status ' + r.status + ' ' + p); return await r.text(); }
 
   async function loadAndRenderNow(forceServerOnly = false){
     try{
       const index = await fetchIndexNoCache();
       const BASE_PATH = 'lealotimesmaceo/content/livres/';
-      const items = (index || []).filter(i =>
-        i.section === 'livres' || (i.path && i.path.startsWith(BASE_PATH))
-      );
+      const items = (index || []).filter(i => i.section === 'livres' || (i.path && i.path.startsWith(BASE_PATH)));
 
       const serverItems = await Promise.all(items.map(async i => {
         try{
           const md = await fetchMarkdownNoCache(i.path);
-          const body = md.replace(/^---[\s\S]*?---/, '');
+          const body = md; // keep raw markdown (avoid fragile regex here)
           return { title: i.title, pseudo: i.pseudo, author: i.author || '', contentHtml: marked.parse(body), path: i.path };
-        }catch(e){
-          return { title: i.title, pseudo: i.pseudo, contentHtml: '<div class="meta">Erreur lecture contenu</div>', path: i.path };
-        }
+        }catch(e){ return { title: i.title, pseudo: i.pseudo, contentHtml: '<div class="meta">Erreur lecture contenu</div>', path: i.path }; }
       }));
 
-      for(const si of serverItems){
-        removePendingMatchedByServerItem({ title: si.title, pseudo: si.pseudo, content: stripHtml(si.contentHtml) });
-      }
-
+      for(const si of serverItems){ removePendingMatchedByServerItem({ title: si.title, pseudo: si.pseudo, content: stripHtml(si.contentHtml) }); }
       renderCombinedList(serverItems);
-    }catch(e){
-      console.warn('loadAndRenderNow failed', e);
-      const fallbackServerItems = [];
-      renderCombinedList(fallbackServerItems);
-      debug(String(e));
-    }
+    }catch(e){ console.warn('loadAndRenderNow failed', e); renderCombinedList([]); debug(String(e)); }
   }
 
-  /* ========= POLLING (backoff) ========= */
-  let pollHandle = null;
-  let pollAttempts = 0;
-  const POLL_MAX_ATTEMPTS = 8;
-  function pollOnce(){
-    pollAttempts++;
-    loadAndRenderNow().then(()=>{
-      if(pending.length === 0 || pollAttempts >= POLL_MAX_ATTEMPTS){ clearPoll(); }
-      else { const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); }
-    }).catch(()=>{ const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); });
-  }
+  let pollHandle = null; let pollAttempts = 0; const POLL_MAX_ATTEMPTS = 8;
+  function pollOnce(){ pollAttempts++; loadAndRenderNow().then(()=>{ if(pending.length === 0 || pollAttempts >= POLL_MAX_ATTEMPTS){ clearPoll(); } else { const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); } }).catch(()=>{ const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); }); }
   function ensurePolling(){ if(pollHandle) return; pollAttempts = 0; pollOnce(); }
   function clearPoll(){ if(pollHandle) clearTimeout(pollHandle); pollHandle = null; pollAttempts = 0; }
 
-  /* ========= DELETE HANDLERS ========= */
-  $('#proposals-list').addEventListener('click', async (e) => {
-    const btn = e.target.closest('button.delete-btn');
-    if(!btn) return;
+  document.getElementById('proposals-list').addEventListener('click', async (e) => {
+    const btn = e.target.closest('button.delete-btn'); if(!btn) return;
 
     if(btn.classList.contains('pending-delete')){
-      const temp = btn.dataset.temp;
-      if(!confirm('Supprimer cette proposition locale ?')) return;
-      if(removePendingByTempId(temp)){
-        $('#result').textContent = 'Proposition locale supprimée';
-        loadAndRenderNow();
-      } else { $('#result').textContent = 'Introuvable'; }
-      return;
+      const temp = btn.dataset.temp; if(!confirm('Supprimer cette proposition locale ?')) return; if(removePendingByTempId(temp)){ $('#result').textContent = 'Proposition locale supprimée'; loadAndRenderNow(); } else { $('#result').textContent = 'Introuvable'; } return;
     }
 
     if(btn.classList.contains('server-delete')){
-      const path = btn.dataset.path;
-      if(!path){ $('#result').textContent = 'Impossible : pas de chemin connu pour cette proposition.'; return; }
-      if(!confirm('Confirmer suppression sur le serveur ? Cette action est irréversible sur le serveur.')) return;
-
-      try{
-        btn.disabled = true;
-        $('#result').textContent = 'Suppression…';
-        const r = await fetch(WORKER_URL + '/delete', {
-          method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ path })
-        });
-        let j = {};
-        try{ j = await r.json(); }catch(e){ j = { success: r.ok } }
-
-        if(r.ok && j.success){
-          $('#result').textContent = '✔ Supprimé sur le serveur';
-          await loadAndRenderNow(true);
-        } else {
-          $('#result').textContent = 'Erreur suppression: ' + (j.error || r.status || 'inconnue');
-          btn.disabled = false;
-        }
-      }catch(err){
-        $('#result').textContent = 'Erreur réseau';
-        btn.disabled = false;
-        debug(String(err));
-      }
+      const path = btn.dataset.path; if(!path){ $('#result').textContent = 'Impossible : pas de chemin connu pour cette proposition.'; return; } if(!confirm('Confirmer suppression sur le serveur ? Cette action est irréversible sur le serveur.')) return;
+      try{ btn.disabled = true; $('#result').textContent = 'Suppression…'; const r = await fetch(WORKER_URL + '/delete', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ path }) }); let j = {}; try{ j = await r.json(); }catch(e){ j = { success: r.ok } }
+        if(r.ok && j.success){ $('#result').textContent = '✔ Supprimé sur le serveur'; await loadAndRenderNow(true); } else { $('#result').textContent = 'Erreur suppression: ' + (j.error || r.status || 'inconnue'); btn.disabled = false; }
+      }catch(err){ $('#result').textContent = 'Erreur réseau'; btn.disabled = false; debug(String(err)); }
     }
   });
 
-  /* ========= INIT ========= */
   document.getElementById('year').textContent = new Date().getFullYear();
-
   loadAndRenderNow().then(()=>{ if(pending.length) ensurePolling(); });
   setInterval(()=>{ loadAndRenderNow(); }, 5*60*1000);
+
+  function renderFeaturedBook(book){
+    // Mise à jour simple et lisible du bloc "fiche livre"
+    const titleEl = document.getElementById('simple-title');
+    const pseudoEl = document.getElementById('simple-pseudo');
+    const authorEl = document.getElementById('simple-author');
+    const descEl = document.getElementById('simple-description');
+
+    if(!titleEl) return;
+
+    titleEl.textContent = book.title || 'Sans titre';
+    pseudoEl.textContent = 'Pseudo : ' + (book.pseudo || 'Anonyme');
+    authorEl.textContent = 'Auteur : ' + (book.author || '—');
+
+    // contenu (sécurisé en amont si possible)
+    if(book.contentHtml) descEl.innerHTML = book.contentHtml;
+    else descEl.textContent = book.content || '';
+
+    // connecter actions locales
+    const printBtn = document.getElementById('print-simple');
+    const copyBtn = document.getElementById('copy-simple');
+    if(printBtn) printBtn.addEventListener('click', () => window.print());
+    if(copyBtn) copyBtn.addEventListener('click', () => copyMarkdown());
+  }
+
+  // ready to copy — la fonction copyMarkdown() commence ici
+  function copyMarkdown(){"
+    const md = `# Le meilleur des mondes
+
+**Pseudo:** TimmotX
+
+**Auteur:** —
+
+**Description:**
+
+description`;
+    navigator.clipboard?.writeText(md).then(()=>{ alert('Markdown copié dans le presse-papiers.'); },()=>{ alert('Impossible de copier — autorisez le presse-papiers.'); });
+  }
   </script>
 </body>
 </html>
