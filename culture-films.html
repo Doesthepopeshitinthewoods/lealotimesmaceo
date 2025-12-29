@@ -69,6 +69,7 @@
     #proposals-list article{border:1px solid #f1f5f9;padding:14px;border-radius:10px;margin-bottom:12px;background:linear-gradient(180deg,#fff,#fbfdff)}
     .badge{display:inline-block;background:var(--glass);padding:6px 8px;border-radius:999px;font-size:12px}
     .pending-badge{font-size:12px;color:#9ca3af;margin-left:8px}
+    .synced-badge{font-size:12px;color:green;margin-left:8px}
     .actions{margin-top:10px}
     .delete-btn{background:transparent;border:1px solid #e5e7eb;color:var(--text);padding:6px 10px;border-radius:8px;cursor:pointer}
     .delete-btn:disabled{opacity:0.6;cursor:not-allowed}
@@ -144,9 +145,7 @@
   const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev";
   const LOCAL_KEY = 'films_pending_v1';
   const BASE_PATH = 'lealotimesmaceo/content/films/';
-
-  // Do not overwrite the featured "Fenêtre sur cour"
-  const LOCK_FEATURED = true;
+  const LOCK_FEATURED = true; // do not overwrite featured block automatically
 
   // ---------- HELPERS ----------
   const $ = s => document.querySelector(s);
@@ -154,12 +153,30 @@
   function debug(t){ const el = $('#debug'); if(!el) return; el.style.display = t ? 'block' : 'none'; el.textContent = t || '' }
 
   // ---------- PENDING STORAGE ----------
+  // pending items now have shape: { title, pseudo, author, content, _tempId, createdAt, filename, synced:bool, serverPath?:string }
   let pending = loadPendingFromStorage();
 
-  function loadPendingFromStorage(){ try{ const raw = localStorage.getItem(LOCAL_KEY); if(!raw) return []; return JSON.parse(raw); }catch(e){ console.error('failed parse pending', e); return []; } }
+  function loadPendingFromStorage(){
+    try{ const raw = localStorage.getItem(LOCAL_KEY); if(!raw) return []; return JSON.parse(raw); }catch(e){ console.error('failed parse pending', e); return []; }
+  }
   function savePendingToStorage(){ try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(pending)); }catch(e){ console.warn('localStorage full?'); } }
   function addPending(item){ pending.unshift(item); savePendingToStorage(); }
   function removePendingByTempId(tempId){ const idx = pending.findIndex(p => p._tempId === tempId); if(idx !== -1){ pending.splice(idx,1); savePendingToStorage(); return true;} return false; }
+
+  // Mark a pending item as synced (but keep it displayed)
+  function markPendingSyncedByServerItem(serverItem, serverPath){
+    const sContent = (serverItem.content||'').trim().slice(0,120);
+    const idx = pending.findIndex(p => p.title === serverItem.title && p.pseudo === serverItem.pseudo && (p.content||'').trim().slice(0,120) === sContent);
+    if(idx !== -1){
+      pending[idx].synced = true;
+      if(serverPath) pending[idx].serverPath = serverPath;
+      savePendingToStorage();
+      return true;
+    }
+    return false;
+  }
+
+  // Keep the old remove heuristic too (in case user wants to explicitly remove)
   function removePendingMatchedByServerItem(serverItem){
     const sContent = (serverItem.content||'').trim().slice(0,120);
     const idx = pending.findIndex(p => p.title === serverItem.title && p.pseudo === serverItem.pseudo && (p.content||'').trim().slice(0,120) === sContent);
@@ -171,18 +188,26 @@
   function sanitizeHtml(html){ if(window.DOMPurify && typeof DOMPurify.sanitize === 'function') return DOMPurify.sanitize(html); return escapeHtml(html); }
   function renderMarkdown(md){ try{ return sanitizeHtml(marked.parse(md || '')); }catch(e){ return sanitizeHtml(escapeHtml(md || '')); } }
 
-  // ---------- BUILD ARTICLE (used for pending items) ----------
+  // ---------- BUILD ARTICLE ----------
   function buildArticleHtml(obj, opts = {}){
     const isPending = !!opts.pending;
-    const badge = isPending ? '<span class="pending-badge">(en attente)</span>' : '';
+    let badge = '';
+    if(isPending){
+      badge = obj.synced ? '<span class="synced-badge">(ajouté)</span>' : '<span class="pending-badge">(en attente)</span>';
+    }
     const contentHtml = obj.contentHtml ? sanitizeHtml(obj.contentHtml) : renderMarkdown(obj.content || '');
     const authorLine = obj.author ? '<div class="meta">Réalisateur : '+escapeHtml(obj.author)+'</div>' : '';
 
     let actionsHtml = '';
-    if(isPending && obj._tempId){ actionsHtml = '<div class="actions"><button class="delete-btn pending-delete" data-temp="'+escapeHtml(obj._tempId)+'">Supprimer</button></div>'; }
-    if(!isPending && obj.path){ actionsHtml = '<div class="actions"><button class="delete-btn server-delete" data-path="'+escapeHtml(obj.path)+'">Supprimer</button></div>'; }
+    const actions = [];
+    // always allow local delete
+    if(obj._tempId){ actions.push(`<button class="delete-btn pending-delete" data-temp="${escapeHtml(obj._tempId)}">Supprimer</button>`); }
+    // if server path exists, show server delete button as well
+    if(obj.serverPath){ actions.push(`<button class="delete-btn server-delete" data-path="${escapeHtml(obj.serverPath)}">Supprimer (serveur)</button>`); }
 
-    const articleAttrs = (obj._tempId ? 'data-temp="'+escapeHtml(obj._tempId)+'"' : '') + (obj.path ? ' data-path="'+escapeHtml(obj.path)+'"' : '');
+    if(actions.length) actionsHtml = '<div class="actions">'+actions.join('')+'</div>';
+
+    const articleAttrs = (obj._tempId ? 'data-temp="'+escapeHtml(obj._tempId)+'"' : '') + (obj.serverPath ? ' data-path="'+escapeHtml(obj.serverPath)+'"' : '');
 
     return '<article '+articleAttrs+'>'
       +'<h3>'+escapeHtml(obj.title || 'Sans titre')+' '+badge+'</h3>'
@@ -195,7 +220,7 @@
 
   function stripHtml(html){ const tmp = document.createElement('div'); tmp.innerHTML = html || ''; return tmp.textContent || tmp.innerText || ''; }
 
-  // ---------- MARKDOWN / FILENAME GENERATION ----------
+  // ---------- MARKDOWN / FILENAME ----------
   function slugify(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70); }
   function generateMarkdown(item){
     const now = new Date().toISOString();
@@ -217,16 +242,8 @@
     return `${base}-${uniq}.md`;
   }
 
-  // ---------- MULTI-METHOD SAVE (try to mimic "culture-musiques") ----------
-  // Try multiple save methods in order:
-  // 1) POST /create with {path, content} (markdown file)
-  // 2) POST to WORKER_URL with JSON fields (section/title/pseudo/author/content) — like older scripts
-  // 3) POST /save as fallback
+  // ---------- MULTI-METHOD SAVE ----------
   async function trySaveToServer(item, filename){
-    // item: {title,pseudo,author,content}
-    // filename: relative filename (without BASE_PATH)
-    // returns server response object { ok: bool, json: obj or null }
-    // 1) /create (markdown)
     try {
       const md = generateMarkdown(item);
       const payload = { path: BASE_PATH + filename, content: md, title: item.title, pseudo: item.pseudo, author: item.author || '' };
@@ -237,10 +254,9 @@
       });
       let j = null;
       try{ j = await r.json(); }catch(e){ j = null; }
-      if(r.ok && (j && j.success || (!j && r.ok))){ return { ok: true, json: j || { success: true } }; }
-    } catch(e) { /* ignore and try next */ debug('create error: ' + String(e)); }
+      if(r.ok && (j && j.success || (!j && r.ok))){ return { ok: true, json: j || { success:true, path: payload.path, item: { title: item.title, pseudo: item.pseudo, content: item.content } } }; }
+    } catch(e) { debug('create error: ' + String(e)); }
 
-    // 2) POST to root worker with JSON form (legacy style used by "livres" / maybe "musiques")
     try {
       const payload = { section: 'films', title: item.title, pseudo: item.pseudo, author: item.author || '', content: item.content };
       const r = await fetch(WORKER_URL, {
@@ -250,10 +266,9 @@
       });
       let j = null;
       try{ j = await r.json(); }catch(e){ j = null; }
-      if(r.ok && (j && j.success || (!j && r.ok))){ return { ok: true, json: j || { success: true } }; }
+      if(r.ok && (j && j.success || (!j && r.ok))){ return { ok: true, json: j || { success:true, item: { title: item.title, pseudo: item.pseudo, content: item.content } } }; }
     } catch(e) { debug('root-post error: ' + String(e)); }
 
-    // 3) POST /save (alternate)
     try {
       const md = generateMarkdown(item);
       const payload = { path: BASE_PATH + filename, content: md, title: item.title, pseudo: item.pseudo, author: item.author || '' };
@@ -264,32 +279,35 @@
       });
       let j = null;
       try{ j = await r.json(); }catch(e){ j = null; }
-      if(r.ok && (j && j.success || (!j && r.ok))){ return { ok: true, json: j || { success: true } }; }
+      if(r.ok && (j && j.success || (!j && r.ok))){ return { ok: true, json: j || { success:true, path: payload.path, item: { title: item.title, pseudo: item.pseudo, content: item.content } } }; }
     } catch(e) { debug('save error: ' + String(e)); }
 
     return { ok: false, json: null };
   }
 
-  // ---------- SYNC PENDING (uses multi-method save) ----------
+  // ---------- SYNC PENDING ----------
   async function syncPending(){
     if(!pending || pending.length === 0) return;
     const toTry = pending.slice();
     for(const p of toTry){
+      // skip already synced entries
+      if(p.synced) continue;
       const filename = p.filename || generateFilename(p);
       try{
         const res = await trySaveToServer({ title: p.title, pseudo: p.pseudo, author: p.author || '', content: p.content }, filename);
         if(res.ok){
-          // if server returned item, remove by match; fallback remove by content/title/pseudo
-          if(res.json && res.json.item) removePendingMatchedByServerItem(res.json.item);
-          else removePendingMatchedByServerItem({ title: p.title, pseudo: p.pseudo, content: stripHtml(renderMarkdown(p.content || '')) });
+          // server confirmed: mark local pending as synced but KEEP it displayed
+          const serverPath = (res.json && (res.json.path || (res.json.item && res.json.item.path))) || null;
+          // try to use item returned, or fallback to content/title/pseudo
+          const serverItem = (res.json && res.json.item) ? res.json.item : { title: p.title, pseudo: p.pseudo, content: p.content };
+          markPendingSyncedByServerItem(serverItem, serverPath);
         } else {
-          // keep pending
           console.warn('syncPending: could not save', p.title);
         }
       }catch(err){
         console.warn('syncPending network error', err);
         debug(String(err));
-        return; // stop trying further to avoid busy loop on network failure
+        return; // stop trying further on network failure
       }
     }
   }
@@ -323,13 +341,12 @@
         }catch(e){ return { title: i.title, pseudo: i.pseudo, contentHtml: '<div class="meta">Erreur lecture contenu</div>', path: i.path }; }
       }));
 
-      // remove pending items that appear on server
-      for(const si of serverItems){ removePendingMatchedByServerItem({ title: si.title, pseudo: si.pseudo, content: stripHtml(si.contentHtml) }); }
-
-      // show only pending items in Recommendations récentes
+      // NOTE: we no longer remove pending items when server shows them;
+      // instead, syncPending will mark matched items as synced.
+      // Show only pending items in Recommendations récentes
       renderPendingList();
 
-      // do not overwrite featured if locked
+      // featured remains locked if LOCK_FEATURED
       if(!LOCK_FEATURED){
         if(serverItems && serverItems.length){
           renderFeaturedItem({ title: serverItems[0].title, pseudo: serverItems[0].pseudo, author: serverItems[0].author || '', contentHtml: serverItems[0].contentHtml });
@@ -356,7 +373,7 @@
   function ensurePolling(){ if(pollHandle) return; pollAttempts = 0; pollOnce(); }
   function clearPoll(){ if(pollHandle) clearTimeout(pollHandle); pollHandle = null; pollAttempts = 0; }
 
-  // ---------- FORM SUBMIT (add to pending immediately, then try multi-method save) ----------
+  // ---------- FORM SUBMIT ----------
   document.getElementById('proposal-form').onsubmit = async e => {
     e.preventDefault();
     $('#result').textContent = 'Envoi…';
@@ -366,7 +383,7 @@
 
     const item = { title: data.title, pseudo: data.pseudo, author: data.author || '', content: data.content };
     const filename = generateFilename(item);
-    const temp = Object.assign({}, item, { _tempId: 't'+Date.now()+Math.random().toString(36).slice(2,6), createdAt: Date.now(), filename });
+    const temp = Object.assign({}, item, { _tempId: 't'+Date.now()+Math.random().toString(36).slice(2,6), createdAt: Date.now(), filename, synced:false });
     addPending(temp);
     renderPendingList();
     ensurePolling();
@@ -375,8 +392,10 @@
       const res = await trySaveToServer(item, filename);
       if(res.ok){
         $('#result').textContent = '✔ Proposition enregistrée sur le serveur';
-        if(res.json && res.json.item) removePendingMatchedByServerItem(res.json.item);
-        else removePendingMatchedByServerItem({ title: item.title, pseudo: item.pseudo, content: stripHtml(renderMarkdown(item.content || '')) });
+        // mark local pending as synced (do not remove)
+        const serverPath = (res.json && (res.json.path || (res.json.item && res.json.item.path))) || null;
+        const serverItem = (res.json && res.json.item) ? res.json.item : { title: item.title, pseudo: item.pseudo, content: item.content };
+        markPendingSyncedByServerItem(serverItem, serverPath);
         setTimeout(()=>loadAndRenderNow(true),300);
       } else {
         $('#result').textContent = 'Proposition sauvegardée localement (en attente)';
@@ -400,7 +419,12 @@
     if(btn.classList.contains('server-delete')){
       const path = btn.dataset.path; if(!path){ $('#result').textContent = 'Impossible : pas de chemin connu pour cette proposition.'; return; } if(!confirm('Confirmer suppression sur le serveur ? Cette action est irréversible sur le serveur.')) return;
       try{ btn.disabled = true; $('#result').textContent = 'Suppression…'; const r = await fetch(WORKER_URL + '/delete', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ path }) }); let j = {}; try{ j = await r.json(); }catch(e){ j = { success: r.ok } }
-        if(r.ok && j.success){ $('#result').textContent = '✔ Supprimé sur le serveur'; await loadAndRenderNow(true); } else { $('#result').textContent = 'Erreur suppression: ' + (j.error || r.status || 'inconnue'); btn.disabled = false; }
+        if(r.ok && j.success){ $('#result').textContent = '✔ Supprimé sur le serveur'; // keep local pending but mark unsynced if desired, here we unset serverPath & synced
+          // find pending with this serverPath and clear its serverPath/synced flag
+          const idx = pending.findIndex(p => p.serverPath === path);
+          if(idx !== -1){ delete pending[idx].serverPath; pending[idx].synced = false; savePendingToStorage(); renderPendingList(); }
+          await loadAndRenderNow(true);
+        } else { $('#result').textContent = 'Erreur suppression: ' + (j.error || r.status || 'inconnue'); btn.disabled = false; }
       }catch(err){ $('#result').textContent = 'Erreur réseau'; btn.disabled = false; debug(String(err)); }
     }
   });
