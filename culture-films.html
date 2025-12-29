@@ -8,517 +8,327 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
 
   <style>
-    :root{--maxw:760px;--bg:#fff;--text:#111827;--muted:#6b7280;--accent:#8b0000;--card:#fff}
+    :root{
+      --maxw:760px;
+      --bg:#fbfcfe;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --text:#0f172a;
+      --accent:#8b0000;
+      --accent-600:#7a0000;
+      --glass:rgba(15,23,42,0.04);
+      --radius:12px;
+      --gap:18px;
+    }
     *{box-sizing:border-box}
-    body{margin:0;background:linear-gradient(180deg,var(--bg),#f7fafc);color:var(--text);font-family:Inter,system-ui;line-height:1.7}
-    header{background:linear-gradient(90deg,var(--accent),#7a0000)}
-    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px;display:flex;justify-content:space-between;align-items:center}
-    h1{margin:0;font-family:Merriweather,serif;font-size:20px;color:#fff}
-    nav a{color:#f3f4f6;text-decoration:none;margin-left:12px;font-size:14px}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+      background:linear-gradient(180deg,var(--bg),#eef2f6);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.6;
+    }
+    header{
+      background:linear-gradient(90deg,var(--accent),var(--accent-600));
+      color:#fff;
+      border-bottom:1px solid rgba(0,0,0,0.06);
+    }
+    .wrap{
+      max-width:var(--maxw);
+      margin:0 auto;
+      padding:18px 20px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    h1.site-title{margin:0;font-family:Merriweather,serif;font-size:20px;font-weight:700}
+    nav{display:flex;gap:12px;align-items:center}
+    nav a{color:rgba(255,255,255,0.92);text-decoration:none;font-size:14px}
+    nav a:hover{text-decoration:underline}
+
     main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
-    h2{font-family:Merriweather,serif;font-size:18px}
-    article{margin-bottom:20px}
-    .meta{color:var(--muted);font-size:13px}
-    form{margin-top:20px}
-    input,textarea{width:100%;padding:10px;margin-bottom:12px;border:1px solid #d1d5db;border-radius:6px}
-    button{padding:10px 16px;background:#1f2937;color:#fff;border:none;border-radius:4px;cursor:pointer}
-    #proposals-list article{border:1px solid #eee;padding:12px;border-radius:8px;background:linear-gradient(180deg,#fff,#fbfdff)}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:28px}
+    @media (max-width:980px){ .grid{grid-template-columns:1fr} }
+
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:0 8px 30px rgba(16,24,40,0.06);padding:18px;display:flex;gap:18px;align-items:flex-start}
+    .cover{width:120px;height:160px;border-radius:8px;background:linear-gradient(135deg,#fff,#f3f7ff);display:flex;align-items:center;justify-content:center;font-weight:700;color:#0b1220;padding:10px;text-align:center}
+    .meta{color:var(--muted);font-size:13px;margin:6px 0}
+    h2.item-title{margin:0;font-size:20px}
+    .description{margin-top:8px;color:#111827}
+
+    .panel{background:var(--card);border-radius:12px;padding:16px;box-shadow:0 6px 20px rgba(16,24,40,0.04)}
+    form{display:flex;flex-direction:column;gap:10px}
+    input,textarea,select{width:100%;padding:10px;border:1px solid #e6e9ef;border-radius:8px;font-size:14px}
+    button.primary{padding:10px 14px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer}
+    .muted{color:var(--muted);font-size:13px}
+
+    #proposals-list article{border:1px solid #f1f5f9;padding:14px;border-radius:10px;margin-bottom:12px;background:linear-gradient(180deg,#fff,#fbfdff)}
+    .badge{display:inline-block;background:var(--glass);padding:6px 8px;border-radius:999px;font-size:12px}
     .pending-badge{font-size:12px;color:#9ca3af;margin-left:8px}
-    pre.debug{display:none;background:#111;color:#0f0;padding:10px;font-size:12px;white-space:pre-wrap;border-radius:6px}
-
-    /* delete button style */
-    .delete-btn{background:transparent;border:1px solid #e5e7eb;color:#111;padding:6px 10px;border-radius:6px;cursor:pointer;margin-left:8px}
-    .delete-btn:disabled{opacity:0.6;cursor:not-allowed}
     .actions{margin-top:10px}
+    .delete-btn{background:transparent;border:1px solid #e5e7eb;color:var(--text);padding:6px 10px;border-radius:8px;cursor:pointer}
+    .delete-btn:disabled{opacity:0.6;cursor:not-allowed}
 
-    .panel{background:var(--card);border-radius:10px;padding:14px;box-shadow:0 8px 30px rgba(16,24,40,0.04);margin-bottom:16px}
-    .featured {display:flex;gap:12px;align-items:flex-start}
-    .cover{width:96px;height:128px;border-radius:8px;background:linear-gradient(135deg,#fff,#f3f7ff);display:flex;align-items:center;justify-content:center;font-weight:700;color:#0b1220;padding:8px;text-align:center}
-    .muted{color:var(--muted)}
-    .small-btn{padding:8px 10px;border-radius:8px;background:transparent;border:1px solid #e5e7eb;cursor:pointer;margin-right:8px}
+    footer.site-footer{max-width:var(--maxw);margin:48px auto 30px;padding:0 20px;color:var(--muted);font-size:13px}
+    pre.debug{display:none}
+
+    @media print{ body{background:#fff} header,footer.site-footer{display:none} .card{box-shadow:none;border-radius:0} }
   </style>
 </head>
-
 <body>
-
-<header>
-  <div class="wrap">
-    <h1>Blog de l'intranquilité</h1>
-    <nav>
-      <a href="index.html">Accueil</a>
-      <a href="culture-films.html">Films</a>
-      <a href="culture-livres.html">Livres</a>
-      <a href="culture-musiques.html">Musiques</a>
-    </nav>
-  </div>
-</header>
-
-<main>
-
-<h2>Proposer un film</h2>
-
-<!-- Featured panel (optionnel) -->
-<div id="featured-panel" class="panel" style="display:none;">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-    <strong>Mise en avant</strong>
-    <div>
-      <button id="print-featured" class="small-btn">Imprimer</button>
-      <button id="copy-featured" class="small-btn">Copier la fiche</button>
+  <header>
+    <div class="wrap">
+      <h1 class="site-title">Blog de l'intranquilité</h1>
+      <nav aria-label="Navigation principale">
+        <a href="index.html">Accueil</a>
+        <a href="culture-films.html">Films</a>
+        <a href="culture-livres.html">Livres</a>
+        <a href="culture-musiques.html">Musiques</a>
+        <a href="projets-libres-pensees.html">Projets</a>
+      </nav>
     </div>
-  </div>
-  <div id="featured-film" class="featured">
-    <div class="cover" id="featured-cover">FILM</div>
-    <div>
-      <h3 id="featured-title" style="margin:0">Titre</h3>
-      <div id="featured-meta" class="meta muted">Par —</div>
-      <div id="featured-author" class="meta muted" style="margin-top:6px">Réalisateur : —</div>
-      <div id="featured-desc" style="margin-top:10px;color:var(--text)"></div>
+  </header>
+
+  <main>
+    <div class="grid">
+      <section>
+        <article class="card simple-item" aria-labelledby="simple-title">
+          <div style="padding:12px">
+            <h2 id="simple-title" class="item-title">Fenêtre sur Cour </h2>
+            <p class="meta"><span id="simple-pseudo">Pseudo : L'Homme Vert</span> &nbsp; • &nbsp; <span id="simple-author">Réalisateur : Hitchcock —</span></p>
+
+            <h3 style="font-size:14px;margin-top:10px;color:var(--muted)">Description</h3>
+            <p id="simple-description" class="description">Super film de suspens. J'ai lu une interview du dernier pris Nobel de physique dans laquelle il expliquait qu'il faisait regarder ce film a ses étudiants car il y avait beaucoup d'analogies à la mécanique quantique.</p>
+
+            <div style="margin-top:12px"><span class="badge">fiche film</span></div>
+          </div>
+        </article>
+
+        <h2 style="margin-top:26px">Propositions récentes</h2>
+        <div id="proposals-list" class="panel">Chargement…</div>
+      </section>
+
+      <aside>
+        <div class="panel">
+          <h3 style="margin:0 0 8px 0">Proposer un film</h3>
+          <form id="proposal-form">
+            <input type="hidden" name="section" value="films">
+            <input name="pseudo" placeholder="Pseudo" required>
+            <input name="title" placeholder="Titre du film" required>
+            <input name="author" placeholder="Réalisateur / année (optionnel)">
+            <textarea name="content" rows="5" placeholder="Pourquoi ce film ? (commentaire en Markdown possible)" required></textarea>
+            <button class="primary">Envoyer</button>
+          </form>
+
+          <p id="result" class="muted" style="margin-top:10px"></p>
+        </div>
+      </aside>
     </div>
-  </div>
-</div>
 
-<form id="proposal-form" class="panel">
-  <input type="hidden" name="section" value="films">
-  <input name="pseudo" placeholder="Pseudo" required>
-  <input name="title" placeholder="Titre du film" required>
-  <input name="author" placeholder="Réalisateur / année (optionnel)">
-  <textarea name="content" rows="5" placeholder="Pourquoi ce film ? (commentaire en Markdown possible)" required></textarea>
-  <div style="display:flex;gap:10px;align-items:center">
-    <button type="submit">Envoyer</button>
-    <div id="result" class="meta" style="margin-left:10px"></div>
-  </div>
-</form>
+    <pre id="debug" class="debug"></pre>
+  </main>
 
-<hr>
+  <footer class="site-footer">
+    © <span id="year"></span> — Blog personnel
+  </footer>
 
-<h2>Propositions récentes</h2>
-<div id="proposals-list" class="panel">Chargement…</div>
-<pre id="debug" class="debug"></pre>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
 
-</main>
+  <script>
+  // ---------- CONFIG ----------
+  const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev";
+  const LOCAL_KEY = 'films_pending_v1';
+  const BASE_PATH = 'lealotimesmaceo/content/films/';
 
-<footer style="text-align:center;color:#777;padding:20px">
-  © <span id="year"></span>
-</footer>
+  // ---------- HELPERS ----------
+  const $ = s => document.querySelector(s);
+  function escapeHtml(s){ return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') }
+  function debug(t){ const el = $('#debug'); if(!el) return; el.style.display = t ? 'block' : 'none'; el.textContent = t || '' }
 
-<!-- dépendances -->
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
+  // ---------- PENDING STORAGE ----------
+  let pending = loadPendingFromStorage();
 
-<script>
-/* ========= CONFIG ========= */
-const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev";
-const LOCAL_KEY = 'films_pending_v1'; // localStorage key
-
-/* ========= HELPERS ========= */
-const $ = s => document.querySelector(s);
-function escapeHtml(s){ return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') }
-function debug(t){ const el = $('#debug'); if(!el) return; el.style.display = t ? 'block' : 'none'; el.textContent = t || '' }
-
-/* ========= PENDING STORAGE ========= */
-let pending = loadPendingFromStorage(); // array of objects {title,pseudo,author,content,_tempId,createdAt}
-
-function loadPendingFromStorage(){
-  try{
-    const raw = localStorage.getItem(LOCAL_KEY);
-    if(!raw) return [];
-    return JSON.parse(raw);
-  }catch(e){
-    console.error('failed parse pending', e);
-    return [];
+  function loadPendingFromStorage(){
+    try{ const raw = localStorage.getItem(LOCAL_KEY); if(!raw) return []; return JSON.parse(raw); }catch(e){ console.error('failed parse pending', e); return []; }
   }
-}
-function savePendingToStorage(){
-  try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(pending)); }catch(e){console.warn('localStorage full?');}
-}
-function addPending(item){
-  pending.unshift(item);
-  savePendingToStorage();
-}
-function removePendingByTempId(tempId){
-  const idx = pending.findIndex(p => p._tempId === tempId);
-  if(idx !== -1){ pending.splice(idx,1); savePendingToStorage(); return true; }
-  return false;
-}
-function removePendingMatchedByServerItem(serverItem){
-  // heuristic: title + pseudo + prefix-of-content
-  const sContent = (serverItem.content||'').trim().slice(0,120);
-  const idx = pending.findIndex(p => p.title === serverItem.title && p.pseudo === serverItem.pseudo && (p.content||'').trim().slice(0,120) === sContent);
-  if(idx!==-1){ pending.splice(idx,1); savePendingToStorage(); return true; }
-  return false;
-}
-
-/* ========= RENDER HELPERS ========= */
-function sanitizeHtml(html){
-  if(window.DOMPurify && typeof DOMPurify.sanitize === 'function'){
-    return DOMPurify.sanitize(html);
-  }
-  return escapeHtml(html);
-}
-function renderMarkdown(md){
-  try{
-    return sanitizeHtml(marked.parse(md || ''));
-  }catch(e){
-    return sanitizeHtml(escapeHtml(md || ''));
-  }
-}
-
-function buildArticleHtml(obj, opts = {}){
-  // opts.pending -> boolean: show badge
-  const badge = opts.pending ? `<span class="pending-badge">(en attente)</span>` : '';
-  const contentHtml = obj.contentHtml ? sanitizeHtml(obj.contentHtml) : renderMarkdown(obj.content || '');
-  const authorLine = obj.author ? `<div class="meta muted">Réalisateur / année : ${escapeHtml(obj.author)}</div>` : '';
-  // delete button(s): pending items have a local delete; server items have a server delete if path known
-  const actions = [];
-  if(opts.pending && obj._tempId){
-    actions.push(`<button class="delete-btn pending-delete" data-temp="${escapeHtml(obj._tempId)}">Supprimer</button>`);
-  }
-  if(!opts.pending && obj.path){
-    actions.push(`<button class="delete-btn server-delete" data-path="${escapeHtml(obj.path)}">Supprimer</button>`);
+  function savePendingToStorage(){ try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(pending)); }catch(e){ console.warn('localStorage full?'); } }
+  function addPending(item){ pending.unshift(item); savePendingToStorage(); }
+  function removePendingByTempId(tempId){ const idx = pending.findIndex(p => p._tempId === tempId); if(idx !== -1){ pending.splice(idx,1); savePendingToStorage(); return true;} return false; }
+  function removePendingMatchedByServerItem(serverItem){
+    const sContent = (serverItem.content||'').trim().slice(0,120);
+    const idx = pending.findIndex(p => p.title === serverItem.title && p.pseudo === serverItem.pseudo && (p.content||'').trim().slice(0,120) === sContent);
+    if(idx!==-1){ pending.splice(idx,1); savePendingToStorage(); return true; }
+    return false;
   }
 
-  const actionsHtml = actions.length ? `<div class="actions">${actions.join('')}</div>` : '';
+  // ---------- SANITIZE / MARKDOWN ----------
+  function sanitizeHtml(html){ if(window.DOMPurify && typeof DOMPurify.sanitize === 'function') return DOMPurify.sanitize(html); return escapeHtml(html); }
+  function renderMarkdown(md){ try{ return sanitizeHtml(marked.parse(md || '')); }catch(e){ return sanitizeHtml(escapeHtml(md || '')); } }
 
-  return `<article ${obj._tempId ? 'data-temp="'+escapeHtml(obj._tempId)+'"' : ''} ${obj.path ? 'data-path="'+escapeHtml(obj.path)+'"' : ''}>
-    <h3 style="margin:0 0 6px 0">${escapeHtml(obj.title || 'Sans titre')} ${badge}</h3>
-    <div class="meta muted">Par ${escapeHtml(obj.pseudo || 'Anonyme')}</div>
-    ${authorLine}
-    <div style="margin-top:8px">${contentHtml}</div>
-    ${actionsHtml}
-  </article>`;
-}
+  // ---------- BUILD ARTICLE ----------
+  function buildArticleHtml(obj, opts = {}){
+    const isPending = !!opts.pending;
+    const badge = isPending ? '<span class="pending-badge">(en attente)</span>' : '';
+    const contentHtml = obj.contentHtml ? sanitizeHtml(obj.contentHtml) : renderMarkdown(obj.content || '');
+    const authorLine = obj.author ? '<div class="meta">Réalisateur : '+escapeHtml(obj.author)+'</div>' : '';
 
-// helper to strip tags for snippet comparison
-function stripHtml(html){
-  const tmp = document.createElement('div'); tmp.innerHTML = html || ''; return tmp.textContent || tmp.innerText || '';
-}
+    let actionsHtml = '';
+    if(isPending && obj._tempId){ actionsHtml = '<div class="actions"><button class="delete-btn pending-delete" data-temp="'+escapeHtml(obj._tempId)+'">Supprimer</button></div>'; }
+    if(!isPending && obj.path){ actionsHtml = '<div class="actions"><button class="delete-btn server-delete" data-path="'+escapeHtml(obj.path)+'">Supprimer</button></div>'; }
 
-/* ========= FORM ========= */
-$('#proposal-form').onsubmit = async e => {
-  e.preventDefault();
-  $('#result').textContent = 'Envoi…';
+    const articleAttrs = (obj._tempId ? 'data-temp="'+escapeHtml(obj._tempId)+'"' : '') + (obj.path ? ' data-path="'+escapeHtml(obj.path)+'"' : '');
 
-  const data = Object.fromEntries(new FormData(e.target).entries());
-
-  // minimal local validation
-  if(!data.title || !data.content || !data.pseudo){
-    $('#result').textContent = 'Remplis tous les champs.';
-    return;
+    return '<article '+articleAttrs+'>'
+      +'<h3>'+escapeHtml(obj.title || 'Sans titre')+' '+badge+'</h3>'
+      +'<div class="meta">Par '+escapeHtml(obj.pseudo || 'Anonyme')+'</div>'
+      +authorLine
+      +'<div class="content">'+contentHtml+'</div>'
+      +actionsHtml
+      +'</article>';
   }
 
-  try {
-    const r = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(data)
-    });
-    // if non-json, will throw in j = await r.json()
-    const j = await r.json();
+  function stripHtml(html){ const tmp = document.createElement('div'); tmp.innerHTML = html || ''; return tmp.textContent || tmp.innerText || ''; }
 
-    if (j.success) {
-      $('#result').textContent = '✔ Proposition envoyée';
-
-      // create pending item
-      const temp = Object.assign({}, data, { _tempId: 't'+Date.now() + Math.random().toString(36).slice(2,6), createdAt: Date.now() });
-      addPending(temp);
-
-      // render immediately (pending at top)
-      loadAndRenderNow();
-
-      e.target.reset();
-
-      // if server returned the exact item, try to remove pending now
-      if(j.item){
-        removePendingMatchedByServerItem(j.item);
-        // force immediate reload of index to show server version
-        setTimeout(()=>loadAndRenderNow(true), 300);
-      } else if (j.path){
-        // optional: if worker returns path where content got saved, try to fetch and confirm
-      }
-
-      // start/continue polling (we also poll periodically)
-      ensurePolling();
-    } else {
-      $('#result').textContent = 'Erreur : ' + (j.error || 'inconnue');
-    }
-  } catch(err){
-    $('#result').textContent = 'Erreur réseau';
-    debug(String(err));
-  }
-};
-
-/* ========= FETCH + MERGE ========= */
-async function fetchIndexNoCache(){
-  const url = WORKER_URL + '/index?t=' + Date.now();
-  const r = await fetch(url, { cache: 'no-store' });
-  if(!r.ok) throw new Error('status ' + r.status);
-  return await r.json();
-}
-
-async function fetchMarkdownNoCache(path){
-  const p = (path || '').replace(/^\/+/, '');
-  const url = WORKER_URL + '/md?path=' + encodeURIComponent(p) + '&t=' + Date.now();
-  const r = await fetch(url, { cache: 'no-store' });
-  if(!r.ok) throw new Error('md status ' + r.status + ' ' + p);
-  return await r.text();
-}
-
-async function loadAndRenderNow(forceServerOnly = false){
-  // forceServerOnly: when true, still render pending but prefer server content update (used after j.item)
-  try{
-    // 1) fetch index
-    const index = await fetchIndexNoCache();
-    const items = (index || []).filter(i => i.section === 'films');
-
-    // 2) fetch md content for each item
-    const serverItems = await Promise.all(items.map(async i => {
-      try{
-        let md = await fetchMarkdownNoCache(i.path);
-        // remove YAML frontmatter if present to avoid showing it as content
-        md = md.replace(/^---[\s\S]*?---\s*/, '');
-        return { title: i.title, pseudo: i.pseudo, author: i.author || i.meta || '', contentHtml: marked.parse(md), path: i.path };
-      }catch(e){
-        return { title: i.title, pseudo: i.pseudo, contentHtml: '<div class="meta">Erreur lecture contenu</div>', path: i.path };
-      }
-    }));
-
-    // 3) remove pending items that now appear in serverItems
-    for(const si of serverItems){
-      removePendingMatchedByServerItem({ title: si.title, pseudo: si.pseudo, content: stripHtml(si.contentHtml) });
-    }
-
-    // 4) render combined
-    renderCombinedList(serverItems);
-
-    // Optionally show the latest server item as featured (only if none pending)
-    // choose the most recent server item if available
-    if(serverItems && serverItems.length){
-      // prefer top server item (first); you can change selection logic
-      renderFeaturedFilm({ title: serverItems[0].title, pseudo: serverItems[0].pseudo, author: serverItems[0].author || '', contentHtml: serverItems[0].contentHtml });
-    } else {
-      // if no server items but there are pending, show first pending as featured
-      if(pending && pending.length){
-        const p = pending[0];
-        renderFeaturedFilm({ title: p.title, pseudo: p.pseudo, author: p.author || '', content: renderMarkdown(p.content), isPending: true });
-      } else {
-        hideFeaturedFilm();
-      }
-    }
-
-  }catch(e){
-    // on erreur, on se rabat sur l'affichage local uniquement
-    console.warn('loadAndRenderNow failed', e);
-    const fallbackServerItems = [];
-    renderCombinedList(fallbackServerItems);
-    debug(String(e));
-  }
-}
-
-/* ========= RENDER COMBINED ========= */
-function renderCombinedList(serverItems = []){
-  // serverItems: [{title,pseudo,contentHtml,path,author,...}, ...]
-  // Build server map to detect matches
-  const serverMap = serverItems.map(si => ({
-    title: si.title,
-    pseudo: si.pseudo,
-    snippet: (si.contentHtml ? stripHtml(si.contentHtml) : (si.content||'')).trim().slice(0,120)
-  }));
-  // Build server HTML
-  const serverHtml = serverItems.map(si => buildArticleHtml(si, {pending:false})).join('');
-
-  // Find pending items not present on server (heuristic)
-  const missingPending = pending.filter(p => {
-    const pSnippet = (p.content||'').trim().slice(0,120);
-    return !serverMap.some(sm => sm.title === p.title && sm.pseudo === p.pseudo && sm.snippet === pSnippet);
-  });
-
-  const pendingHtml = missingPending.map(p => buildArticleHtml(p, {pending:true})).join('');
-
-  const combined = (pendingHtml ? pendingHtml : '') + (serverHtml ? serverHtml : '');
-  $('#proposals-list').innerHTML = combined || '<div class="muted">Aucune proposition.</div>';
-}
-
-/* ========= POLLING (backoff) ========= */
-let pollHandle = null;
-let pollAttempts = 0;
-const POLL_MAX_ATTEMPTS = 8; // exponentiel (approx up to ~10-60s)
-function pollOnce(){
-  pollAttempts++;
-  loadAndRenderNow().then(()=>{
-    // if pending empty, stop polling
-    if(pending.length === 0 || pollAttempts >= POLL_MAX_ATTEMPTS){
-      clearPoll();
-    } else {
-      // schedule next with backoff
-      const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); // 1s,2s,4s,8s,...
-      pollHandle = setTimeout(pollOnce, delay);
-    }
-  }).catch(()=>{
-    // error already handled in loadAndRenderNow
-    const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000);
-    pollHandle = setTimeout(pollOnce, delay);
-  });
-}
-
-function ensurePolling(){
-  if(pollHandle) return;
-  pollAttempts = 0;
-  pollOnce();
-}
-
-function clearPoll(){
-  if(pollHandle) clearTimeout(pollHandle);
-  pollHandle = null;
-  pollAttempts = 0;
-}
-
-/* ========= DELETE HANDLERS ========= */
-// event delegation: handle both pending (local) deletes and server deletes
-$('#proposals-list').addEventListener('click', async (e) => {
-  const btn = e.target.closest('button.delete-btn');
-  if(!btn) return;
-
-  // Local pending delete
-  if(btn.classList.contains('pending-delete')){
-    const temp = btn.dataset.temp;
-    if(!confirm('Supprimer cette proposition locale ?')) return;
-    if(removePendingByTempId(temp)){
-      $('#result').textContent = 'Proposition locale supprimée';
-      loadAndRenderNow();
-    } else {
-      $('#result').textContent = 'Introuvable';
-    }
-    return;
+  // ---------- RENDER COMBINED ----------
+  function renderCombinedList(serverItems = []){
+    const serverMap = serverItems.map(si => ({ title: si.title, pseudo: si.pseudo, snippet: (si.contentHtml ? stripHtml(si.contentHtml) : (si.content||'')).trim().slice(0,120) }));
+    const serverHtml = serverItems.map(si => buildArticleHtml(si, {pending:false})).join('');
+    const missingPending = pending.filter(p => { const pSnippet = (p.content||'').trim().slice(0,120); return !serverMap.some(sm => sm.title === p.title && sm.pseudo === p.pseudo && sm.snippet === pSnippet); });
+    const pendingHtml = missingPending.map(p => buildArticleHtml(p, {pending:true})).join('');
+    const combined = (pendingHtml ? pendingHtml : '') + (serverHtml ? serverHtml : '');
+    $('#proposals-list').innerHTML = combined || '<div class="muted">Aucune proposition.</div>';
   }
 
-  // Server delete (best-effort): requires your worker to expose a /delete endpoint that accepts { path }
-  if(btn.classList.contains('server-delete')){
-    const path = btn.dataset.path;
-    if(!path){ $('#result').textContent = 'Impossible : pas de chemin connu pour cette proposition.'; return; }
-    if(!confirm('Confirmer suppression sur le serveur ? Cette action est irréversible sur le serveur.')) return;
+  // ---------- FORM SUBMIT ----------
+  document.getElementById('proposal-form').onsubmit = async e => {
+    e.preventDefault();
+    $('#result').textContent = 'Envoi…';
+
+    const data = Object.fromEntries(new FormData(e.target).entries());
+    if(!data.title || !data.content || !data.pseudo){ $('#result').textContent = 'Remplis tous les champs.'; return; }
 
     try{
-      btn.disabled = true;
-      $('#result').textContent = 'Suppression…';
-      // Many workers prefer POST for actions; try POST /delete with JSON
-      const r = await fetch(WORKER_URL + '/delete', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ path })
-      });
-      let j = {};
-      try{ j = await r.json(); }catch(e){ j = { success: r.ok } }
+      const r = await fetch(WORKER_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
+      const j = await r.json();
 
-      if(r.ok && j.success){
-        $('#result').textContent = '✔ Supprimé sur le serveur';
-        // reload to reflect change
-        await loadAndRenderNow(true);
-      } else {
-        $('#result').textContent = 'Erreur suppression: ' + (j.error || r.status || 'inconnue');
-        btn.disabled = false;
+      if(j.success){
+        $('#result').textContent = '✔ Proposition envoyée';
+        const temp = Object.assign({}, data, { _tempId: 't'+Date.now()+Math.random().toString(36).slice(2,6), createdAt: Date.now() });
+        addPending(temp);
+        loadAndRenderNow();
+        e.target.reset();
+        if(j.item){ removePendingMatchedByServerItem(j.item); setTimeout(()=>loadAndRenderNow(true), 300); }
+        ensurePolling();
+      } else { $('#result').textContent = 'Erreur : ' + (j.error || 'inconnue'); }
+    }catch(err){ $('#result').textContent = 'Erreur réseau'; debug(String(err)); }
+  };
+
+  // ---------- FETCH FUNCTIONS ----------
+  async function fetchIndexNoCache(){ const url = WORKER_URL + '/index?t=' + Date.now(); const r = await fetch(url, { cache: 'no-store' }); if(!r.ok) throw new Error('status ' + r.status); return await r.json(); }
+  async function fetchMarkdownNoCache(path){ let p = path || ''; while(p.charAt(0) === '/') p = p.slice(1); const url = WORKER_URL + '/md?path=' + encodeURIComponent(p) + '&t=' + Date.now(); const r = await fetch(url, { cache: 'no-store' }); if(!r.ok) throw new Error('md status ' + r.status + ' ' + p); return await r.text(); }
+
+  // ---------- LOAD & RENDER ----------
+  async function loadAndRenderNow(forceServerOnly = false){
+    try{
+      const index = await fetchIndexNoCache();
+      const items = (index || []).filter(i => i.section === 'films' || (i.path && i.path.startsWith(BASE_PATH)));
+
+      const serverItems = await Promise.all(items.map(async i => {
+        try{
+          let md = await fetchMarkdownNoCache(i.path);
+          // remove YAML frontmatter if present
+          md = md.replace(/^---[\s\S]*?---\s*/, '');
+          const body = md;
+          return { title: i.title, pseudo: i.pseudo, author: i.author || '', contentHtml: marked.parse(body), path: i.path };
+        }catch(e){ return { title: i.title, pseudo: i.pseudo, contentHtml: '<div class="meta">Erreur lecture contenu</div>', path: i.path }; }
+      }));
+
+      for(const si of serverItems){ removePendingMatchedByServerItem({ title: si.title, pseudo: si.pseudo, content: stripHtml(si.contentHtml) }); }
+      renderCombinedList(serverItems);
+
+      // update featured simple-item with first server item or first pending
+      if(serverItems && serverItems.length){
+        renderFeaturedItem({ title: serverItems[0].title, pseudo: serverItems[0].pseudo, author: serverItems[0].author || '', contentHtml: serverItems[0].contentHtml });
+      } else if(pending && pending.length){
+        const p = pending[0];
+        renderFeaturedItem({ title: p.title, pseudo: p.pseudo, author: p.author || '', content: renderMarkdown(p.content) });
       }
-    }catch(err){
-      $('#result').textContent = 'Erreur réseau';
-      btn.disabled = false;
-      debug(String(err));
+    }catch(e){ console.warn('loadAndRenderNow failed', e); renderCombinedList([]); debug(String(e)); }
+  }
+
+  // ---------- POLLING ----------
+  let pollHandle = null; let pollAttempts = 0; const POLL_MAX_ATTEMPTS = 8;
+  function pollOnce(){ pollAttempts++; loadAndRenderNow().then(()=>{ if(pending.length === 0 || pollAttempts >= POLL_MAX_ATTEMPTS){ clearPoll(); } else { const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); } }).catch(()=>{ const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); }); }
+  function ensurePolling(){ if(pollHandle) return; pollAttempts = 0; pollOnce(); }
+  function clearPoll(){ if(pollHandle) clearTimeout(pollHandle); pollHandle = null; pollAttempts = 0; }
+
+  // ---------- DELETE HANDLERS ----------
+  document.getElementById('proposals-list').addEventListener('click', async (e) => {
+    const btn = e.target.closest('button.delete-btn'); if(!btn) return;
+
+    if(btn.classList.contains('pending-delete')){
+      const temp = btn.dataset.temp; if(!confirm('Supprimer cette proposition locale ?')) return; if(removePendingByTempId(temp)){ $('#result').textContent = 'Proposition locale supprimée'; loadAndRenderNow(); } else { $('#result').textContent = 'Introuvable'; } return;
     }
+
+    if(btn.classList.contains('server-delete')){
+      const path = btn.dataset.path; if(!path){ $('#result').textContent = 'Impossible : pas de chemin connu pour cette proposition.'; return; } if(!confirm('Confirmer suppression sur le serveur ? Cette action est irréversible sur le serveur.')) return;
+      try{ btn.disabled = true; $('#result').textContent = 'Suppression…'; const r = await fetch(WORKER_URL + '/delete', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ path }) }); let j = {}; try{ j = await r.json(); }catch(e){ j = { success: r.ok } }
+        if(r.ok && j.success){ $('#result').textContent = '✔ Supprimé sur le serveur'; await loadAndRenderNow(true); } else { $('#result').textContent = 'Erreur suppression: ' + (j.error || r.status || 'inconnue'); btn.disabled = false; }
+      }catch(err){ $('#result').textContent = 'Erreur réseau'; btn.disabled = false; debug(String(err)); }
+    }
+  });
+
+  // ---------- FEATURED (simple-item block) ----------
+  function renderFeaturedItem(item){
+    const titleEl = document.getElementById('simple-title');
+    const pseudoEl = document.getElementById('simple-pseudo');
+    const authorEl = document.getElementById('simple-author');
+    const descEl = document.getElementById('simple-description');
+
+    if(!titleEl) return;
+
+    titleEl.textContent = item.title || 'Sans titre';
+    pseudoEl.textContent = 'Pseudo : ' + (item.pseudo || 'Anonyme');
+    authorEl.textContent = 'Réalisateur : ' + (item.author || '—');
+
+    if(item.contentHtml) descEl.innerHTML = item.contentHtml;
+    else descEl.textContent = item.content || '';
   }
-});
 
-/* ========= FEATURED FILM (UI helpers) ========= */
-let currentFeatured = null;
-function renderFeaturedFilm(item){
-  if(!item) return hideFeaturedFilm();
-  currentFeatured = item;
-  const panel = $('#featured-panel');
-  if(!panel) return;
-  panel.style.display = 'block';
-  $('#featured-title').textContent = item.title || 'Sans titre';
-  $('#featured-meta').textContent = 'Par ' + (item.pseudo || 'Anonyme');
-  $('#featured-author').textContent = item.author ? ('Réalisateur / année : ' + item.author) : 'Réalisateur / année : —';
-  // contentHtml may already be sanitized / parsed
-  if(item.contentHtml){
-    $('#featured-desc').innerHTML = sanitizeHtml(item.contentHtml);
-  } else if(item.content){
-    $('#featured-desc').innerHTML = renderMarkdown(item.content);
-  } else {
-    $('#featured-desc').textContent = '';
-  }
-  // cover text (simple)
-  $('#featured-cover').textContent = (item.title || 'FILM').split(' ')[0].slice(0,6).toUpperCase();
-}
+  // ready to copy — la fonction copyMarkdown() commence ici
+  function copyMarkdown(){
+    const title = document.getElementById('simple-title')?.textContent || 'Sans titre';
+    const pseudo = document.getElementById('simple-pseudo')?.textContent.replace(/^Pseudo\s*:\s*/, '') || 'Anonyme';
+    const author = document.getElementById('simple-author')?.textContent.replace(/^Réalisateur\s*:\s*/, '') || '—';
+    const desc = document.getElementById('simple-description')?.textContent || '';
 
-function hideFeaturedFilm(){
-  const panel = $('#featured-panel');
-  if(panel) panel.style.display = 'none';
-  currentFeatured = null;
-}
+    const md = `# ${title}
 
-/* copy featured markdown to clipboard */
-async function copyFeaturedMarkdown(){
-  if(!currentFeatured){
-    alert('Aucun film mis en avant à copier.');
-    return;
-  }
-  const md = `# ${currentFeatured.title || 'Sans titre'}
+**Pseudo:** ${pseudo}
 
-**Pseudo:** ${currentFeatured.pseudo || 'Anonyme'}
-
-**Réalisateur / année:** ${currentFeatured.author || '—'}
+**Réalisateur:** ${author}
 
 **Description:**
 
-${stripHtml(currentFeatured.contentHtml || renderMarkdown(currentFeatured.content || ''))}
-`;
-  try{
-    await navigator.clipboard.writeText(md);
-    alert('Markdown copié dans le presse-papiers.');
-  }catch(e){
-    alert('Impossible de copier — autorisez le presse-papiers.');
+${desc}`;
+    navigator.clipboard?.writeText(md).then(()=>{ alert('Markdown copié dans le presse-papiers.'); },()=>{ alert('Impossible de copier — autorisez le presse-papiers.'); });
   }
-}
 
-/* print featured */
-function printFeatured(){
-  if(!currentFeatured){ alert('Aucun film mis en avant.'); return; }
-  // open a new window with a minimal print view
-  const w = window.open('', '_blank', 'noopener');
-  const html = `
-  <html><head><title>${escapeHtml(currentFeatured.title || '')}</title>
-  <style>body{font-family:Inter,system-ui;padding:20px;color:#111}</style>
-  </head><body>
-  <h1>${escapeHtml(currentFeatured.title || '')}</h1>
-  <p><strong>Pseudo:</strong> ${escapeHtml(currentFeatured.pseudo || 'Anonyme')}</p>
-  <p><strong>Réalisateur / année:</strong> ${escapeHtml(currentFeatured.author || '—')}</p>
-  <div>${currentFeatured.contentHtml ? sanitizeHtml(currentFeatured.contentHtml) : renderMarkdown(currentFeatured.content || '')}</div>
-  </body></html>`;
-  w.document.write(html);
-  w.document.close();
-  w.focus();
-  w.print();
-}
+  // attach copy/print if buttons exist (kept for parity)
+  document.addEventListener('click', (e) => {
+    if(e.target && e.target.id === 'print-simple') window.print();
+    if(e.target && e.target.id === 'copy-simple') copyMarkdown();
+  });
 
-/* hook featured buttons */
-document.addEventListener('click', (e) => {
-  if(e.target && e.target.id === 'copy-featured'){ copyFeaturedMarkdown(); }
-  if(e.target && e.target.id === 'print-featured'){ printFeatured(); }
-});
-
-/* ========= INIT ========= */
-$('#year').textContent = new Date().getFullYear();
-
-// on load: render server + pending (pending stored in localStorage)
-loadAndRenderNow().then(()=>{
-  // if there are pending items, start polling to confirm them
-  if(pending.length) ensurePolling();
-});
-
-// also poll periodically in background to keep list fresh (every 5 minutes)
-setInterval(()=>{ loadAndRenderNow(); }, 5*60*1000);
-</script>
-
+  // ---------- INIT ----------
+  document.getElementById('year').textContent = new Date().getFullYear();
+  loadAndRenderNow().then(()=>{ if(pending.length) ensurePolling(); });
+  setInterval(()=>{ loadAndRenderNow(); }, 5*60*1000);
+  </script>
 </body>
 </html>
-
-
-  
