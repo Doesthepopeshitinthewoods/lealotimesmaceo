@@ -98,7 +98,7 @@
       <section>
         <article class="card simple-item" aria-labelledby="simple-title">
           <div style="padding:12px">
-            <h2 id="simple-title" class="item-title">Le film de référence</h2>
+            <h2 id="simple-title" class="item-title">Fenêtre sur cour</h2>
             <p class="meta"><span id="simple-pseudo">Pseudo : Cinephile</span> &nbsp; • &nbsp; <span id="simple-author">Réalisateur : —</span></p>
 
             <h3 style="font-size:14px;margin-top:10px;color:var(--muted)">Description</h3>
@@ -108,7 +108,7 @@
           </div>
         </article>
 
-        <h2 style="margin-top:26px">Propositions récentes</h2>
+        <h2 style="margin-top:26px">Recommendations récentes <small style="color:var(--muted);font-size:13px"> (en attente d'ajout)</small></h2>
         <div id="proposals-list" class="panel">Chargement…</div>
       </section>
 
@@ -145,6 +145,10 @@
   const LOCAL_KEY = 'films_pending_v1';
   const BASE_PATH = 'lealotimesmaceo/content/films/';
 
+  // If true, we WILL NOT overwrite the featured "fenêtre sur cour" block automatically.
+  // This ensures the featured film remains as authored in the HTML until you deliberately change it.
+  const LOCK_FEATURED = true;
+
   // ---------- HELPERS ----------
   const $ = s => document.querySelector(s);
   function escapeHtml(s){ return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') }
@@ -170,7 +174,7 @@
   function sanitizeHtml(html){ if(window.DOMPurify && typeof DOMPurify.sanitize === 'function') return DOMPurify.sanitize(html); return escapeHtml(html); }
   function renderMarkdown(md){ try{ return sanitizeHtml(marked.parse(md || '')); }catch(e){ return sanitizeHtml(escapeHtml(md || '')); } }
 
-  // ---------- BUILD ARTICLE ----------
+  // ---------- BUILD ARTICLE (used for pending items) ----------
   function buildArticleHtml(obj, opts = {}){
     const isPending = !!opts.pending;
     const badge = isPending ? '<span class="pending-badge">(en attente)</span>' : '';
@@ -224,11 +228,8 @@
   // ---------- SYNC PENDING ----------
   async function syncPending(){
     if(!pending || pending.length === 0) return;
-    // try to send each pending item to the worker
-    // iterate copy because sync will modify pending
     const toTry = pending.slice();
     for(const p of toTry){
-      // prepare payload
       const md = generateMarkdown(p);
       const filename = p.filename || generateFilename(p);
       const payload = { path: BASE_PATH + filename, content: md, title: p.title, pseudo: p.pseudo, author: p.author || '' };
@@ -241,26 +242,15 @@
         let j = {};
         try{ j = await r.json(); }catch(e){ j = { success: r.ok }; }
         if(r.ok && j.success){
-          // consider it's been saved on server
-          // remove by matching either returned item or temp id
           if(j.item){
             removePendingMatchedByServerItem(j.item);
           } else {
-            // fallback remove by temp id if path matches
-            if(j.path){
-              // attempt to remove the matching pending by checking title/pseudo/content
-              removePendingMatchedByServerItem({ title: p.title, pseudo: p.pseudo, content: stripHtml(renderMarkdown(p.content || '')) });
-            } else {
-              // best-effort: remove by temp id
-              removePendingByTempId(p._tempId);
-            }
+            removePendingMatchedByServerItem({ title: p.title, pseudo: p.pseudo, content: stripHtml(renderMarkdown(p.content || '')) });
           }
         } else {
-          // server returned error — keep it pending
           console.warn('syncPending: server error for', p.title, j.error || r.status);
         }
       }catch(err){
-        // network error — stop trying (we'll try next poll)
         console.warn('syncPending network error', err);
         debug(String(err));
         return;
@@ -268,55 +258,16 @@
     }
   }
 
-  // ---------- FORM SUBMIT (now using /create + markdown) ----------
-  document.getElementById('proposal-form').onsubmit = async e => {
-    e.preventDefault();
-    $('#result').textContent = 'Envoi…';
-
-    const data = Object.fromEntries(new FormData(e.target).entries());
-    if(!data.title || !data.content || !data.pseudo){ $('#result').textContent = 'Remplis tous les champs.'; return; }
-
-    // Prepare markdown + filename
-    const item = { title: data.title, pseudo: data.pseudo, author: data.author || '', content: data.content };
-    const md = generateMarkdown(item);
-    const filename = generateFilename(item);
-    const payload = { path: BASE_PATH + filename, content: md, title: item.title, pseudo: item.pseudo, author: item.author };
-
-    try{
-      const r = await fetch(WORKER_URL + '/create', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify(payload)
-      });
-      let j = {};
-      try{ j = await r.json(); }catch(e){ j = { success: r.ok }; }
-
-      if(r.ok && j.success){
-        $('#result').textContent = '✔ Proposition enregistrée sur le serveur';
-        // If server returned the item, attempt to remove any duplicate pending
-        if(j.item) removePendingMatchedByServerItem(j.item);
-        // force reload to show server item
-        setTimeout(()=>loadAndRenderNow(true), 300);
-      } else {
-        // server responded but with error -> save locally as pending
-        $('#result').textContent = 'Proposition enregistrée localement (erreur serveur)';
-        const temp = Object.assign({}, item, { _tempId: 't'+Date.now()+Math.random().toString(36).slice(2,6), createdAt: Date.now(), filename, content: item.content });
-        addPending(temp);
-        loadAndRenderNow();
-        ensurePolling();
-      }
-    }catch(err){
-      // network error -> save locally and schedule sync
-      $('#result').textContent = 'Hors-ligne : proposition sauvegardée localement (en attente)';
-      const temp = Object.assign({}, item, { _tempId: 't'+Date.now()+Math.random().toString(36).slice(2,6), createdAt: Date.now(), filename, content: item.content });
-      addPending(temp);
-      loadAndRenderNow();
-      debug(String(err));
-      ensurePolling();
-    } finally {
-      e.target.reset();
+  // ---------- RENDER PENDING (Recommendations récentes) ----------
+  function renderPendingList(){
+    // show only pending items (new "Recommendations récentes")
+    if(!pending || pending.length === 0){
+      $('#proposals-list').innerHTML = '<div class="muted">Aucune recommendation en attente.</div>';
+      return;
     }
-  };
+    const html = pending.map(p => buildArticleHtml(p, { pending: true })).join('');
+    $('#proposals-list').innerHTML = html;
+  }
 
   // ---------- FETCH FUNCTIONS ----------
   async function fetchIndexNoCache(){ const url = WORKER_URL + '/index?t=' + Date.now(); const r = await fetch(url, { cache: 'no-store' }); if(!r.ok) throw new Error('status ' + r.status); return await r.json(); }
@@ -337,39 +288,89 @@
         }catch(e){ return { title: i.title, pseudo: i.pseudo, contentHtml: '<div class="meta">Erreur lecture contenu</div>', path: i.path }; }
       }));
 
+      // remove pending items that appear on server
       for(const si of serverItems){ removePendingMatchedByServerItem({ title: si.title, pseudo: si.pseudo, content: stripHtml(si.contentHtml) }); }
-      renderCombinedList(serverItems);
 
-      // update featured simple-item with first server item or first pending
-      if(serverItems && serverItems.length){
-        renderFeaturedItem({ title: serverItems[0].title, pseudo: serverItems[0].pseudo, author: serverItems[0].author || '', contentHtml: serverItems[0].contentHtml });
-      } else if(pending && pending.length){
-        const p = pending[0];
-        renderFeaturedItem({ title: p.title, pseudo: p.pseudo, author: p.author || '', content: renderMarkdown(p.content) });
+      // render pending (recommendations) only
+      renderPendingList();
+
+      // update featured ONLY if not locked and server has items
+      if(!LOCK_FEATURED){
+        if(serverItems && serverItems.length){
+          renderFeaturedItem({ title: serverItems[0].title, pseudo: serverItems[0].pseudo, author: serverItems[0].author || '', contentHtml: serverItems[0].contentHtml });
+        } else if(pending && pending.length){
+          const p = pending[0];
+          renderFeaturedItem({ title: p.title, pseudo: p.pseudo, author: p.author || '', content: renderMarkdown(p.content) });
+        }
       }
-    }catch(e){ console.warn('loadAndRenderNow failed', e); renderCombinedList([]); debug(String(e)); }
+    }catch(e){
+      console.warn('loadAndRenderNow failed', e);
+      renderPendingList();
+      debug(String(e));
+    }
   }
 
   // ---------- POLLING (backoff) with syncPending ----------
   let pollHandle = null; let pollAttempts = 0; const POLL_MAX_ATTEMPTS = 8;
   function pollOnce(){
     pollAttempts++;
-    // first try to sync pending items, then refresh index
-    syncPending().then(()=> {
-      return loadAndRenderNow();
-    }).then(()=> {
+    syncPending().then(()=> loadAndRenderNow() ).then(()=> {
       if(pending.length === 0 || pollAttempts >= POLL_MAX_ATTEMPTS){ clearPoll(); } else { const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); }
     }).catch(()=>{ const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); });
   }
   function ensurePolling(){ if(pollHandle) return; pollAttempts = 0; pollOnce(); }
   function clearPoll(){ if(pollHandle) clearTimeout(pollHandle); pollHandle = null; pollAttempts = 0; }
 
+  // ---------- FORM SUBMIT (add to pending immediately, then try to send) ----------
+  document.getElementById('proposal-form').onsubmit = async e => {
+    e.preventDefault();
+    $('#result').textContent = 'Envoi…';
+
+    const data = Object.fromEntries(new FormData(e.target).entries());
+    if(!data.title || !data.content || !data.pseudo){ $('#result').textContent = 'Remplis tous les champs.'; return; }
+
+    // Prepare item & add to pending immediately so it appears in "Recommendations récentes"
+    const item = { title: data.title, pseudo: data.pseudo, author: data.author || '', content: data.content };
+    const temp = Object.assign({}, item, { _tempId: 't'+Date.now()+Math.random().toString(36).slice(2,6), createdAt: Date.now(), filename: generateFilename(item) });
+    addPending(temp);
+    renderPendingList(); // update UI instantly
+    ensurePolling(); // make sure sync will run
+
+    // Then attempt to save on server (create endpoint)
+    const md = generateMarkdown(item);
+    const payload = { path: BASE_PATH + temp.filename, content: md, title: item.title, pseudo: item.pseudo, author: item.author };
+
+    try{
+      const r = await fetch(WORKER_URL + '/create', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+      let j = {};
+      try{ j = await r.json(); }catch(e){ j = { success: r.ok }; }
+
+      if(r.ok && j.success){
+        $('#result').textContent = '✔ Proposition enregistrée sur le serveur';
+        if(j.item) removePendingMatchedByServerItem(j.item);
+        // refresh to reflect server state
+        setTimeout(()=>loadAndRenderNow(true), 300);
+      } else {
+        $('#result').textContent = 'Proposition sauvegardée localement (erreur serveur)';
+      }
+    }catch(err){
+      $('#result').textContent = 'Hors-ligne : proposition sauvegardée localement (en attente)';
+      debug(String(err));
+    } finally {
+      e.target.reset();
+    }
+  };
+
   // ---------- DELETE HANDLERS ----------
   document.getElementById('proposals-list').addEventListener('click', async (e) => {
     const btn = e.target.closest('button.delete-btn'); if(!btn) return;
 
     if(btn.classList.contains('pending-delete')){
-      const temp = btn.dataset.temp; if(!confirm('Supprimer cette proposition locale ?')) return; if(removePendingByTempId(temp)){ $('#result').textContent = 'Proposition locale supprimée'; loadAndRenderNow(); } else { $('#result').textContent = 'Introuvable'; } return;
+      const temp = btn.dataset.temp; if(!confirm('Supprimer cette recommendation locale ?')) return; if(removePendingByTempId(temp)){ $('#result').textContent = 'Recommendation locale supprimée'; renderPendingList(); } else { $('#result').textContent = 'Introuvable'; } return;
     }
 
     if(btn.classList.contains('server-delete')){
@@ -423,8 +424,12 @@ ${desc}`;
 
   // ---------- INIT ----------
   document.getElementById('year').textContent = new Date().getFullYear();
+  // initial render: show pending from localStorage
+  renderPendingList();
+  // load server index asynchronously (does not override featured if LOCK_FEATURED)
   loadAndRenderNow().then(()=>{ if(pending.length) ensurePolling(); });
   setInterval(()=>{ loadAndRenderNow(); }, 5*60*1000);
   </script>
 </body>
 </html>
+
