@@ -3,40 +3,86 @@
 <head>
   <meta charset="utf-8">
   <title>Culture — Musiques</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
+
   <style>
-    :root{--maxw:760px;--bg:#fff;--text:#111827;--muted:#6b7280;--accent:#1f2937}
+    :root{
+      --maxw:760px;
+      --bg:#fbfcfe;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --text:#0f172a;
+      --accent:#8b0000;
+      --accent-600:#7a0000;
+      --glass:rgba(15,23,42,0.04);
+      --radius:12px;
+      --gap:18px;
+    }
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.7}
-    header{background:#8b0000;border-bottom:1px solid #7a0000}
-    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between}
-    h1{margin:0;font-family:Merriweather,serif;font-size:20px;font-weight:700;color:#fff}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+      background:linear-gradient(180deg,var(--bg),#eef2f6);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.6;
+    }
+    header{
+      background:linear-gradient(90deg,var(--accent),var(--accent-600));
+      color:#fff;
+      border-bottom:1px solid rgba(0,0,0,0.06);
+    }
+    .wrap{
+      max-width:var(--maxw);
+      margin:0 auto;
+      padding:18px 20px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    h1.site-title{margin:0;font-family:Merriweather,serif;font-size:20px;font-weight:700}
     nav{display:flex;gap:12px;align-items:center}
-    nav a{color:#f3f4f6;text-decoration:none;font-size:14px}
+    nav a{color:rgba(255,255,255,0.92);text-decoration:none;font-size:14px}
     nav a:hover{text-decoration:underline}
+
     main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
-    h2{font-family:Merriweather,serif;font-size:18px;margin:0 0 8px}
-    article{margin-bottom:20px}
-    .meta{color:var(--muted);font-size:13px;margin-bottom:6px}
-    footer{border-top:1px solid #e5e7eb;text-align:center;font-size:14px;color:var(--muted);padding:18px 20px}
-    /* form + list */
-    form{margin-top:14px}
-    input,textarea,select{width:100%;padding:10px;margin-bottom:12px;border:1px solid #d1d5db;border-radius:4px}
-    button.primary{padding:10px 16px;background:var(--accent);color:#fff;border:none;border-radius:4px;cursor:pointer}
-    #proposals-list article{border:1px solid #eee;padding:12px;border-radius:8px}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:28px}
+    @media (max-width:980px){ .grid{grid-template-columns:1fr} }
+
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:0 8px 30px rgba(16,24,40,0.06);padding:18px;display:flex;gap:18px;align-items:flex-start}
+    .meta{color:var(--muted);font-size:13px;margin:6px 0}
+    h2.item-title{margin:0;font-size:20px}
+    .description{margin-top:8px;color:#111827}
+
+    .panel{background:var(--card);border-radius:12px;padding:16px;box-shadow:0 6px 20px rgba(16,24,40,0.04)}
+    form{display:flex;flex-direction:column;gap:10px}
+    input,textarea,select{width:100%;padding:10px;border:1px solid #e6e9ef;border-radius:8px;font-size:14px}
+    button.primary{padding:10px 14px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer}
+    .muted{color:var(--muted);font-size:13px}
+
+    #proposals-list article{border:1px solid #f1f5f9;padding:14px;border-radius:10px;margin-bottom:12px;background:linear-gradient(180deg,#fff,#fbfdff)}
+    .badge{display:inline-block;background:var(--glass);padding:6px 8px;border-radius:999px;font-size:12px}
     .pending-badge{font-size:12px;color:#9ca3af;margin-left:8px}
-    pre.debug{display:none;background:#111;color:#0f0;padding:10px;font-size:12px;white-space:pre-wrap}
-    .delete-btn{background:transparent;border:1px solid #e5e7eb;color:#111;padding:6px 10px;border-radius:6px;cursor:pointer;margin-left:8px}
-    .delete-btn:disabled{opacity:0.6;cursor:not-allowed}
+    .synced-badge{font-size:12px;color:green;margin-left:8px}
     .actions{margin-top:10px}
-    .small-muted{font-size:12px;color:var(--muted)}
+    .delete-btn{background:transparent;border:1px solid #e5e7eb;color:var(--text);padding:6px 10px;border-radius:8px;cursor:pointer}
+    .delete-btn:disabled{opacity:0.6;cursor:not-allowed}
+
+    footer.site-footer{max-width:var(--maxw);margin:48px auto 30px;padding:0 20px;color:var(--muted);font-size:13px}
+    pre.debug{display:none}
+
+    @media print{ body{background:#fff} header,footer.site-footer{display:none} .card{box-shadow:none;border-radius:0} }
   </style>
 </head>
 <body>
   <header>
     <div class="wrap">
-      <h1>Blog de l'intranquilité</h1>
+      <h1 class="site-title">Blog de l'intranquilité</h1>
       <nav aria-label="Navigation principale">
         <a href="index.html">Accueil</a>
         <a href="culture-films.html">Films</a>
@@ -48,180 +94,237 @@
   </header>
 
   <main>
-    <h2>Proposer une piste / un album</h2>
+    <div class="grid">
+      <section>
+        <article class="card simple-item" aria-labelledby="page-title">
+          <div style="padding:12px">
+            <h2 id="page-title" class="item-title">Musiques </h2>
+            <p class="meta">Proposez vos titres </p>
+          </div>
+        </article>
 
-    <form id="proposal-form">
-      <input type="hidden" name="section" value="musiques">
-      <input name="pseudo" placeholder="Pseudo" required>
-      <input name="title" placeholder="Titre (piste / album)" required>
-      <input name="artist" placeholder="Interprète / Groupe (optionnel)">
-      <textarea name="content" rows="5" placeholder="Pourquoi recommander ? (commentaire)" required></textarea>
-      <button class="primary">Envoyer</button>
-    </form>
+        <h2 style="margin-top:26px">Recommendations récentes <small style="color:var(--muted);font-size:13px"> (en attente d'ajout)</small></h2>
+        <div id="proposals-list" class="panel">Chargement…</div>
+      </section>
 
-    <p id="result" class="meta small-muted"></p>
+      <aside>
+        <div class="panel">
+          <h3 style="margin:0 0 8px 0">Proposer une piste / un album</h3>
+          <form id="proposal-form">
+            <input type="hidden" name="section" value="musiques">
+            <input name="pseudo" placeholder="Pseudo" required>
+            <input name="title" placeholder="Titre (piste / album)" required>
+            <input name="artist" placeholder="Interprète / Groupe (optionnel)">
+            <textarea name="content" rows="5" placeholder="Pourquoi recommander ? (commentaire en Markdown possible)" required></textarea>
+            <button class="primary">Envoyer</button>
+          </form>
 
-    <hr>
+          <p id="result" class="muted" style="margin-top:10px"></p>
+        </div>
+      </aside>
+    </div>
 
-    <h2>Recommandations récentes</h2>
-    <div id="proposals-list">Chargement…</div>
     <pre id="debug" class="debug"></pre>
   </main>
 
-  <footer>
+  <footer class="site-footer">
     © <span id="year"></span> — Blog personnel
   </footer>
 
-  <!-- deps -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
 
   <script>
-  /* ========= CONFIG ========= */
+  // ---------- CONFIG ----------
   const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev";
   const LOCAL_KEY = 'musiques_pending_v1';
   const PSEUDO_KEY = 'musiques_user_pseudo';
+  const BASE_PATH = 'lealotimesmaceo/content/musiques/';
+  const LOCK_FEATURED = true; // parity with films script (no auto overwrite)
 
-  /* ========= HELPERS ========= */
+  // ---------- HELPERS ----------
   const $ = s => document.querySelector(s);
   function escapeHtml(s){ return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') }
-  function debug(t){ $('#debug').style.display = t ? 'block' : 'none'; $('#debug').textContent = t || '' }
-  function sanitizeHtml(html){ if(window.DOMPurify && typeof DOMPurify.sanitize==='function') return DOMPurify.sanitize(html); return escapeHtml(html); }
+  function debug(t){ const el = $('#debug'); if(!el) return; el.style.display = t ? 'block' : 'none'; el.textContent = t || '' }
+
+  function sanitizeHtml(html){ if(window.DOMPurify && typeof DOMPurify.sanitize === 'function') return DOMPurify.sanitize(html); return escapeHtml(html); }
   function renderMarkdown(md){ try{ return sanitizeHtml(marked.parse(md || '')); }catch(e){ return sanitizeHtml(escapeHtml(md || '')); } }
 
-  /* ========= PENDING STORAGE ========= */
-  let pending = loadPendingFromStorage(); // {title,pseudo,artist,content,_tempId,createdAt}
+  // ---------- PENDING STORAGE ----------
+  // pending entries: { title, pseudo, artist, content, _tempId, createdAt, filename, synced:bool, serverPath?:string }
+  let pending = loadPendingFromStorage();
 
   function loadPendingFromStorage(){
-    try{
-      const raw = localStorage.getItem(LOCAL_KEY);
-      if(!raw) return [];
-      return JSON.parse(raw);
-    }catch(e){
-      console.error('failed parse pending', e);
-      return [];
-    }
+    try{ const raw = localStorage.getItem(LOCAL_KEY); if(!raw) return []; return JSON.parse(raw); }catch(e){ console.error('failed parse pending', e); return []; }
   }
   function savePendingToStorage(){ try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(pending)); }catch(e){ console.warn('localStorage full?'); } }
   function addPending(item){ pending.unshift(item); savePendingToStorage(); }
-  function removePendingByTempId(tempId){
-    const idx = pending.findIndex(p => p._tempId === tempId);
-    if(idx !== -1){ pending.splice(idx,1); savePendingToStorage(); return true; }
+  function removePendingByTempId(tempId){ const idx = pending.findIndex(p => p._tempId === tempId); if(idx !== -1){ pending.splice(idx,1); savePendingToStorage(); return true;} return false; }
+
+  function getStoredPseudo(){ return localStorage.getItem(PSEUDO_KEY) || ''; }
+  function setStoredPseudo(p){ try{ localStorage.setItem(PSEUDO_KEY, p); }catch(e){} }
+
+  // Mark a pending item as synced (keep displayed)
+  function markPendingSyncedByServerItem(serverItem, serverPath){
+    const sContent = (serverItem.content||'').trim().slice(0,120);
+    const idx = pending.findIndex(p => p.title === serverItem.title && p.pseudo === serverItem.pseudo && (p.content||'').trim().slice(0,120) === sContent);
+    if(idx !== -1){
+      pending[idx].synced = true;
+      if(serverPath) pending[idx].serverPath = serverPath;
+      savePendingToStorage();
+      return true;
+    }
     return false;
   }
+
+  // fallback removal
   function removePendingMatchedByServerItem(serverItem){
     const sContent = (serverItem.content||'').trim().slice(0,120);
     const idx = pending.findIndex(p => p.title === serverItem.title && p.pseudo === serverItem.pseudo && (p.content||'').trim().slice(0,120) === sContent);
     if(idx!==-1){ pending.splice(idx,1); savePendingToStorage(); return true; }
     return false;
   }
-  function getStoredPseudo(){ return localStorage.getItem(PSEUDO_KEY) || ''; }
-  function setStoredPseudo(p){ try{ localStorage.setItem(PSEUDO_KEY, p); }catch(e){} }
 
-  /* ========= RENDER HELPERS ========= */
+  // ---------- RENDER ----------
   function buildArticleHtml(obj, opts = {}){
-    const badge = opts.pending ? `<span class="pending-badge">(en attente)</span>` : '';
-    const artistLine = obj.artist ? `<div class="meta">Interprète : ${escapeHtml(obj.artist)}</div>` : '';
+    const isPending = !!opts.pending;
+    let badge = '';
+    if(isPending){
+      badge = obj.synced ? '<span class="synced-badge">(ajouté)</span>' : '<span class="pending-badge">(en attente)</span>';
+    }
+    const artistLine = obj.artist ? '<div class="meta">Interprète : '+escapeHtml(obj.artist)+'</div>' : '';
     const contentHtml = obj.contentHtml ? sanitizeHtml(obj.contentHtml) : renderMarkdown(obj.content || '');
 
     const actions = [];
-    if(opts.pending && obj._tempId) actions.push(`<button class="delete-btn pending-delete" data-temp="${escapeHtml(obj._tempId)}">Supprimer</button>`);
-    if(!opts.pending && obj.path) actions.push(`<button class="delete-btn server-delete" data-path="${escapeHtml(obj.path)}">Supprimer</button>`);
-    const actionsHtml = actions.length ? `<div class="actions">${actions.join('')}</div>` : '';
+    if(obj._tempId) actions.push(`<button class="delete-btn pending-delete" data-temp="${escapeHtml(obj._tempId)}">Supprimer</button>`);
+    if(obj.serverPath) actions.push(`<button class="delete-btn server-delete" data-path="${escapeHtml(obj.serverPath)}">Supprimer (serveur)</button>`);
+    const actionsHtml = actions.length ? '<div class="actions">'+actions.join('')+'</div>' : '';
 
-    return `<article ${obj._tempId ? 'data-temp="'+escapeHtml(obj._tempId)+'"' : ''} ${obj.path ? 'data-path="'+escapeHtml(obj.path)+'"' : ''}>
-      <h3>${escapeHtml(obj.title || 'Sans titre')}${badge}</h3>
-      <div class="meta">Par ${escapeHtml(obj.pseudo || 'Anonyme')}</div>
-      ${artistLine}
-      ${contentHtml}
-      ${actionsHtml}
-    </article>`;
+    const articleAttrs = (obj._tempId ? 'data-temp="'+escapeHtml(obj._tempId)+'"' : '') + (obj.serverPath ? ' data-path="'+escapeHtml(obj.serverPath)+'"' : '');
+
+    return '<article '+articleAttrs+'>'
+      +'<h3>'+escapeHtml(obj.title || 'Sans titre')+' '+badge+'</h3>'
+      +'<div class="meta">Par '+escapeHtml(obj.pseudo || 'Anonyme')+'</div>'
+      +artistLine
+      +'<div class="content">'+contentHtml+'</div>'
+      +actionsHtml
+      +'</article>';
   }
 
   function stripHtml(html){ const tmp = document.createElement('div'); tmp.innerHTML = html || ''; return tmp.textContent || tmp.innerText || ''; }
 
-  function renderCombinedList(serverItems = []){
-    const serverMap = serverItems.map(si => ({
-      title: si.title,
-      pseudo: si.pseudo,
-      snippet: (si.contentHtml ? stripHtml(si.contentHtml) : (si.content||'')).trim().slice(0,120)
-    }));
-    const serverHtml = serverItems.map(si => buildArticleHtml(si, { pending:false })).join('');
-    const missingPending = pending.filter(p => {
-      const pSnippet = (p.content||'').trim().slice(0,120);
-      return !serverMap.some(sm => sm.title === p.title && sm.pseudo === p.pseudo && sm.snippet === pSnippet);
-    });
-    const pendingHtml = missingPending.map(p => buildArticleHtml(p, { pending:true })).join('');
-    const combined = (pendingHtml ? pendingHtml : '') + (serverHtml ? serverHtml : '');
-    $('#proposals-list').innerHTML = combined || 'Aucune proposition.';
+  function renderPendingList(){
+    if(!pending || pending.length === 0){
+      $('#proposals-list').innerHTML = '<div class="muted">Aucune recommendation en attente.</div>';
+      return;
+    }
+    const html = pending.map(p => buildArticleHtml(p, { pending: true })).join('');
+    $('#proposals-list').innerHTML = html;
   }
 
-  /* ========= FORM ========= */
-  $('#proposal-form').onsubmit = async e => {
-    e.preventDefault();
-    $('#result').textContent = 'Envoi…';
+  // ---------- MARKDOWN / FILENAME ----------
+  function slugify(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70); }
+  function generateFilename(item){
+    const base = slugify(item.title || (item.pseudo ? item.pseudo + '-morceau' : 'proposition'));
+    const uniq = Date.now().toString(36).slice(-6);
+    return `${base}-${uniq}.md`;
+  }
+  function generateMarkdown(item){
+    const now = new Date().toISOString();
+    const frontmatter = [
+      '---',
+      `title: "${(item.title||'').replace(/"/g,'\\"')}"`,
+      `pseudo: "${(item.pseudo||'').replace(/"/g,'\\"')}"`,
+      item.artist ? `artist: "${(item.artist||'').replace(/"/g,'\\"')}"` : '',
+      `date: "${now}"`,
+      '---',
+      ''
+    ].filter(Boolean).join('\n');
+    const body = (item.content || '').trim();
+    return frontmatter + '\n' + body + '\n';
+  }
 
-    const data = Object.fromEntries(new FormData(e.target).entries());
-    // include artist field in data
-    // minimal validation
-    if(!data.title || !data.content || !data.pseudo){ $('#result').textContent = 'Remplis tous les champs.'; return; }
-
-    // store pseudo locally so deletion is possible later
-    setStoredPseudo(data.pseudo);
-
+  // ---------- MULTI-METHOD SAVE (create -> root -> save) ----------
+  async function trySaveToServer(item, filename){
+    // 1) /create (markdown)
     try{
-      const r = await fetch(WORKER_URL, {
+      const md = generateMarkdown(item);
+      const payload = { path: BASE_PATH + filename, content: md, title: item.title, pseudo: item.pseudo, artist: item.artist || '' };
+      const r = await fetch(WORKER_URL + '/create', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify(data)
+        body: JSON.stringify(payload)
       });
-      const j = await r.json().catch(()=>({ success: false, error: 'Invalid JSON response' }));
-
-      if(j.success){
-        $('#result').textContent = '✔ Proposition envoyée';
-        const temp = Object.assign({}, data, { _tempId: 't'+Date.now()+Math.random().toString(36).slice(2,6), createdAt: Date.now() });
-        addPending(temp);
-        loadAndRenderNow();
-        e.target.reset();
-
-        // if server returned item with content, remove pending
-        if(j.item){
-          // j.item may not include artist in index; we rely on matching heuristics
-          removePendingMatchedByServerItem(j.item);
-          setTimeout(()=>loadAndRenderNow(true), 300);
-        }
-        // start polling to confirm pending
-        ensurePolling();
-      } else {
-        $('#result').textContent = 'Erreur : ' + (j.error || 'inconnue');
-        debug(JSON.stringify(j));
+      let j = null; try{ j = await r.json(); }catch(e){ j = null; }
+      if(r.ok && (j && j.success || (!j && r.ok))){
+        return { ok:true, json: j || { success:true, path: payload.path, item:{ title:item.title, pseudo:item.pseudo, content:item.content } } };
       }
-    } catch(err){
-      $('#result').textContent = 'Erreur réseau';
-      debug(String(err));
+    }catch(e){ debug('create error: '+String(e)); }
+
+    // 2) root POST (legacy)
+    try{
+      const payload = { section:'musiques', title:item.title, pseudo:item.pseudo, artist:item.artist||'', content:item.content };
+      const r = await fetch(WORKER_URL, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+      let j = null; try{ j = await r.json(); }catch(e){ j = null; }
+      if(r.ok && (j && j.success || (!j && r.ok))){
+        return { ok:true, json: j || { success:true, item:{ title:item.title, pseudo:item.pseudo, content:item.content } } };
+      }
+    }catch(e){ debug('root-post error: '+String(e)); }
+
+    // 3) /save fallback
+    try{
+      const md = generateMarkdown(item);
+      const payload = { path: BASE_PATH + filename, content: md, title: item.title, pseudo: item.pseudo, artist: item.artist || '' };
+      const r = await fetch(WORKER_URL + '/save', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+      let j = null; try{ j = await r.json(); }catch(e){ j = null; }
+      if(r.ok && (j && j.success || (!j && r.ok))){
+        return { ok:true, json:j || { success:true, path: payload.path, item:{ title:item.title, pseudo:item.pseudo, content:item.content } } };
+      }
+    }catch(e){ debug('save error: '+String(e)); }
+
+    return { ok:false, json:null };
+  }
+
+  // ---------- SYNC PENDING ----------
+  async function syncPending(){
+    if(!pending || pending.length === 0) return;
+    const toTry = pending.slice();
+    for(const p of toTry){
+      if(p.synced) continue;
+      const filename = p.filename || generateFilename(p);
+      try{
+        const res = await trySaveToServer({ title:p.title, pseudo:p.pseudo, artist:p.artist||'', content:p.content }, filename);
+        if(res.ok){
+          const serverPath = (res.json && (res.json.path || (res.json.item && res.json.item.path))) || null;
+          const serverItem = (res.json && res.json.item) ? res.json.item : { title:p.title, pseudo:p.pseudo, content:p.content };
+          markPendingSyncedByServerItem(serverItem, serverPath);
+        } else {
+          console.warn('syncPending: could not save', p.title);
+        }
+      }catch(err){
+        console.warn('syncPending network error', err);
+        debug(String(err));
+        return;
+      }
     }
-  };
-
-  /* ========= NETWORK (via Worker) ========= */
-  async function fetchIndexNoCache(){
-    const url = WORKER_URL + '/index?t=' + Date.now();
-    const r = await fetch(url, { cache: 'no-store' });
-    if(!r.ok) throw new Error('index fetch status ' + r.status);
-    return await r.json();
-  }
-  async function fetchMarkdownNoCache(path){
-    const p = (path || '').replace(/^\/+/, '');
-    const url = WORKER_URL + '/md?path=' + encodeURIComponent(p) + '&t=' + Date.now();
-    const r = await fetch(url, { cache: 'no-store' });
-    if(!r.ok) throw new Error('md fetch status ' + r.status + ' ' + p);
-    return await r.text();
   }
 
-  /* parse simple YAML frontmatter key: value lines -> returns object */
+  // ---------- INDEX / MD helpers ----------
+  async function fetchIndexNoCache(){ const url = WORKER_URL + '/index?t=' + Date.now(); const r = await fetch(url, { cache: 'no-store' }); if(!r.ok) throw new Error('status ' + r.status); return await r.json(); }
+  async function fetchMarkdownNoCache(path){ let p = path || ''; while(p.charAt(0) === '/') p = p.slice(1); const url = WORKER_URL + '/md?path=' + encodeURIComponent(p) + '&t=' + Date.now(); const r = await fetch(url, { cache: 'no-store' }); if(!r.ok) throw new Error('md status ' + r.status + ' ' + p); return await r.text(); }
+
   function parseFrontmatter(md){
     const m = md.match(/^---\s*([\s\S]*?)\s*---/);
     if(!m) return {};
-    const lines = m[1].split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const lines = m[1].split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
     const obj = {};
     for(const line of lines){
       const kv = line.split(':');
@@ -233,13 +336,12 @@
     return obj;
   }
 
-  /* ========= LOAD & MERGE ========= */
+  // ---------- LOAD & RENDER (try to mark synced) ----------
   async function loadAndRenderNow(forceServerOnly = false){
     try{
       const rawIndex = await fetchIndexNoCache();
       const index = Array.isArray(rawIndex) ? rawIndex : (Array.isArray(rawIndex.items) ? rawIndex.items : []);
 
-      // keep items that belong to musiques (either indexed by section or have path under /content/musiques/)
       const items = index.filter(i => i.section === 'musiques' || (i.path && i.path.includes('/content/musiques/')));
 
       const serverItems = await Promise.all(items.map(async i => {
@@ -256,53 +358,84 @@
             path: i.path
           };
         }catch(err){
-          return { title: i.title, pseudo: i.pseudo, artist: '', contentHtml: '<div class="meta">Erreur lecture contenu</div>', path: i.path };
+          return { title: i.title, pseudo: i.pseudo, artist:'', contentHtml:'<div class="meta">Erreur lecture contenu</div>', path: i.path };
         }
       }));
 
-      // remove confirmed pending
+      // mark pending that now exist on server
       for(const si of serverItems){
-        removePendingMatchedByServerItem({ title: si.title, pseudo: si.pseudo, content: si.content || '' });
+        const serverItem = { title: si.title, pseudo: si.pseudo, content: si.content || '' };
+        markPendingSyncedByServerItem(serverItem, si.path);
       }
 
-      renderCombinedList(serverItems);
+      // render only recommendations (pending and kept synced)
+      renderPendingList();
     }catch(e){
       console.warn('loadAndRenderNow failed', e);
-      renderCombinedList([]);
+      renderPendingList();
       debug(String(e));
     }
   }
 
-  /* ========= POLLING ========= */
-  let pollHandle = null;
-  let pollAttempts = 0;
+  // ---------- POLLING (backoff) ----------
+  let pollHandle = null; let pollAttempts = 0; const POLL_MAX_ATTEMPTS = 8;
   function pollOnce(){
     pollAttempts++;
-    loadAndRenderNow().then(()=>{
-      if(pending.length === 0 || pollAttempts >= 8){ clearPoll(); }
-      else { const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); }
+    syncPending().then(()=> loadAndRenderNow() ).then(()=> {
+      if(pending.length === 0 || pollAttempts >= POLL_MAX_ATTEMPTS){ clearPoll(); } else { const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); }
     }).catch(()=>{ const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); });
   }
   function ensurePolling(){ if(pollHandle) return; pollAttempts = 0; pollOnce(); }
   function clearPoll(){ if(pollHandle) clearTimeout(pollHandle); pollHandle = null; pollAttempts = 0; }
 
-  /* ========= DELETE HANDLERS (delegation) ========= */
-  $('#proposals-list').addEventListener('click', async (ev) => {
+  // ---------- FORM SUBMIT ----------
+  document.getElementById('proposal-form').onsubmit = async e => {
+    e.preventDefault();
+    $('#result').textContent = 'Envoi…';
+
+    const data = Object.fromEntries(new FormData(e.target).entries());
+    if(!data.title || !data.content || !data.pseudo){ $('#result').textContent = 'Remplis tous les champs.'; return; }
+
+    setStoredPseudo(data.pseudo);
+
+    const item = { title: data.title, pseudo: data.pseudo, artist: data.artist || '', content: data.content };
+    const filename = generateFilename(item);
+    const temp = Object.assign({}, item, { _tempId: 't'+Date.now()+Math.random().toString(36).slice(2,6), createdAt: Date.now(), filename, synced:false });
+    addPending(temp);
+    renderPendingList();
+    ensurePolling();
+
+    try{
+      const res = await trySaveToServer(item, filename);
+      if(res.ok){
+        $('#result').textContent = '✔ Proposition enregistrée sur le serveur';
+        const serverPath = (res.json && (res.json.path || (res.json.item && res.json.item.path))) || null;
+        const serverItem = (res.json && res.json.item) ? res.json.item : { title:item.title, pseudo:item.pseudo, content:item.content };
+        markPendingSyncedByServerItem(serverItem, serverPath);
+        setTimeout(()=>loadAndRenderNow(true), 300);
+      } else {
+        $('#result').textContent = 'Proposition sauvegardée localement (en attente)';
+      }
+    }catch(err){
+      $('#result').textContent = 'Hors-ligne : proposition sauvegardée localement (en attente)';
+      debug(String(err));
+    } finally {
+      e.target.reset();
+    }
+  };
+
+  // ---------- DELETE HANDLERS ----------
+  document.getElementById('proposals-list').addEventListener('click', async (ev) => {
     const btn = ev.target.closest('button.delete-btn');
     if(!btn) return;
 
-    // pending delete (local)
     if(btn.classList.contains('pending-delete')){
       const temp = btn.dataset.temp;
-      if(!confirm('Supprimer cette proposition locale ?')) return;
-      if(removePendingByTempId(temp)){
-        $('#result').textContent = 'Proposition locale supprimée';
-        loadAndRenderNow();
-      } else { $('#result').textContent = 'Introuvable'; }
+      if(!confirm('Supprimer cette recommendation locale ?')) return;
+      if(removePendingByTempId(temp)){ $('#result').textContent = 'Recommendation locale supprimée'; renderPendingList(); } else { $('#result').textContent = 'Introuvable'; }
       return;
     }
 
-    // server delete
     if(btn.classList.contains('server-delete')){
       const path = btn.dataset.path;
       if(!path){ $('#result').textContent = 'Impossible : pas de chemin connu pour cette proposition.'; return; }
@@ -311,7 +444,6 @@
       try{
         btn.disabled = true;
         $('#result').textContent = 'Suppression…';
-        // include pseudo if stored locally (worker expects pseudo in many implementations)
         const payload = { path };
         const storedPseudo = getStoredPseudo();
         if(storedPseudo) payload.pseudo = storedPseudo;
@@ -321,17 +453,17 @@
           headers: {'Content-Type':'application/json'},
           body: JSON.stringify(payload)
         });
-
         let j = {};
-        try{ j = await r.json(); } catch(e){ j = { success: r.ok }; }
+        try{ j = await r.json(); }catch(e){ j = { success: r.ok }; }
 
         if(r.ok && j.success){
           $('#result').textContent = '✔ Supprimé sur le serveur';
+          const idx = pending.findIndex(p => p.serverPath === path);
+          if(idx !== -1){ delete pending[idx].serverPath; pending[idx].synced = false; savePendingToStorage(); renderPendingList(); }
           await loadAndRenderNow(true);
         } else {
           $('#result').textContent = 'Erreur suppression: ' + (j.error || r.status || 'inconnue');
           btn.disabled = false;
-          debug(JSON.stringify(j));
         }
       }catch(err){
         $('#result').textContent = 'Erreur réseau';
@@ -341,12 +473,12 @@
     }
   });
 
-  /* ========= INIT ========= */
+  // ---------- INIT ----------
   document.getElementById('year').textContent = new Date().getFullYear();
-  // initial load
+  renderPendingList();
   loadAndRenderNow().then(()=>{ if(pending.length) ensurePolling(); });
-  // periodic refresh
-  setInterval(()=>{ loadAndRenderNow().catch(()=>{}); }, 5*60*1000);
+  setInterval(()=>{ loadAndRenderNow(); }, 5*60*1000);
   </script>
 </body>
 </html>
+
