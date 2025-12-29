@@ -69,6 +69,7 @@
     #proposals-list article{border:1px solid #f1f5f9;padding:14px;border-radius:10px;margin-bottom:12px;background:linear-gradient(180deg,#fff,#fbfdff)}
     .badge{display:inline-block;background:var(--glass);padding:6px 8px;border-radius:999px;font-size:12px}
     .pending-badge{font-size:12px;color:#9ca3af;margin-left:8px}
+    .synced-badge{font-size:12px;color:green;margin-left:8px}
     .actions{margin-top:10px}
     .delete-btn{background:transparent;border:1px solid #e5e7eb;color:var(--text);padding:6px 10px;border-radius:8px;cursor:pointer}
     .delete-btn:disabled{opacity:0.6;cursor:not-allowed}
@@ -99,19 +100,16 @@
         <article class="card simple-book" aria-labelledby="simple-title">
   <div style="padding:12px">
     <h2 id="simple-title" class="book-title">Le meilleur des mondes</h2>
-    <p class="meta"><span id="simple-pseudo">Pseudo : TimmyX</span> &nbsp; • &nbsp; <span id="simple-author">Auteur : Aldous Huxley
-—</span></p>
+    <p class="meta"><span id="simple-pseudo">Pseudo : TimmyX</span> &nbsp; • &nbsp; <span id="simple-author">Auteur : Aldous Huxley —</span></p>
 
     <h3 style="font-size:14px;margin-top:10px;color:var(--muted)">Description</h3>
-    <p id="simple-description" class="description"> Une petite dystopie qui se lit vite (180 pages seulement) intéressante à bien des égards. Cet univers montre des dérives impliquées par une application de la rationnalité stricte à la nature humaine. Les castes sociales sont prédéterminées dès la naissance pour que la société puisse tourner "sans frottement". Chacun à sa place pour exécuter ses fonctions sans avoir de raison de se plaindre. Ce bouquin c'est littéralement la vision qu'aurait un autiste un peu radical et antisocial de la société idéale. Des pions sur un échiquier ou toi qui joue aux Sims sans leur laisser de chiottes.</p>
+    <p id="simple-description" class="description">Une petite dystopie qui se lit vite (180 pages seulement) intéressante à bien des égards. Cet univers montre des dérives impliquées par une application de la rationnalité stricte à la nature humaine. Les castes sociales sont prédéterminées dès la naissance pour que la société puisse tourner "sans frottement". Chacun à sa place pour exécuter ses fonctions sans avoir de raison de se plaindre.</p>
 
     <div style="margin-top:12px"><span class="badge">fiche livre</span></div>
-
-    
   </div>
 </article>
 
-        <h2 style="margin-top:26px">Propositions récentes</h2>
+        <h2 style="margin-top:26px">Recommendations récentes <small style="color:var(--muted);font-size:13px">(en attente d'ajout)</small></h2>
         <div id="proposals-list" class="panel">Chargement…</div>
       </section>
 
@@ -143,13 +141,19 @@
   <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
 
   <script>
+  // ---------- CONFIG ----------
   const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev";
   const LOCAL_KEY = 'livres_pending_v1';
+  const BASE_PATH = 'lealotimesmaceo/content/livres/';
+  const LOCK_FEATURED = true; // do not overwrite the featured book automatically
 
+  // ---------- HELPERS ----------
   const $ = s => document.querySelector(s);
   function escapeHtml(s){ return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') }
   function debug(t){ const el = $('#debug'); if(!el) return; el.style.display = t ? 'block' : 'none'; el.textContent = t || '' }
 
+  // ---------- PENDING STORAGE ----------
+  // pending shape: { title, pseudo, author, content, _tempId, createdAt, filename, synced:bool, serverPath?:string }
   let pending = loadPendingFromStorage();
 
   function loadPendingFromStorage(){
@@ -158,6 +162,21 @@
   function savePendingToStorage(){ try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(pending)); }catch(e){ console.warn('localStorage full?'); } }
   function addPending(item){ pending.unshift(item); savePendingToStorage(); }
   function removePendingByTempId(tempId){ const idx = pending.findIndex(p => p._tempId === tempId); if(idx !== -1){ pending.splice(idx,1); savePendingToStorage(); return true;} return false; }
+
+  // Mark a pending item as synced (but keep it displayed)
+  function markPendingSyncedByServerItem(serverItem, serverPath){
+    const sContent = (serverItem.content||'').trim().slice(0,120);
+    const idx = pending.findIndex(p => p.title === serverItem.title && p.pseudo === serverItem.pseudo && (p.content||'').trim().slice(0,120) === sContent);
+    if(idx !== -1){
+      pending[idx].synced = true;
+      if(serverPath) pending[idx].serverPath = serverPath;
+      savePendingToStorage();
+      return true;
+    }
+    return false;
+  }
+
+  // fallback remove if user wants explicit removal behavior
   function removePendingMatchedByServerItem(serverItem){
     const sContent = (serverItem.content||'').trim().slice(0,120);
     const idx = pending.findIndex(p => p.title === serverItem.title && p.pseudo === serverItem.pseudo && (p.content||'').trim().slice(0,120) === sContent);
@@ -165,47 +184,200 @@
     return false;
   }
 
+  // ---------- SANITIZE / MARKDOWN ----------
   function sanitizeHtml(html){ if(window.DOMPurify && typeof DOMPurify.sanitize === 'function') return DOMPurify.sanitize(html); return escapeHtml(html); }
   function renderMarkdown(md){ try{ return sanitizeHtml(marked.parse(md || '')); }catch(e){ return sanitizeHtml(escapeHtml(md || '')); } }
 
+  // ---------- BUILD ARTICLE ----------
   function buildArticleHtml(obj, opts = {}){
     const isPending = !!opts.pending;
-    const badge = isPending ? '<span class="pending-badge">(en attente)</span>' : '';
+    let badge = '';
+    if(isPending){
+      badge = obj.synced ? '<span class="synced-badge">(ajouté)</span>' : '<span class="pending-badge">(en attente)</span>';
+    }
     const contentHtml = obj.contentHtml ? sanitizeHtml(obj.contentHtml) : renderMarkdown(obj.content || '');
     const authorLine = obj.author ? '<div class="meta">Auteur : '+escapeHtml(obj.author)+'</div>' : '';
 
     let actionsHtml = '';
-    if(isPending && obj._tempId){ actionsHtml = '<div class="actions"><button class="delete-btn pending-delete" data-temp="'+escapeHtml(obj._tempId)+'">Supprimer</button></div>'; }
-    if(!isPending && obj.path){ actionsHtml = '<div class="actions"><button class="delete-btn server-delete" data-path="'+escapeHtml(obj.path)+'">Supprimer</button></div>'; }
+    const actions = [];
+    // always allow local delete
+    if(obj._tempId){ actions.push(`<button class="delete-btn pending-delete" data-temp="${escapeHtml(obj._tempId)}">Supprimer</button>`); }
+    // if server path exists, show server delete button as well
+    if(obj.serverPath){ actions.push(`<button class="delete-btn server-delete" data-path="${escapeHtml(obj.serverPath)}">Supprimer (serveur)</button>`); }
 
-    const articleAttrs = (obj._tempId ? 'data-temp="'+escapeHtml(obj._tempId)+'"' : '') + (obj.path ? ' data-path="'+escapeHtml(obj.path)+'"' : '');
+    if(actions.length) actionsHtml = '<div class="actions">'+actions.join('')+'</div>';
 
-    return '<article '+articleAttrs+'>
-'
-      +'<h3>'+escapeHtml(obj.title || 'Sans titre')+' '+badge+'</h3>
-'
-      +'<div class="meta">Par '+escapeHtml(obj.pseudo || 'Anonyme')+'</div>
-'
-      +authorLine+'
-'
-      +'<div class="content">'+contentHtml+'</div>
-'
-      +actionsHtml+'
-'
+    const articleAttrs = (obj._tempId ? 'data-temp="'+escapeHtml(obj._tempId)+'"' : '') + (obj.serverPath ? ' data-path="'+escapeHtml(obj.serverPath)+'"' : '');
+
+    return '<article '+articleAttrs+'>'
+      +'<h3>'+escapeHtml(obj.title || 'Sans titre')+' '+badge+'</h3>'
+      +'<div class="meta">Par '+escapeHtml(obj.pseudo || 'Anonyme')+'</div>'
+      +authorLine
+      +'<div class="content">'+contentHtml+'</div>'
+      +actionsHtml
       +'</article>';
   }
 
   function stripHtml(html){ const tmp = document.createElement('div'); tmp.innerHTML = html || ''; return tmp.textContent || tmp.innerText || ''; }
 
-  function renderCombinedList(serverItems = []){
-    const serverMap = serverItems.map(si => ({ title: si.title, pseudo: si.pseudo, snippet: (si.contentHtml ? stripHtml(si.contentHtml) : (si.content||'')).trim().slice(0,120) }));
-    const serverHtml = serverItems.map(si => buildArticleHtml(si, {pending:false})).join('');
-    const missingPending = pending.filter(p => { const pSnippet = (p.content||'').trim().slice(0,120); return !serverMap.some(sm => sm.title === p.title && sm.pseudo === p.pseudo && sm.snippet === pSnippet); });
-    const pendingHtml = missingPending.map(p => buildArticleHtml(p, {pending:true})).join('');
-    const combined = (pendingHtml ? pendingHtml : '') + (serverHtml ? serverHtml : '');
-    $('#proposals-list').innerHTML = combined || '<div class="muted">Aucune proposition.</div>';
+  // ---------- MARKDOWN / FILENAME ----------
+  function slugify(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70); }
+  function generateMarkdown(item){
+    const now = new Date().toISOString();
+    const frontmatter = [
+      '---',
+      `title: "${(item.title||'').replace(/"/g,'\\"')}"`,
+      `pseudo: "${(item.pseudo||'').replace(/"/g,'\\"')}"`,
+      item.author ? `author: "${(item.author||'').replace(/"/g,'\\"')}"` : '',
+      `date: "${now}"`,
+      '---',
+      ''
+    ].filter(Boolean).join('\n');
+    const body = (item.content || '').trim();
+    return frontmatter + '\n' + body + '\n';
+  }
+  function generateFilename(item){
+    const base = slugify(item.title || (item.pseudo ? item.pseudo + '-livre' : 'proposition'));
+    const uniq = Date.now().toString(36).slice(-6);
+    return `${base}-${uniq}.md`;
   }
 
+  // ---------- MULTI-METHOD SAVE (try same methods as musique/films) ----------
+  async function trySaveToServer(item, filename){
+    // 1) POST /create (markdown)
+    try {
+      const md = generateMarkdown(item);
+      const payload = { path: BASE_PATH + filename, content: md, title: item.title, pseudo: item.pseudo, author: item.author || '' };
+      const r = await fetch(WORKER_URL + '/create', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+      let j = null;
+      try{ j = await r.json(); }catch(e){ j = null; }
+      if(r.ok && (j && j.success || (!j && r.ok))){
+        return { ok: true, json: j || { success:true, path: payload.path, item: { title: item.title, pseudo: item.pseudo, content: item.content } } };
+      }
+    } catch(e){ debug('create error: ' + String(e)); }
+
+    // 2) POST to root worker with JSON form (legacy)
+    try {
+      const payload = { section: 'livres', title: item.title, pseudo: item.pseudo, author: item.author || '', content: item.content };
+      const r = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+      let j = null;
+      try{ j = await r.json(); }catch(e){ j = null; }
+      if(r.ok && (j && j.success || (!j && r.ok))){
+        return { ok: true, json: j || { success:true, item: { title: item.title, pseudo: item.pseudo, content: item.content } } };
+      }
+    } catch(e){ debug('root-post error: ' + String(e)); }
+
+    // 3) POST /save fallback
+    try {
+      const md = generateMarkdown(item);
+      const payload = { path: BASE_PATH + filename, content: md, title: item.title, pseudo: item.pseudo, author: item.author || '' };
+      const r = await fetch(WORKER_URL + '/save', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+      let j = null;
+      try{ j = await r.json(); }catch(e){ j = null; }
+      if(r.ok && (j && j.success || (!j && r.ok))){
+        return { ok: true, json: j || { success:true, path: payload.path, item: { title: item.title, pseudo: item.pseudo, content: item.content } } };
+      }
+    } catch(e){ debug('save error: ' + String(e)); }
+
+    return { ok: false, json: null };
+  }
+
+  // ---------- SYNC PENDING ----------
+  async function syncPending(){
+    if(!pending || pending.length === 0) return;
+    const toTry = pending.slice();
+    for(const p of toTry){
+      if(p.synced) continue; // skip already synced
+      const filename = p.filename || generateFilename(p);
+      try{
+        const res = await trySaveToServer({ title: p.title, pseudo: p.pseudo, author: p.author || '', content: p.content }, filename);
+        if(res.ok){
+          const serverPath = (res.json && (res.json.path || (res.json.item && res.json.item.path))) || null;
+          const serverItem = (res.json && res.json.item) ? res.json.item : { title: p.title, pseudo: p.pseudo, content: p.content };
+          markPendingSyncedByServerItem(serverItem, serverPath);
+        } else {
+          console.warn('syncPending: could not save', p.title);
+        }
+      }catch(err){
+        console.warn('syncPending network error', err);
+        debug(String(err));
+        return; // stop further tries on network error
+      }
+    }
+  }
+
+  // ---------- RENDER PENDING (Recommendations récentes) ----------
+  function renderPendingList(){
+    if(!pending || pending.length === 0){
+      $('#proposals-list').innerHTML = '<div class="muted">Aucune recommendation en attente.</div>';
+      return;
+    }
+    const html = pending.map(p => buildArticleHtml(p, { pending: true })).join('');
+    $('#proposals-list').innerHTML = html;
+  }
+
+  // ---------- FETCH FUNCTIONS ----------
+  async function fetchIndexNoCache(){ const url = WORKER_URL + '/index?t=' + Date.now(); const r = await fetch(url, { cache: 'no-store' }); if(!r.ok) throw new Error('status ' + r.status); return await r.json(); }
+  async function fetchMarkdownNoCache(path){ let p = path || ''; while(p.charAt(0) === '/') p = p.slice(1); const url = WORKER_URL + '/md?path=' + encodeURIComponent(p) + '&t=' + Date.now(); const r = await fetch(url, { cache: 'no-store' }); if(!r.ok) throw new Error('md status ' + r.status + ' ' + p); return await r.text(); }
+
+  // ---------- LOAD & RENDER ----------
+  async function loadAndRenderNow(forceServerOnly = false){
+    try{
+      const index = await fetchIndexNoCache();
+      const items = (index || []).filter(i => i.section === 'livres' || (i.path && i.path.startsWith(BASE_PATH)));
+
+      const serverItems = await Promise.all(items.map(async i => {
+        try{
+          let md = await fetchMarkdownNoCache(i.path);
+          md = md.replace(/^---[\s\S]*?---\s*/, '');
+          const body = md;
+          return { title: i.title, pseudo: i.pseudo, author: i.author || '', contentHtml: marked.parse(body), path: i.path };
+        }catch(e){ return { title: i.title, pseudo: i.pseudo, contentHtml: '<div class="meta">Erreur lecture contenu</div>', path: i.path }; }
+      }));
+
+      // We do not remove synced pending here; syncPending will mark items as synced.
+      renderPendingList();
+
+      // keep featured locked unless unlocked
+      if(!LOCK_FEATURED){
+        if(serverItems && serverItems.length){
+          renderFeaturedBook({ title: serverItems[0].title, pseudo: serverItems[0].pseudo, author: serverItems[0].author || '', contentHtml: serverItems[0].contentHtml });
+        } else if(pending && pending.length){
+          const p = pending[0];
+          renderFeaturedBook({ title: p.title, pseudo: p.pseudo, author: p.author || '', contentHtml: renderMarkdown(p.content) });
+        }
+      }
+    }catch(e){
+      console.warn('loadAndRenderNow failed', e);
+      renderPendingList();
+      debug(String(e));
+    }
+  }
+
+  // ---------- POLLING (backoff) with syncPending ----------
+  let pollHandle = null; let pollAttempts = 0; const POLL_MAX_ATTEMPTS = 8;
+  function pollOnce(){
+    pollAttempts++;
+    syncPending().then(()=> loadAndRenderNow() ).then(()=> {
+      if(pending.length === 0 || pollAttempts >= POLL_MAX_ATTEMPTS){ clearPoll(); } else { const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); }
+    }).catch(()=>{ const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); });
+  }
+  function ensurePolling(){ if(pollHandle) return; pollAttempts = 0; pollOnce(); }
+  function clearPoll(){ if(pollHandle) clearTimeout(pollHandle); pollHandle = null; pollAttempts = 0; }
+
+  // ---------- FORM SUBMIT ----------
   document.getElementById('proposal-form').onsubmit = async e => {
     e.preventDefault();
     $('#result').textContent = 'Envoi…';
@@ -213,70 +385,54 @@
     const data = Object.fromEntries(new FormData(e.target).entries());
     if(!data.title || !data.content || !data.pseudo){ $('#result').textContent = 'Remplis tous les champs.'; return; }
 
-    try{
-      const r = await fetch(WORKER_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
-      const j = await r.json();
+    const item = { title: data.title, pseudo: data.pseudo, author: data.author || '', content: data.content };
+    const filename = generateFilename(item);
+    const temp = Object.assign({}, item, { _tempId: 't'+Date.now()+Math.random().toString(36).slice(2,6), createdAt: Date.now(), filename, synced:false });
+    addPending(temp);
+    renderPendingList();
+    ensurePolling();
 
-      if(j.success){
-        $('#result').textContent = '✔ Proposition envoyée';
-        const temp = Object.assign({}, data, { _tempId: 't'+Date.now()+Math.random().toString(36).slice(2,6), createdAt: Date.now() });
-        addPending(temp);
-        loadAndRenderNow();
-        e.target.reset();
-        if(j.item){ removePendingMatchedByServerItem(j.item); setTimeout(()=>loadAndRenderNow(true), 300); }
-        ensurePolling();
-      } else { $('#result').textContent = 'Erreur : ' + (j.error || 'inconnue'); }
-    }catch(err){ $('#result').textContent = 'Erreur réseau'; debug(String(err)); }
+    try{
+      const res = await trySaveToServer(item, filename);
+      if(res.ok){
+        $('#result').textContent = '✔ Proposition enregistrée sur le serveur';
+        const serverPath = (res.json && (res.json.path || (res.json.item && res.json.item.path))) || null;
+        const serverItem = (res.json && res.json.item) ? res.json.item : { title: item.title, pseudo: item.pseudo, content: item.content };
+        markPendingSyncedByServerItem(serverItem, serverPath);
+        setTimeout(()=>loadAndRenderNow(true),300);
+      } else {
+        $('#result').textContent = 'Proposition sauvegardée localement (en attente)';
+      }
+    }catch(err){
+      $('#result').textContent = 'Hors-ligne : proposition sauvegardée localement (en attente)';
+      debug(String(err));
+    } finally {
+      e.target.reset();
+    }
   };
 
-  async function fetchIndexNoCache(){ const url = WORKER_URL + '/index?t=' + Date.now(); const r = await fetch(url, { cache: 'no-store' }); if(!r.ok) throw new Error('status ' + r.status); return await r.json(); }
-  async function fetchMarkdownNoCache(path){ let p = path || ''; while(p.charAt(0) === '/') p = p.slice(1); const url = WORKER_URL + '/md?path=' + encodeURIComponent(p) + '&t=' + Date.now(); const r = await fetch(url, { cache: 'no-store' }); if(!r.ok) throw new Error('md status ' + r.status + ' ' + p); return await r.text(); }
-
-  async function loadAndRenderNow(forceServerOnly = false){
-    try{
-      const index = await fetchIndexNoCache();
-      const BASE_PATH = 'lealotimesmaceo/content/livres/';
-      const items = (index || []).filter(i => i.section === 'livres' || (i.path && i.path.startsWith(BASE_PATH)));
-
-      const serverItems = await Promise.all(items.map(async i => {
-        try{
-          const md = await fetchMarkdownNoCache(i.path);
-          const body = md; // keep raw markdown (avoid fragile regex here)
-          return { title: i.title, pseudo: i.pseudo, author: i.author || '', contentHtml: marked.parse(body), path: i.path };
-        }catch(e){ return { title: i.title, pseudo: i.pseudo, contentHtml: '<div class="meta">Erreur lecture contenu</div>', path: i.path }; }
-      }));
-
-      for(const si of serverItems){ removePendingMatchedByServerItem({ title: si.title, pseudo: si.pseudo, content: stripHtml(si.contentHtml) }); }
-      renderCombinedList(serverItems);
-    }catch(e){ console.warn('loadAndRenderNow failed', e); renderCombinedList([]); debug(String(e)); }
-  }
-
-  let pollHandle = null; let pollAttempts = 0; const POLL_MAX_ATTEMPTS = 8;
-  function pollOnce(){ pollAttempts++; loadAndRenderNow().then(()=>{ if(pending.length === 0 || pollAttempts >= POLL_MAX_ATTEMPTS){ clearPoll(); } else { const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); } }).catch(()=>{ const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); }); }
-  function ensurePolling(){ if(pollHandle) return; pollAttempts = 0; pollOnce(); }
-  function clearPoll(){ if(pollHandle) clearTimeout(pollHandle); pollHandle = null; pollAttempts = 0; }
-
+  // ---------- DELETE HANDLERS ----------
   document.getElementById('proposals-list').addEventListener('click', async (e) => {
     const btn = e.target.closest('button.delete-btn'); if(!btn) return;
 
     if(btn.classList.contains('pending-delete')){
-      const temp = btn.dataset.temp; if(!confirm('Supprimer cette proposition locale ?')) return; if(removePendingByTempId(temp)){ $('#result').textContent = 'Proposition locale supprimée'; loadAndRenderNow(); } else { $('#result').textContent = 'Introuvable'; } return;
+      const temp = btn.dataset.temp; if(!confirm('Supprimer cette recommendation locale ?')) return; if(removePendingByTempId(temp)){ $('#result').textContent = 'Recommendation locale supprimée'; renderPendingList(); } else { $('#result').textContent = 'Introuvable'; } return;
     }
 
     if(btn.classList.contains('server-delete')){
       const path = btn.dataset.path; if(!path){ $('#result').textContent = 'Impossible : pas de chemin connu pour cette proposition.'; return; } if(!confirm('Confirmer suppression sur le serveur ? Cette action est irréversible sur le serveur.')) return;
       try{ btn.disabled = true; $('#result').textContent = 'Suppression…'; const r = await fetch(WORKER_URL + '/delete', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ path }) }); let j = {}; try{ j = await r.json(); }catch(e){ j = { success: r.ok } }
-        if(r.ok && j.success){ $('#result').textContent = '✔ Supprimé sur le serveur'; await loadAndRenderNow(true); } else { $('#result').textContent = 'Erreur suppression: ' + (j.error || r.status || 'inconnue'); btn.disabled = false; }
+        if(r.ok && j.success){ $('#result').textContent = '✔ Supprimé sur le serveur'; // unset serverPath & synced flag for local pending if present
+          const idx = pending.findIndex(p => p.serverPath === path);
+          if(idx !== -1){ delete pending[idx].serverPath; pending[idx].synced = false; savePendingToStorage(); renderPendingList(); }
+          await loadAndRenderNow(true);
+        } else { $('#result').textContent = 'Erreur suppression: ' + (j.error || r.status || 'inconnue'); btn.disabled = false; }
       }catch(err){ $('#result').textContent = 'Erreur réseau'; btn.disabled = false; debug(String(err)); }
     }
   });
 
-  document.getElementById('year').textContent = new Date().getFullYear();
-  loadAndRenderNow().then(()=>{ if(pending.length) ensurePolling(); });
-  setInterval(()=>{ loadAndRenderNow(); }, 5*60*1000);
-
+  // ---------- FEATURED (simple-book block) ----------
   function renderFeaturedBook(book){
-    // Mise à jour simple et lisible du bloc "fiche livre"
     const titleEl = document.getElementById('simple-title');
     const pseudoEl = document.getElementById('simple-pseudo');
     const authorEl = document.getElementById('simple-author');
@@ -288,30 +444,40 @@
     pseudoEl.textContent = 'Pseudo : ' + (book.pseudo || 'Anonyme');
     authorEl.textContent = 'Auteur : ' + (book.author || '—');
 
-    // contenu (sécurisé en amont si possible)
     if(book.contentHtml) descEl.innerHTML = book.contentHtml;
     else descEl.textContent = book.content || '';
-
-    // connecter actions locales
-    const printBtn = document.getElementById('print-simple');
-    const copyBtn = document.getElementById('copy-simple');
-    if(printBtn) printBtn.addEventListener('click', () => window.print());
-    if(copyBtn) copyBtn.addEventListener('click', () => copyMarkdown());
   }
 
-  // ready to copy — la fonction copyMarkdown() commence ici
-  function copyMarkdown(){"
-    const md = `# Le meilleur des mondes
+  // copy markdown helper
+  function copyMarkdown(){
+    const title = document.getElementById('simple-title')?.textContent || 'Sans titre';
+    const pseudo = document.getElementById('simple-pseudo')?.textContent.replace(/^Pseudo\s*:\s*/, '') || 'Anonyme';
+    const author = document.getElementById('simple-author')?.textContent.replace(/^Auteur\s*:\s*/, '') || '—';
+    const desc = document.getElementById('simple-description')?.textContent || '';
 
-**Pseudo:** TimmotX
+    const md = `# ${title}
 
-**Auteur:** —
+**Pseudo:** ${pseudo}
+
+**Auteur:** ${author}
 
 **Description:**
 
-description`;
+${desc}`;
     navigator.clipboard?.writeText(md).then(()=>{ alert('Markdown copié dans le presse-papiers.'); },()=>{ alert('Impossible de copier — autorisez le presse-papiers.'); });
   }
+
+  document.addEventListener('click', (e) => {
+    if(e.target && e.target.id === 'print-simple') window.print();
+    if(e.target && e.target.id === 'copy-simple') copyMarkdown();
+  });
+
+  // ---------- INIT ----------
+  document.getElementById('year').textContent = new Date().getFullYear();
+  renderPendingList(); // show local pending first
+  loadAndRenderNow().then(()=>{ if(pending.length) ensurePolling(); });
+  setInterval(()=>{ loadAndRenderNow(); }, 5*60*1000);
   </script>
 </body>
 </html>
+
