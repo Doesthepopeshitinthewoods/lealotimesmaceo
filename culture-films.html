@@ -8,11 +8,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
 
   <style>
-    :root{--maxw:760px;--bg:#fff;--text:#111827;--muted:#6b7280}
+    :root{--maxw:760px;--bg:#fff;--text:#111827;--muted:#6b7280;--accent:#8b0000;--card:#fff}
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui;line-height:1.7}
-    header{background:#8b0000}
-    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px;display:flex;justify-content:space-between}
+    body{margin:0;background:linear-gradient(180deg,var(--bg),#f7fafc);color:var(--text);font-family:Inter,system-ui;line-height:1.7}
+    header{background:linear-gradient(90deg,var(--accent),#7a0000)}
+    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px;display:flex;justify-content:space-between;align-items:center}
     h1{margin:0;font-family:Merriweather,serif;font-size:20px;color:#fff}
     nav a{color:#f3f4f6;text-decoration:none;margin-left:12px;font-size:14px}
     main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
@@ -20,16 +20,22 @@
     article{margin-bottom:20px}
     .meta{color:var(--muted);font-size:13px}
     form{margin-top:20px}
-    input,textarea{width:100%;padding:10px;margin-bottom:12px;border:1px solid #d1d5db;border-radius:4px}
+    input,textarea{width:100%;padding:10px;margin-bottom:12px;border:1px solid #d1d5db;border-radius:6px}
     button{padding:10px 16px;background:#1f2937;color:#fff;border:none;border-radius:4px;cursor:pointer}
-    #proposals-list article{border:1px solid #eee;padding:12px;border-radius:8px}
+    #proposals-list article{border:1px solid #eee;padding:12px;border-radius:8px;background:linear-gradient(180deg,#fff,#fbfdff)}
     .pending-badge{font-size:12px;color:#9ca3af;margin-left:8px}
-    pre.debug{display:none;background:#111;color:#0f0;padding:10px;font-size:12px;white-space:pre-wrap}
+    pre.debug{display:none;background:#111;color:#0f0;padding:10px;font-size:12px;white-space:pre-wrap;border-radius:6px}
 
     /* delete button style */
     .delete-btn{background:transparent;border:1px solid #e5e7eb;color:#111;padding:6px 10px;border-radius:6px;cursor:pointer;margin-left:8px}
     .delete-btn:disabled{opacity:0.6;cursor:not-allowed}
     .actions{margin-top:10px}
+
+    .panel{background:var(--card);border-radius:10px;padding:14px;box-shadow:0 8px 30px rgba(16,24,40,0.04);margin-bottom:16px}
+    .featured {display:flex;gap:12px;align-items:flex-start}
+    .cover{width:96px;height:128px;border-radius:8px;background:linear-gradient(135deg,#fff,#f3f7ff);display:flex;align-items:center;justify-content:center;font-weight:700;color:#0b1220;padding:8px;text-align:center}
+    .muted{color:var(--muted)}
+    .small-btn{padding:8px 10px;border-radius:8px;background:transparent;border:1px solid #e5e7eb;cursor:pointer;margin-right:8px}
   </style>
 </head>
 
@@ -51,20 +57,42 @@
 
 <h2>Proposer un film</h2>
 
-<form id="proposal-form">
+<!-- Featured panel (optionnel) -->
+<div id="featured-panel" class="panel" style="display:none;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <strong>Mise en avant</strong>
+    <div>
+      <button id="print-featured" class="small-btn">Imprimer</button>
+      <button id="copy-featured" class="small-btn">Copier la fiche</button>
+    </div>
+  </div>
+  <div id="featured-film" class="featured">
+    <div class="cover" id="featured-cover">FILM</div>
+    <div>
+      <h3 id="featured-title" style="margin:0">Titre</h3>
+      <div id="featured-meta" class="meta muted">Par —</div>
+      <div id="featured-author" class="meta muted" style="margin-top:6px">Réalisateur : —</div>
+      <div id="featured-desc" style="margin-top:10px;color:var(--text)"></div>
+    </div>
+  </div>
+</div>
+
+<form id="proposal-form" class="panel">
   <input type="hidden" name="section" value="films">
   <input name="pseudo" placeholder="Pseudo" required>
   <input name="title" placeholder="Titre du film" required>
-  <textarea name="content" rows="5" placeholder="Commentaire" required></textarea>
-  <button>Envoyer</button>
+  <input name="author" placeholder="Réalisateur / année (optionnel)">
+  <textarea name="content" rows="5" placeholder="Pourquoi ce film ? (commentaire en Markdown possible)" required></textarea>
+  <div style="display:flex;gap:10px;align-items:center">
+    <button type="submit">Envoyer</button>
+    <div id="result" class="meta" style="margin-left:10px"></div>
+  </div>
 </form>
-
-<p id="result" class="meta"></p>
 
 <hr>
 
 <h2>Propositions récentes</h2>
-<div id="proposals-list">Chargement…</div>
+<div id="proposals-list" class="panel">Chargement…</div>
 <pre id="debug" class="debug"></pre>
 
 </main>
@@ -85,10 +113,10 @@ const LOCAL_KEY = 'films_pending_v1'; // localStorage key
 /* ========= HELPERS ========= */
 const $ = s => document.querySelector(s);
 function escapeHtml(s){ return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') }
-function debug(t){ $('#debug').style.display = t ? 'block' : 'none'; $('#debug').textContent = t || '' }
+function debug(t){ const el = $('#debug'); if(!el) return; el.style.display = t ? 'block' : 'none'; el.textContent = t || '' }
 
 /* ========= PENDING STORAGE ========= */
-let pending = loadPendingFromStorage(); // array of objects {title,pseudo,content,_tempId,createdAt}
+let pending = loadPendingFromStorage(); // array of objects {title,pseudo,author,content,_tempId,createdAt}
 
 function loadPendingFromStorage(){
   try{
@@ -139,7 +167,7 @@ function buildArticleHtml(obj, opts = {}){
   // opts.pending -> boolean: show badge
   const badge = opts.pending ? `<span class="pending-badge">(en attente)</span>` : '';
   const contentHtml = obj.contentHtml ? sanitizeHtml(obj.contentHtml) : renderMarkdown(obj.content || '');
-
+  const authorLine = obj.author ? `<div class="meta muted">Réalisateur / année : ${escapeHtml(obj.author)}</div>` : '';
   // delete button(s): pending items have a local delete; server items have a server delete if path known
   const actions = [];
   if(opts.pending && obj._tempId){
@@ -152,35 +180,12 @@ function buildArticleHtml(obj, opts = {}){
   const actionsHtml = actions.length ? `<div class="actions">${actions.join('')}</div>` : '';
 
   return `<article ${obj._tempId ? 'data-temp="'+escapeHtml(obj._tempId)+'"' : ''} ${obj.path ? 'data-path="'+escapeHtml(obj.path)+'"' : ''}>
-    <h3>${escapeHtml(obj.title || 'Sans titre')}${badge}</h3>
-    <div class="meta">Par ${escapeHtml(obj.pseudo || 'Anonyme')}</div>
-    ${contentHtml}
+    <h3 style="margin:0 0 6px 0">${escapeHtml(obj.title || 'Sans titre')} ${badge}</h3>
+    <div class="meta muted">Par ${escapeHtml(obj.pseudo || 'Anonyme')}</div>
+    ${authorLine}
+    <div style="margin-top:8px">${contentHtml}</div>
     ${actionsHtml}
   </article>`;
-}
-
-/* ========= UI MUTATION ========= */
-function renderCombinedList(serverItems = []){
-  // serverItems: [{title,pseudo,contentHtml,path,...}, ...]
-  // Build server map to detect matches
-  const serverMap = serverItems.map(si => ({
-    title: si.title,
-    pseudo: si.pseudo,
-    snippet: (si.contentHtml ? stripHtml(si.contentHtml) : (si.content||'')).trim().slice(0,120)
-  }));
-  // Build server HTML
-  const serverHtml = serverItems.map(si => buildArticleHtml(si, {pending:false})).join('');
-
-  // Find pending items not present on server (heuristic)
-  const missingPending = pending.filter(p => {
-    const pSnippet = (p.content||'').trim().slice(0,120);
-    return !serverMap.some(sm => sm.title === p.title && sm.pseudo === p.pseudo && sm.snippet === pSnippet);
-  });
-
-  const pendingHtml = missingPending.map(p => buildArticleHtml(p, {pending:true})).join('');
-
-  const combined = (pendingHtml ? pendingHtml : '') + (serverHtml ? serverHtml : '');
-  $('#proposals-list').innerHTML = combined || 'Aucune proposition.';
 }
 
 // helper to strip tags for snippet comparison
@@ -229,10 +234,9 @@ $('#proposal-form').onsubmit = async e => {
         setTimeout(()=>loadAndRenderNow(true), 300);
       } else if (j.path){
         // optional: if worker returns path where content got saved, try to fetch and confirm
-        // we'll rely on polling below
       }
 
-      // start/continue polling (we also poll globally on a timer)
+      // start/continue polling (we also poll periodically)
       ensurePolling();
     } else {
       $('#result').textContent = 'Erreur : ' + (j.error || 'inconnue');
@@ -244,7 +248,6 @@ $('#proposal-form').onsubmit = async e => {
 };
 
 /* ========= FETCH + MERGE ========= */
-/* ---------- MODIFIED: use Worker for index + md ---------- */
 async function fetchIndexNoCache(){
   const url = WORKER_URL + '/index?t=' + Date.now();
   const r = await fetch(url, { cache: 'no-store' });
@@ -259,7 +262,6 @@ async function fetchMarkdownNoCache(path){
   if(!r.ok) throw new Error('md status ' + r.status + ' ' + p);
   return await r.text();
 }
-/* --------------------------------------------------------- */
 
 async function loadAndRenderNow(forceServerOnly = false){
   // forceServerOnly: when true, still render pending but prefer server content update (used after j.item)
@@ -271,23 +273,38 @@ async function loadAndRenderNow(forceServerOnly = false){
     // 2) fetch md content for each item
     const serverItems = await Promise.all(items.map(async i => {
       try{
-        const md = await fetchMarkdownNoCache(i.path);
-        const body = md.replace(/^---[\s\S]*?---/, '');
-        return { title: i.title, pseudo: i.pseudo, contentHtml: marked.parse(body), path: i.path };
+        let md = await fetchMarkdownNoCache(i.path);
+        // remove YAML frontmatter if present to avoid showing it as content
+        md = md.replace(/^---[\s\S]*?---\s*/, '');
+        return { title: i.title, pseudo: i.pseudo, author: i.author || i.meta || '', contentHtml: marked.parse(md), path: i.path };
       }catch(e){
         return { title: i.title, pseudo: i.pseudo, contentHtml: '<div class="meta">Erreur lecture contenu</div>', path: i.path };
       }
     }));
 
     // 3) remove pending items that now appear in serverItems
-    // Convert serverItems to simplified items with content text for matching
     for(const si of serverItems){
-      // try to match and remove pending
       removePendingMatchedByServerItem({ title: si.title, pseudo: si.pseudo, content: stripHtml(si.contentHtml) });
     }
 
     // 4) render combined
     renderCombinedList(serverItems);
+
+    // Optionally show the latest server item as featured (only if none pending)
+    // choose the most recent server item if available
+    if(serverItems && serverItems.length){
+      // prefer top server item (first); you can change selection logic
+      renderFeaturedFilm({ title: serverItems[0].title, pseudo: serverItems[0].pseudo, author: serverItems[0].author || '', contentHtml: serverItems[0].contentHtml });
+    } else {
+      // if no server items but there are pending, show first pending as featured
+      if(pending && pending.length){
+        const p = pending[0];
+        renderFeaturedFilm({ title: p.title, pseudo: p.pseudo, author: p.author || '', content: renderMarkdown(p.content), isPending: true });
+      } else {
+        hideFeaturedFilm();
+      }
+    }
+
   }catch(e){
     // on erreur, on se rabat sur l'affichage local uniquement
     console.warn('loadAndRenderNow failed', e);
@@ -295,6 +312,30 @@ async function loadAndRenderNow(forceServerOnly = false){
     renderCombinedList(fallbackServerItems);
     debug(String(e));
   }
+}
+
+/* ========= RENDER COMBINED ========= */
+function renderCombinedList(serverItems = []){
+  // serverItems: [{title,pseudo,contentHtml,path,author,...}, ...]
+  // Build server map to detect matches
+  const serverMap = serverItems.map(si => ({
+    title: si.title,
+    pseudo: si.pseudo,
+    snippet: (si.contentHtml ? stripHtml(si.contentHtml) : (si.content||'')).trim().slice(0,120)
+  }));
+  // Build server HTML
+  const serverHtml = serverItems.map(si => buildArticleHtml(si, {pending:false})).join('');
+
+  // Find pending items not present on server (heuristic)
+  const missingPending = pending.filter(p => {
+    const pSnippet = (p.content||'').trim().slice(0,120);
+    return !serverMap.some(sm => sm.title === p.title && sm.pseudo === p.pseudo && sm.snippet === pSnippet);
+  });
+
+  const pendingHtml = missingPending.map(p => buildArticleHtml(p, {pending:true})).join('');
+
+  const combined = (pendingHtml ? pendingHtml : '') + (serverHtml ? serverHtml : '');
+  $('#proposals-list').innerHTML = combined || '<div class="muted">Aucune proposition.</div>';
 }
 
 /* ========= POLLING (backoff) ========= */
@@ -384,6 +425,85 @@ $('#proposals-list').addEventListener('click', async (e) => {
   }
 });
 
+/* ========= FEATURED FILM (UI helpers) ========= */
+let currentFeatured = null;
+function renderFeaturedFilm(item){
+  if(!item) return hideFeaturedFilm();
+  currentFeatured = item;
+  const panel = $('#featured-panel');
+  if(!panel) return;
+  panel.style.display = 'block';
+  $('#featured-title').textContent = item.title || 'Sans titre';
+  $('#featured-meta').textContent = 'Par ' + (item.pseudo || 'Anonyme');
+  $('#featured-author').textContent = item.author ? ('Réalisateur / année : ' + item.author) : 'Réalisateur / année : —';
+  // contentHtml may already be sanitized / parsed
+  if(item.contentHtml){
+    $('#featured-desc').innerHTML = sanitizeHtml(item.contentHtml);
+  } else if(item.content){
+    $('#featured-desc').innerHTML = renderMarkdown(item.content);
+  } else {
+    $('#featured-desc').textContent = '';
+  }
+  // cover text (simple)
+  $('#featured-cover').textContent = (item.title || 'FILM').split(' ')[0].slice(0,6).toUpperCase();
+}
+
+function hideFeaturedFilm(){
+  const panel = $('#featured-panel');
+  if(panel) panel.style.display = 'none';
+  currentFeatured = null;
+}
+
+/* copy featured markdown to clipboard */
+async function copyFeaturedMarkdown(){
+  if(!currentFeatured){
+    alert('Aucun film mis en avant à copier.');
+    return;
+  }
+  const md = `# ${currentFeatured.title || 'Sans titre'}
+
+**Pseudo:** ${currentFeatured.pseudo || 'Anonyme'}
+
+**Réalisateur / année:** ${currentFeatured.author || '—'}
+
+**Description:**
+
+${stripHtml(currentFeatured.contentHtml || renderMarkdown(currentFeatured.content || ''))}
+`;
+  try{
+    await navigator.clipboard.writeText(md);
+    alert('Markdown copié dans le presse-papiers.');
+  }catch(e){
+    alert('Impossible de copier — autorisez le presse-papiers.');
+  }
+}
+
+/* print featured */
+function printFeatured(){
+  if(!currentFeatured){ alert('Aucun film mis en avant.'); return; }
+  // open a new window with a minimal print view
+  const w = window.open('', '_blank', 'noopener');
+  const html = `
+  <html><head><title>${escapeHtml(currentFeatured.title || '')}</title>
+  <style>body{font-family:Inter,system-ui;padding:20px;color:#111}</style>
+  </head><body>
+  <h1>${escapeHtml(currentFeatured.title || '')}</h1>
+  <p><strong>Pseudo:</strong> ${escapeHtml(currentFeatured.pseudo || 'Anonyme')}</p>
+  <p><strong>Réalisateur / année:</strong> ${escapeHtml(currentFeatured.author || '—')}</p>
+  <div>${currentFeatured.contentHtml ? sanitizeHtml(currentFeatured.contentHtml) : renderMarkdown(currentFeatured.content || '')}</div>
+  </body></html>`;
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  w.print();
+}
+
+/* hook featured buttons */
+document.addEventListener('click', (e) => {
+  if(e.target && e.target.id === 'copy-featured'){ copyFeaturedMarkdown(); }
+  if(e.target && e.target.id === 'print-featured'){ printFeatured(); }
+});
+
 /* ========= INIT ========= */
 $('#year').textContent = new Date().getFullYear();
 
@@ -400,3 +520,5 @@ setInterval(()=>{ loadAndRenderNow(); }, 5*60*1000);
 </body>
 </html>
 
+
+  
