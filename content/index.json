@@ -1,5 +1,12 @@
 [
   {
+    "title": "Gros-Câlin ",
+    "pseudo": "hme",
+    "section": "livres",
+    "path": "/content/1767098152275-gros-calin.md",
+    "date": "2025-12-30T12:35:52.275Z"
+  },
+  {
     "title": "Les Chroniques martiennes",
     "pseudo": "hme",
     "section": "livres",
@@ -7,14 +14,14 @@
     "date": "2025-12-30T12:35:49.298Z"
   },
   {
-    "title": "La RÃ©volte des anges",
+    "title": "La RÃÂ©volte des anges",
     "pseudo": "hme",
     "section": "livres",
     "path": "/content/1767098147713-la-revolte-des-anges.md",
     "date": "2025-12-30T12:35:47.713Z"
   },
   {
-    "title": "Gros-CÃÂ¢lin ",
+    "title": "Gros-CÃÂÃÂ¢lin ",
     "pseudo": "hme",
     "section": "livres",
     "path": "/content/1767098146235-gros-calin.md",
