@@ -1,6 +1,13 @@
 [
   {
-    "title": "Gros-Câlin",
+    "title": "La Révolte des anges",
+    "pseudo": "hme",
+    "section": "livres",
+    "path": "/content/1767091324789-la-revolte-des-anges.md",
+    "date": "2025-12-30T10:42:04.789Z"
+  },
+  {
+    "title": "Gros-CÃ¢lin",
     "pseudo": "hme",
     "section": "livres",
     "path": "/content/1767091323110-gros-calin.md",
@@ -14,7 +21,7 @@
     "date": "2025-12-30T10:42:00.128Z"
   },
   {
-    "title": "La RÃÂ©volte des anges",
+    "title": "La RÃÂÃÂ©volte des anges",
     "pseudo": "hme",
     "section": "livres",
     "path": "/content/1767091318733-la-revolte-des-anges.md",
