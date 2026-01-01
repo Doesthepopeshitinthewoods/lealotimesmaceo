@@ -1,6 +1,13 @@
 [
   {
-    "title": "Le temps des tempêtes ",
+    "title": "Mein Kampf",
+    "pseudo": "Pseudo",
+    "section": "livres",
+    "path": "/content/1767283573762-mein-kampf.md",
+    "date": "2026-01-01T16:06:13.762Z"
+  },
+  {
+    "title": "Le temps des tempÃªtes ",
     "pseudo": "Pseudo",
     "section": "livres",
     "path": "/content/1767283569370-le-temps-des-tempetes.md",
