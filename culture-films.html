@@ -482,5 +482,80 @@ ${desc}`;
   loadAndRenderNow().then(()=>{ if(pending.length) ensurePolling(); });
   setInterval(()=>{ loadAndRenderNow(); }, 5*60*1000);
   </script>
+  <script>
+/* Frontend pour #remark-form -> POST /api/remarks et affichage de la liste */
+(function(){
+  const form = document.getElementById('remark-form');
+  const resultEl = document.getElementById('remark-result');
+  const listEl = document.getElementById('remarks-list');
+
+  function escapeHtml(s=''){ return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;'); }
+  function fmtDate(iso){ try{ return new Date(iso).toLocaleString(); }catch(e){ return iso; } }
+
+  async function fetchRemarks(){
+    listEl.innerHTML = '<div class="muted">Chargement…</div>';
+    try{
+      const res = await fetch('/api/remarks');
+      if(!res.ok) throw new Error('status ' + res.status);
+      const items = await res.json();
+      if(!items || items.length === 0){
+        listEl.innerHTML = '<div class="muted">Aucune remarque enregistrée.</div>';
+        return;
+      }
+      listEl.innerHTML = '';
+      items.forEach(it => {
+        const art = document.createElement('div');
+        art.className = 'remarks-item';
+        art.innerHTML = `
+          <div><strong>${escapeHtml(it.pseudo || 'Anonyme')}</strong> <span class="muted" style="margin-left:8px;font-size:12px">${fmtDate(it.createdAt)}</span></div>
+          <div style="margin-top:6px;white-space:pre-wrap">${escapeHtml(it.content)}</div>
+        `;
+        listEl.appendChild(art);
+      });
+    }catch(err){
+      console.error(err);
+      listEl.innerHTML = '<div class="muted">Impossible de charger les remarques.</div>';
+    }
+  }
+
+  form.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    resultEl.textContent = '';
+    const fd = new FormData(form);
+    const pseudo = (fd.get('pseudo') || '').toString().slice(0,200).trim();
+    const content = (fd.get('content') || '').toString().slice(0,2000).trim();
+
+    if(!content){
+      resultEl.textContent = 'Le champ "Remarque" est requis.';
+      return;
+    }
+
+    resultEl.textContent = 'Envoi…';
+    try{
+      const res = await fetch('/api/remarks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pseudo, content })
+      });
+      const j = await res.json().catch(()=>null);
+      if(!res.ok){
+        console.error('server error', j);
+        resultEl.textContent = (j && j.error) ? j.error : 'Erreur serveur lors de l\'enregistrement.';
+        return;
+      }
+      resultEl.textContent = '✔ Remarque enregistrée.';
+      form.reset();
+      await fetchRemarks();
+    }catch(err){
+      console.error(err);
+      resultEl.textContent = 'Erreur réseau — la remarque n\'a pas été envoyée.';
+    }
+  });
+
+  // Chargement initial
+  fetchRemarks();
+})();
+</script>
+
 </body>
 </html>
