@@ -887,85 +887,82 @@
 
     // Chargement initial
     fetchRemarks();
-  <script>
-/* --- Remark form: same approach as culture-films --- */
+ <!-- Remarque simple : bas de page (version alignée sur "culture — films") -->
+<article class="card" id="remarks" aria-labelledby="remarks-title" style="margin-top:18px">
+  <h2 id="remarks-title" class="item-title">Remarque / commentaire</h2>
+  <p class="meta">Formulaire </p>
+
+  <!-- FORMULAIRE : garder les mêmes id/name que le JS -->
+  <form id="remark-form" style="margin-top:10px" novalidate>
+    <label for="pseudo" class="muted" style="display:block;margin-bottom:6px">Pseudo (optionnel)</label>
+    <input id="pseudo" name="pseudo" placeholder="Pseudo (optionnel)" aria-label="Pseudo">
+
+    <label for="content" class="muted" style="display:block;margin:10px 0 6px 0">Votre remarque</label>
+    <textarea id="content" name="content" rows="5" placeholder="Votre remarque, suggestion ou correction..." required aria-label="Remarque"></textarea>
+
+    <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+      <button class="primary" type="submit">Enregistrer la remarque</button>
+      <button id="download-remarks" type="button" class="muted" style="background:transparent;border:1px solid #e6e9ef;padding:8px 10px;border-radius:8px;cursor:pointer">Télécharger</button>
+    </div>
+
+    <p id="remark-result" class="muted" style="margin-top:8px"></p>
+  </form>
+
+  <div style="margin-top:12px">
+    <strong>Remarques enregistrées </strong>
+    <div class="remarks-list" id="remarks-list" style="margin-top:8px">
+      <div class="muted">Chargement…</div>
+    </div>
+  </div>
+</article>
+
+<script>
+/* Remarques — structure calquée sur culture-films.js */
 (function(){
-  // CONFIG
-  const WORKER_URL = 'https://steep-dawn-b94d.ettae634.workers.dev'; // adapte si besoin
+  // ---------- CONFIG ----------
+  const WORKER_URL = 'https://steep-dawn-b94d.ettae634.workers.dev';
   const LOCAL_KEY = 'remarks_pending_v1';
   const BASE_PATH = 'lealotimesmaceo/content/remarks/';
+  const POLL_MAX_ATTEMPTS = 8;
 
-  // ELEMENTS
-  const form = document.getElementById('remark-form');
-  const resultEl = document.getElementById('remark-result');
-  const listEl = document.getElementById('remarks-list');
-
-  if(!form || !listEl){
-    console.warn('remark form or list not found');
-    return;
-  }
-
-  // HELPERS
+  // ---------- HELPERS ----------
   const $ = s => document.querySelector(s);
-  function escapeHtmlLocal(s=''){ return String(s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;'); }
-  function fmtDate(iso){ try{ return new Date(iso).toLocaleString(); }catch(e){ return iso; } }
+  function escapeHtml(s=''){ return String(s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;'); }
+  function debug(t){ const el = document.getElementById('debug'); if(!el) return; el.style.display = t ? 'block' : 'none'; el.textContent = t || ''; }
 
-  // PENDING STORAGE
-  let pending = loadPending();
-  function loadPending(){
-    try{ const raw = localStorage.getItem(LOCAL_KEY); return raw ? JSON.parse(raw) : []; }catch(e){ console.warn('parse pending fail', e); return []; }
+  // ---------- STORAGE PENDING ----------
+  let pending = loadPendingFromStorage();
+  function loadPendingFromStorage(){
+    try{ const raw = localStorage.getItem(LOCAL_KEY); if(!raw) return []; return JSON.parse(raw); }catch(e){ console.warn('failed parse pending', e); return []; }
   }
-  function savePending(){ try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(pending)); }catch(e){ console.warn('save pending fail', e); } }
-  function addPending(item){ pending.unshift(item); savePending(); }
-  function removePendingByTempId(id){ const i = pending.findIndex(p => p._tempId === id); if(i>-1){ pending.splice(i,1); savePending(); return true;} return false; }
-
-  // Matching / marking from server response
+  function savePendingToStorage(){ try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(pending)); }catch(e){ console.warn('localStorage full?'); } }
+  function addPending(item){ pending.unshift(item); savePendingToStorage(); }
+  function removePendingByTempId(tempId){ const idx = pending.findIndex(p => p._tempId === tempId); if(idx !== -1){ pending.splice(idx,1); savePendingToStorage(); return true;} return false; }
   function markPendingSyncedByServerItem(serverItem, serverPath){
     const sContent = (serverItem.content||'').trim().slice(0,120);
-    const idx = pending.findIndex(p => p.title === (serverItem.title||'') && p.pseudo === (serverItem.pseudo||'') && (p.content||'').trim().slice(0,120) === sContent);
+    const idx = pending.findIndex(p => p.title === serverItem.title && p.pseudo === serverItem.pseudo && (p.content||'').trim().slice(0,120) === sContent);
     if(idx !== -1){
       pending[idx].synced = true;
       if(serverPath) pending[idx].serverPath = serverPath;
-      savePending();
-      renderList();
+      savePendingToStorage();
       return true;
     }
     return false;
   }
 
-  // RENDER single item (pending or server)
-  function buildItemHtml(obj, opts = {}){
-    const isPending = !!opts.pending;
-    const badge = isPending ? (obj.synced ? '<span class="synced-badge">(ajouté)</span>' : '<span class="pending-badge">(en attente)</span>') : '';
-    const header = `<div style="display:flex;justify-content:space-between;align-items:center"><strong>${escapeHtmlLocal(obj.pseudo || 'Anonyme')}</strong><span class="muted" style="font-size:12px">${fmtDate(obj.createdAt || obj.date || obj.created)}</span></div>`;
-    const content = `<div style="margin-top:6px;white-space:pre-wrap">${escapeHtmlLocal(obj.content || '')}</div>`;
-    const actions = isPending ? `<div style="margin-top:8px"><button class="delete-btn pending-delete" data-temp="${escapeHtmlLocal(obj._tempId||'')}">Supprimer</button></div>` : (obj.serverPath ? `<div style="margin-top:8px"><button class="delete-btn server-delete" data-path="${escapeHtmlLocal(obj.serverPath)}">Supprimer (serveur)</button></div>` : '');
-    return `<article style="border:1px solid #f1f5f9;padding:12px;border-radius:8px;margin-bottom:8px;background:linear-gradient(180deg,#fff,#fbfdff)">${header}${badge}${content}${actions}</article>`;
-  }
-
-  function renderList(){
-    // show pending first; then optionally we keep server-provided list by fetching /api/remarks
-    if((pending||[]).length === 0){
-      // we still call fetchServerRemarks to display server items
-      fetchServerRemarks();
-      return;
-    }
-    listEl.innerHTML = pending.map(p => buildItemHtml(p, { pending:true })).join('');
-  }
-
-  // MARKDOWN / FILENAME helpers (same approach as films)
+  // ---------- MARKDOWN / FILENAME ----------
   function slugify(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70); }
   function generateMarkdown(item){
     const now = new Date().toISOString();
-    const fm = [
+    const frontmatter = [
       '---',
-      `title: "${(item.title||'Remarque').replace(/"/g,'\\"')}"`,
+      `title: "${(item.title||'').replace(/"/g,'\\"')}"`,
       `pseudo: "${(item.pseudo||'').replace(/"/g,'\\"')}"`,
       `date: "${now}"`,
       '---',
       ''
     ].join('\n');
-    return fm + '\n' + (item.content||'') + '\n';
+    return frontmatter + '\n' + (item.content||'') + '\n';
   }
   function generateFilename(item){
     const base = slugify(item.title || (item.pseudo ? item.pseudo + '-remark' : 'remarque'));
@@ -973,38 +970,62 @@
     return `${base}-${uniq}.md`;
   }
 
-  // MULTI-METHOD SAVE (try /create, then root POST, then /save)
+  // ---------- SANITIZE / MARKDOWN RENDER ----------
+  function sanitizeHtml(html){ if(window.DOMPurify && typeof DOMPurify.sanitize === 'function') return DOMPurify.sanitize(html); return escapeHtml(html); }
+  function renderMarkdown(md){ try{ return sanitizeHtml(marked.parse(md || '')); }catch(e){ return sanitizeHtml(escapeHtml(md || '')); } }
+
+  // ---------- BUILD ITEM HTML ----------
+  function buildItemHtml(obj, opts = {}){
+    const isPending = !!opts.pending;
+    let badge = '';
+    if(isPending){
+      badge = obj.synced ? '<span class="synced-badge" style="margin-left:8px;color:green">(ajouté)</span>' : '<span class="pending-badge" style="margin-left:8px;color:#9ca3af">(en attente)</span>';
+    }
+    const contentHtml = obj.contentHtml ? sanitizeHtml(obj.contentHtml) : renderMarkdown(obj.content || '');
+    const headerTime = obj.createdAt ? new Date(obj.createdAt).toLocaleString() : (obj.date ? new Date(obj.date).toLocaleString() : '');
+    const actions = [];
+    if(obj._tempId) actions.push(`<button class="delete-btn pending-delete" data-temp="${escapeHtml(obj._tempId)}">Supprimer</button>`);
+    if(obj.serverPath) actions.push(`<button class="delete-btn server-delete" data-path="${escapeHtml(obj.serverPath)}">Supprimer (serveur)</button>`);
+    const actionsHtml = actions.length ? '<div class="actions" style="margin-top:8px">'+actions.join('')+'</div>' : '';
+    const articleAttrs = (obj._tempId ? 'data-temp="'+escapeHtml(obj._tempId)+'"' : '') + (obj.serverPath ? ' data-path="'+escapeHtml(obj.serverPath)+'"' : '');
+    return `<article ${articleAttrs} style="border:1px solid #f1f5f9;padding:12px;border-radius:8px;margin-bottom:8px;background:linear-gradient(180deg,#fff,#fbfdff)">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><strong>${escapeHtml(obj.pseudo || 'Anonyme')}</strong> ${badge}</div>
+        <div class="muted" style="font-size:12px">${escapeHtml(headerTime)}</div>
+      </div>
+      <div style="margin-top:8px">${contentHtml}</div>
+      ${actionsHtml}
+    </article>`;
+  }
+
+  // ---------- MULTI-METHOD SAVE ----------
   async function trySaveToServer(item, filename){
-    // returns { ok: bool, json: object|null }
     const md = generateMarkdown(item);
     // 1) /create
     try {
-      const payload = { path: BASE_PATH + filename, content: md, title: item.title||'Remarque', pseudo: item.pseudo||'', section:'remarks' };
-      const r = await fetch(WORKER_URL + '/create', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      const payload = { path: BASE_PATH + filename, content: md, title: item.title || 'Remarque', pseudo: item.pseudo || '', section:'remarks' };
+      const r = await fetch(WORKER_URL + '/create', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
       let j = null; try{ j = await r.json(); }catch(e){ j = null; }
       if(r.ok && (j && j.success || (!j && r.ok))) return { ok:true, json:j || { success:true, path: payload.path, item } };
-    } catch(e){ console.warn('create error', e); }
-
-    // 2) root POST (some workers expect a plain POST)
+    } catch(e){ debug('create error: ' + String(e)); }
+    // 2) root POST
     try {
-      const payload = { section: 'remarks', title: item.title||'Remarque', pseudo: item.pseudo||'', content: item.content };
+      const payload = { section: 'remarks', title: item.title || 'Remarque', pseudo: item.pseudo || '', content: item.content };
       const r = await fetch(WORKER_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
       let j = null; try{ j = await r.json(); }catch(e){ j = null; }
       if(r.ok && (j && j.success || (!j && r.ok))) return { ok:true, json:j || { success:true, item } };
-    } catch(e){ console.warn('root-post error', e); }
-
+    } catch(e){ debug('root-post error: ' + String(e)); }
     // 3) /save
     try {
-      const payload = { path: BASE_PATH + filename, content: md, title: item.title||'Remarque', pseudo: item.pseudo||'' };
+      const payload = { path: BASE_PATH + filename, content: md, title: item.title || 'Remarque', pseudo: item.pseudo || '' };
       const r = await fetch(WORKER_URL + '/save', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
       let j = null; try{ j = await r.json(); }catch(e){ j = null; }
       if(r.ok && (j && j.success || (!j && r.ok))) return { ok:true, json:j || { success:true, path: payload.path, item } };
-    } catch(e){ console.warn('save error', e); }
-
+    } catch(e){ debug('save error: ' + String(e)); }
     return { ok:false, json:null };
   }
 
-  // SYNC PENDING (iterate and try to save pending items)
+  // ---------- SYNC PENDING ----------
   async function syncPending(){
     if(!pending || pending.length === 0) return;
     const toTry = pending.slice();
@@ -1012,61 +1033,57 @@
       if(p.synced) continue;
       const filename = p.filename || generateFilename(p);
       try{
-        const res = await trySaveToServer({ title: p.title || 'Remarque', pseudo: p.pseudo || '', content: p.content }, filename);
+        const res = await trySaveToServer({ title: p.title, pseudo: p.pseudo || '', content: p.content }, filename);
         if(res.ok){
           const serverPath = (res.json && (res.json.path || (res.json.item && res.json.item.path))) || null;
           const serverItem = (res.json && res.json.item) ? res.json.item : { title: p.title, pseudo: p.pseudo, content: p.content };
           markPendingSyncedByServerItem(serverItem, serverPath);
         } else {
-          console.warn('Could not persist pending item', p.title);
+          console.warn('syncPending: could not save', p.title);
         }
       }catch(err){
         console.warn('syncPending network error', err);
-        return; // stop on network failure to avoid hammering
+        debug(String(err));
+        return; // stop trying further on network failure
       }
     }
   }
 
-  // POLLING (exponential backoff)
-  let pollHandle = null, pollAttempts = 0;
-  function pollOnce(){
-    pollAttempts++;
-    syncPending().then(()=> fetchServerRemarks()).then(()=> {
-      if(pending.length === 0 || pollAttempts >= 8){ clearPoll(); } else {
-        const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000);
-        pollHandle = setTimeout(pollOnce, delay);
-      }
-    }).catch(()=> {
-      const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000);
-      pollHandle = setTimeout(pollOnce, delay);
-    });
+  // ---------- RENDER ----------
+  function renderPendingList(){
+    const listEl = document.getElementById('remarks-list');
+    if(!listEl) return;
+    if(!pending || pending.length === 0){
+      // no pending: fetch server items instead
+      fetchServerRemarks();
+      return;
+    }
+    const html = pending.map(p => buildItemHtml(p, { pending:true })).join('');
+    listEl.innerHTML = html;
   }
-  function ensurePolling(){ if(pollHandle) return; pollAttempts = 0; pollOnce(); }
-  function clearPoll(){ if(pollHandle) clearTimeout(pollHandle); pollHandle = null; pollAttempts = 0; }
 
-  // FETCH server remarks (fallback to /api/remarks if present)
+  // ---------- FETCH SERVER-SIDE REMARKS ----------
   async function fetchServerRemarks(){
-    // first render pending at top
-    if(pending && pending.length) renderList();
-
-    // try to GET /api/remarks (local server) — if not available, ignore
+    const listEl = document.getElementById('remarks-list');
+    listEl.innerHTML = '<div class="muted">Chargement…</div>';
+    // show pending on top if present
+    const pendingHtml = (pending && pending.length) ? pending.map(p => buildItemHtml(p, { pending:true })).join('') : '';
+    // 1) try local API `/api/remarks`
     try{
-      const r = await fetch('/api/remarks', { cache:'no-store' });
-      if(!r.ok) throw new Error('no local api');
-      const items = await r.json();
-      // merge: show server items after pending (do not remove pending)
-      const html = (pending && pending.length ? pending.map(p => buildItemHtml(p, {pending:true})).join('') : '')
-                 + items.map(it => {
-                    // server items may not have createdAt field but have createdAt in our server code
-                    return buildItemHtml(Object.assign({}, it, { serverPath: it.path || null }), { pending: false });
-                  }).join('');
-      listEl.innerHTML = html || '<div class="muted">Aucune remarque enregistrée.</div>';
+      const res = await fetch('/api/remarks', { cache: 'no-store' });
+      if(!res.ok) throw new Error('no local api');
+      const items = await res.json();
+      const serverHtml = (items || []).map(it => {
+        const si = { pseudo: it.pseudo || 'Anonyme', content: it.content || '', createdAt: it.createdAt || it.date || '' , serverPath: it.path || null, title: it.title || '' };
+        return buildItemHtml(si, { pending:false });
+      }).join('');
+      listEl.innerHTML = (pendingHtml + serverHtml) || '<div class="muted">Aucune remarque enregistrée.</div>';
       return;
     }catch(e){
-      // if /api/remarks not available, try to fetch index from worker and md if you use worker
+      // ignore, try worker index next
     }
 
-    // Try worker index approach (if WORKER_URL supports /index and /md)
+    // 2) try WORKER_URL index/md
     try{
       const idxRes = await fetch(WORKER_URL + '/index?t=' + Date.now(), { cache:'no-store' });
       if(!idxRes.ok) throw new Error('worker index not available');
@@ -1074,98 +1091,158 @@
       const items = (idx || []).filter(i => i.section === 'remarks' || (i.path && i.path.startsWith(BASE_PATH)));
       const serverItems = await Promise.all(items.map(async i => {
         try{
-          let md = await (await fetch(WORKER_URL + '/md?path=' + encodeURIComponent(i.path) + '&t=' + Date.now(), { cache:'no-store' })).text();
+          let md = await fetch(WORKER_URL + '/md?path=' + encodeURIComponent(i.path) + '&t=' + Date.now(), { cache:'no-store' }).then(r => r.text());
           md = md.replace(/^---[\s\S]*?---\s*/, '');
-          return { pseudo: i.pseudo || '', title: i.title || '', content: md, path: i.path, createdAt: i.date || i.createdAt || (new Date().toISOString()) };
-        }catch(e){ return { pseudo: i.pseudo||'', title:i.title||'', content:'(erreur lecture)', path:i.path, createdAt: i.date||new Date().toISOString() }; }
+          return { pseudo: i.pseudo || 'Anonyme', content: md, createdAt: i.date || i.createdAt || '', serverPath: i.path, title: i.title || '' };
+        }catch(e){
+          return { pseudo: i.pseudo || 'Anonyme', content: '(erreur lecture)', createdAt: i.date || i.createdAt || '', serverPath: i.path || null, title: i.title || '' };
+        }
       }));
-      const html = (pending && pending.length ? pending.map(p => buildItemHtml(p, {pending:true})).join('') : '') + serverItems.map(si => buildItemHtml(Object.assign({}, si, { serverPath: si.path }), { pending:false })).join('');
-      listEl.innerHTML = html || '<div class="muted">Aucune remarque enregistrée.</div>';
+      const serverHtml = serverItems.map(si => buildItemHtml(si, { pending:false })).join('');
+      listEl.innerHTML = (pendingHtml + serverHtml) || '<div class="muted">Aucune remarque enregistrée.</div>';
       return;
     }catch(e){
-      // fallback: if nothing available, display pending or empty
-      if(pending && pending.length) return renderList();
-      listEl.innerHTML = '<div class="muted">Aucune remarque enregistrée.</div>';
+      // fallback
     }
+
+    // final fallback: only pending or empty
+    if(pending && pending.length){ listEl.innerHTML = pendingHtml; return; }
+    listEl.innerHTML = '<div class="muted">Aucune remarque enregistrée.</div>';
   }
 
-  // FORM submit handler: save locally as pending immediately, then attempt server save
-  form.addEventListener('submit', async (ev) => {
-    ev.preventDefault();
-    resultEl.textContent = '';
-    const fd = new FormData(form);
-    const pseudo = (fd.get('pseudo') || '').toString().slice(0,200).trim();
-    const content = (fd.get('content') || '').toString().slice(0,5000).trim();
-    if(!content){ resultEl.textContent = 'Le champ "Remarque" est requis.'; return; }
-
-    const item = { title: content.slice(0,60), pseudo: pseudo || 'Anonyme', content };
-    const filename = generateFilename(item);
-    const temp = Object.assign({}, item, { _tempId: 't'+Date.now()+Math.random().toString(36).slice(2,6), createdAt: new Date().toISOString(), filename, synced:false });
-    addPending(temp);
-    renderList();
-    ensurePolling();
-    resultEl.textContent = 'Enregistré localement (en attente de synchronisation)…';
-    form.reset();
-
-    // Try immediate save (best-effort)
-    try {
-      const res = await trySaveToServer(item, filename);
-      if(res.ok){
-        resultEl.textContent = '✔ Remarque synchronisée sur le serveur';
-        const serverPath = (res.json && (res.json.path || (res.json.item && res.json.item.path))) || null;
-        const serverItem = (res.json && res.json.item) ? res.json.item : { title: item.title, pseudo: item.pseudo, content: item.content };
-        markPendingSyncedByServerItem(serverItem, serverPath);
-        // refresh to show remote items too
-        setTimeout(()=> fetchServerRemarks(), 300);
-      } else {
-        resultEl.textContent = 'Proposition sauvegardée localement (en attente)';
+  // ---------- POLLING ----------
+  let pollHandle = null; let pollAttempts = 0;
+  function pollOnce(){
+    pollAttempts++;
+    syncPending().then(()=> fetchServerRemarks() ).then(()=> {
+      if(pending.length === 0 || pollAttempts >= POLL_MAX_ATTEMPTS){ clearPoll(); } else {
+        const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000);
+        pollHandle = setTimeout(pollOnce, delay);
       }
-    } catch(err){
-      console.warn('immediate save failed', err);
-      resultEl.textContent = 'Hors-ligne : proposition sauvegardée localement (en attente)';
-    }
-  });
+    }).catch(()=>{ const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); });
+  }
+  function ensurePolling(){ if(pollHandle) return; pollAttempts = 0; pollOnce(); }
+  function clearPoll(){ if(pollHandle) clearTimeout(pollHandle); pollHandle = null; pollAttempts = 0; }
 
-  // DELETE handlers (delegated)
-  listEl.addEventListener('click', async (ev) => {
-    const btn = ev.target.closest('button');
-    if(!btn) return;
+  // ---------- FORM SUBMIT ----------
+  const form = document.getElementById('remark-form');
+  const resultEl = document.getElementById('remark-result');
+  if(form){
+    form.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      resultEl.textContent = '';
+      const fd = new FormData(form);
+      const pseudo = (fd.get('pseudo') || '').toString().slice(0,200).trim();
+      const content = (fd.get('content') || '').toString().slice(0,5000).trim();
+
+      if(!content){ resultEl.textContent = 'Le champ "Remarque" est requis.'; return; }
+
+      const item = { title: content.slice(0,60), pseudo: pseudo || 'Anonyme', content };
+      const filename = generateFilename(item);
+      const temp = Object.assign({}, item, { _tempId: 't'+Date.now()+Math.random().toString(36).slice(2,6), createdAt: new Date().toISOString(), filename, synced:false });
+      addPending(temp);
+      renderPendingList();
+      ensurePolling();
+
+      resultEl.textContent = 'Envoi…';
+      form.reset();
+
+      try{
+        const res = await trySaveToServer(item, filename);
+        if(res.ok){
+          resultEl.textContent = '✔ Remarque synchronisée sur le serveur';
+          const serverPath = (res.json && (res.json.path || (res.json.item && res.json.item.path))) || null;
+          const serverItem = (res.json && res.json.item) ? res.json.item : { title: item.title, pseudo: item.pseudo, content: item.content };
+          markPendingSyncedByServerItem(serverItem, serverPath);
+          setTimeout(()=> fetchServerRemarks(), 300);
+        } else {
+          resultEl.textContent = 'Remarque sauvegardée localement (en attente)';
+        }
+      }catch(err){
+        console.warn(err);
+        resultEl.textContent = 'Hors-ligne : remarque sauvegardée localement (en attente)';
+        debug(String(err));
+      }
+    });
+  }
+
+  // ---------- DELETE HANDLERS ----------
+  document.getElementById('remarks-list').addEventListener('click', async (e) => {
+    const btn = e.target.closest('button.delete-btn'); if(!btn) return;
     if(btn.classList.contains('pending-delete')){
-      const temp = btn.dataset.temp;
-      if(!confirm('Supprimer cette remarque locale ?')) return;
-      if(removePendingByTempId(temp)){ resultEl.textContent = 'Remarque locale supprimée'; renderList(); } else { resultEl.textContent = 'Introuvable.'; }
-      setTimeout(()=>{ resultEl.textContent = ''; }, 2500);
+      const temp = btn.dataset.temp; if(!confirm('Supprimer cette remarque locale ?')) return;
+      if(removePendingByTempId(temp)){ resultEl.textContent = 'Remarque locale supprimée'; renderPendingList(); } else { resultEl.textContent = 'Introuvable'; }
       return;
     }
     if(btn.classList.contains('server-delete')){
-      const path = btn.dataset.path;
-      if(!path){ resultEl.textContent = 'Impossible : pas de chemin serveur connu.'; return; }
-      if(!confirm('Confirmer suppression sur le serveur ?')) return;
+      const path = btn.dataset.path; if(!path){ resultEl.textContent = 'Impossible : pas de chemin connu pour cette remarque.'; return; }
+      if(!confirm('Confirmer suppression sur le serveur ? Cette action est irréversible sur le serveur.')) return;
       try{
         btn.disabled = true; resultEl.textContent = 'Suppression…';
-        const r = await fetch(WORKER_URL + '/delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ path }) });
-        let j = {}; try{ j = await r.json(); }catch(e){ j = { success: r.ok }; }
+        const r = await fetch(WORKER_URL + '/delete', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ path }) });
+        let j = {}; try{ j = await r.json(); }catch(e){ j = { success: r.ok } }
         if(r.ok && j.success){
           resultEl.textContent = '✔ Supprimé sur le serveur';
-          // clear serverPath from matching pending item
           const idx = pending.findIndex(p => p.serverPath === path);
-          if(idx !== -1){ delete pending[idx].serverPath; pending[idx].synced = false; savePending(); renderList(); }
+          if(idx !== -1){ delete pending[idx].serverPath; pending[idx].synced = false; savePendingToStorage(); renderPendingList(); }
           await fetchServerRemarks();
-        } else {
-          resultEl.textContent = 'Erreur suppression: ' + (j.error || r.status || 'inconnue');
-          btn.disabled = false;
-        }
-      }catch(err){ resultEl.textContent = 'Erreur réseau'; btn.disabled = false; console.warn(err); }
+        } else { resultEl.textContent = 'Erreur suppression: ' + (j.error || r.status || 'inconnue'); btn.disabled = false; }
+      }catch(err){ resultEl.textContent = 'Erreur réseau'; btn.disabled = false; debug(String(err)); }
     }
   });
 
-  // INIT load
-  renderList();
-  fetchServerRemarks().then(()=> { if(pending && pending.length) ensurePolling(); });
-  // periodic refresh of server list
-  setInterval(fetchServerRemarks, 5*60*1000);
+  // ---------- DOWNLOAD BUTTON (simple export of server remarks if available) ----------
+  const downloadBtn = document.getElementById('download-remarks');
+  if(downloadBtn){
+    downloadBtn.addEventListener('click', async () => {
+      downloadBtn.disabled = true;
+      downloadBtn.textContent = 'Préparation…';
+      try{
+        // try /api/remarks first
+        let items = [];
+        try{
+          const r = await fetch('/api/remarks', { cache:'no-store' });
+          if(r.ok) items = await r.json();
+        }catch(e){}
+        // fallback to worker index/md if needed
+        if(!items.length){
+          try{
+            const idxRes = await fetch(WORKER_URL + '/index?t=' + Date.now(), { cache:'no-store' });
+            if(idxRes.ok){
+              const idx = await idxRes.json();
+              const list = (idx || []).filter(i => i.section === 'remarks' || (i.path && i.path.startsWith(BASE_PATH)));
+              items = await Promise.all(list.map(async i => {
+                try{ let md = await fetch(WORKER_URL + '/md?path=' + encodeURIComponent(i.path) + '&t=' + Date.now(), { cache:'no-store' }).then(r => r.text()); md = md.replace(/^---[\s\S]*?---\s*/, ''); return { pseudo: i.pseudo || 'Anonyme', content: md, date: i.date || '' }; }catch(e){ return { pseudo: i.pseudo||'Anonyme', content:'(erreur lecture)', date: i.date||'' }; }
+              }));
+            }
+          }catch(e){}
+        }
+        const txt = (items || []).map(it => `Pseudo: ${it.pseudo || 'Anonyme'}\nDate: ${it.createdAt||it.date||''}\n\n${it.content||''}\n\n-----\n`).join('\n');
+        if(!txt) { resultEl.textContent = 'Aucune remarque disponible à télécharger.'; downloadBtn.disabled = false; downloadBtn.textContent = 'Télécharger'; return; }
+        const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'remarques.txt'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+        downloadBtn.textContent = 'Téléchargé';
+      }catch(err){
+        console.warn(err);
+        resultEl.textContent = 'Impossible de télécharger les remarques.';
+        downloadBtn.textContent = 'Télécharger';
+      } finally {
+        downloadBtn.disabled = false;
+        setTimeout(()=>{ downloadBtn.textContent = 'Télécharger'; }, 1200);
+      }
+    });
+  }
+
+  // ---------- INIT ----------
+  // render pending first then try load server ones
+  renderPendingList();
+  fetchServerRemarks().then(()=>{ if(pending.length) ensurePolling(); });
+  setInterval(()=>{ fetchServerRemarks(); }, 5*60*1000);
+
 })();
 </script>
+
 
 </body>
 </html>
