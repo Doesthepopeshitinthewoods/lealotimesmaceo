@@ -917,30 +917,36 @@
 </article>
 
 <script>
-/* Remarques — structure calquée sur culture-films.js */
-(function(){
-  // ---------- CONFIG ----------
-  const WORKER_URL = 'https://steep-dawn-b94d.ettae634.workers.dev';
-  const LOCAL_KEY = 'remarks_pending_v1';
-  const BASE_PATH = 'lealotimesmaceo/content/remarks/';
-  const POLL_MAX_ATTEMPTS = 8;
+/* Méthode "comme Films" — stockage local + tentative d'écriture dans content/droit-ue/ via WORKER */
+(() => {
+  // --- CONFIG — à adapter ---
+  const WORKER_URL = 'https://steep-dawn-b94d.ettae634.workers.dev'; // <-- mets ici ton worker/API
+  const BASE_PATH = 'content/droit-ue/'; // chemin dans le repo où écrire les .md (ex: content/droit-ue/)
+  const LOCAL_KEY = 'droit_ue_pending_v1';
 
-  // ---------- HELPERS ----------
+  // --- helpers DOM / formatage ---
   const $ = s => document.querySelector(s);
-  function escapeHtml(s=''){ return String(s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;'); }
-  function debug(t){ const el = document.getElementById('debug'); if(!el) return; el.style.display = t ? 'block' : 'none'; el.textContent = t || ''; }
-
-  // ---------- STORAGE PENDING ----------
-  let pending = loadPendingFromStorage();
-  function loadPendingFromStorage(){
-    try{ const raw = localStorage.getItem(LOCAL_KEY); if(!raw) return []; return JSON.parse(raw); }catch(e){ console.warn('failed parse pending', e); return []; }
+  function escapeHtml(s = '') {
+    return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
   }
-  function savePendingToStorage(){ try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(pending)); }catch(e){ console.warn('localStorage full?'); } }
+  function nowIso(){ return new Date().toISOString(); }
+
+  // --- stockage local (pending) ---
+  let pending = loadPendingFromStorage();
+
+  function loadPendingFromStorage(){
+    try{ const raw = localStorage.getItem(LOCAL_KEY); return raw ? JSON.parse(raw) : []; } catch(e){ console.warn('parse pending failed', e); return []; }
+  }
+  function savePendingToStorage(){ try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(pending)); } catch(e){ console.warn('save pending failed', e); } }
   function addPending(item){ pending.unshift(item); savePendingToStorage(); }
-  function removePendingByTempId(tempId){ const idx = pending.findIndex(p => p._tempId === tempId); if(idx !== -1){ pending.splice(idx,1); savePendingToStorage(); return true;} return false; }
+  function removePendingByTempId(tempId){
+    const i = pending.findIndex(p => p._tempId === tempId);
+    if(i !== -1){ pending.splice(i,1); savePendingToStorage(); return true; }
+    return false;
+  }
   function markPendingSyncedByServerItem(serverItem, serverPath){
-    const sContent = (serverItem.content||'').trim().slice(0,120);
-    const idx = pending.findIndex(p => p.title === serverItem.title && p.pseudo === serverItem.pseudo && (p.content||'').trim().slice(0,120) === sContent);
+    const sContent = (serverItem.content||'').trim().slice(0,140);
+    const idx = pending.findIndex(p => p.pseudo === serverItem.pseudo && (p.content||'').trim().slice(0,140) === sContent && p.title === serverItem.title);
     if(idx !== -1){
       pending[idx].synced = true;
       if(serverPath) pending[idx].serverPath = serverPath;
@@ -950,298 +956,241 @@
     return false;
   }
 
-  // ---------- MARKDOWN / FILENAME ----------
+  // --- markdown / filename helpers ---
   function slugify(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70); }
-  function generateMarkdown(item){
-    const now = new Date().toISOString();
-    const frontmatter = [
-      '---',
-      `title: "${(item.title||'').replace(/"/g,'\\"')}"`,
-      `pseudo: "${(item.pseudo||'').replace(/"/g,'\\"')}"`,
-      `date: "${now}"`,
-      '---',
-      ''
-    ].join('\n');
-    return frontmatter + '\n' + (item.content||'') + '\n';
-  }
   function generateFilename(item){
-    const base = slugify(item.title || (item.pseudo ? item.pseudo + '-remark' : 'remarque'));
+    const base = slugify(item.pseudo ? (item.pseudo + '-' + (item.title||'remarque')) : (item.title || 'remarque'));
     const uniq = Date.now().toString(36).slice(-6);
     return `${base}-${uniq}.md`;
   }
+  function generateMarkdown(item){
+    const d = nowIso();
+    const front = [
+      '---',
+      `title: "${(item.title||'Remarque').replace(/"/g,'\\"')}"`,
+      `pseudo: "${(item.pseudo||'Anonyme').replace(/"/g,'\\"')}"`,
+      item.author ? `author: "${(item.author||'').replace(/"/g,'\\"')}"` : '',
+      `date: "${d}"`,
+      '---',
+      ''
+    ].filter(Boolean).join('\n');
+    const body = (item.content || '').trim();
+    return front + '\n' + body + '\n';
+  }
 
-  // ---------- SANITIZE / MARKDOWN RENDER ----------
-  function sanitizeHtml(html){ if(window.DOMPurify && typeof DOMPurify.sanitize === 'function') return DOMPurify.sanitize(html); return escapeHtml(html); }
-  function renderMarkdown(md){ try{ return sanitizeHtml(marked.parse(md || '')); }catch(e){ return sanitizeHtml(escapeHtml(md || '')); } }
-
-  // ---------- BUILD ITEM HTML ----------
-  function buildItemHtml(obj, opts = {}){
-    const isPending = !!opts.pending;
-    let badge = '';
-    if(isPending){
-      badge = obj.synced ? '<span class="synced-badge" style="margin-left:8px;color:green">(ajouté)</span>' : '<span class="pending-badge" style="margin-left:8px;color:#9ca3af">(en attente)</span>';
-    }
-    const contentHtml = obj.contentHtml ? sanitizeHtml(obj.contentHtml) : renderMarkdown(obj.content || '');
-    const headerTime = obj.createdAt ? new Date(obj.createdAt).toLocaleString() : (obj.date ? new Date(obj.date).toLocaleString() : '');
-    const actions = [];
-    if(obj._tempId) actions.push(`<button class="delete-btn pending-delete" data-temp="${escapeHtml(obj._tempId)}">Supprimer</button>`);
-    if(obj.serverPath) actions.push(`<button class="delete-btn server-delete" data-path="${escapeHtml(obj.serverPath)}">Supprimer (serveur)</button>`);
-    const actionsHtml = actions.length ? '<div class="actions" style="margin-top:8px">'+actions.join('')+'</div>' : '';
-    const articleAttrs = (obj._tempId ? 'data-temp="'+escapeHtml(obj._tempId)+'"' : '') + (obj.serverPath ? ' data-path="'+escapeHtml(obj.serverPath)+'"' : '');
-    return `<article ${articleAttrs} style="border:1px solid #f1f5f9;padding:12px;border-radius:8px;margin-bottom:8px;background:linear-gradient(180deg,#fff,#fbfdff)">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div><strong>${escapeHtml(obj.pseudo || 'Anonyme')}</strong> ${badge}</div>
-        <div class="muted" style="font-size:12px">${escapeHtml(headerTime)}</div>
-      </div>
-      <div style="margin-top:8px">${contentHtml}</div>
-      ${actionsHtml}
+  // --- affichage des propositions ---
+  function buildPendingHtml(p){
+    const badge = p.synced ? '<span style="color:green;margin-left:6px;font-size:12px">(ajouté)</span>' : '<span style="color:#9ca3af;margin-left:6px;font-size:12px">(en attente)</span>';
+    const time = new Date(p.createdAt).toLocaleString();
+    return `<article data-temp="${escapeHtml(p._tempId)}" style="border-top:1px dashed #eee;padding:10px 0">
+      <div style="font-weight:700">${escapeHtml(p.pseudo || 'Anonyme')} ${badge}</div>
+      <div class="muted" style="font-size:12px;margin-top:4px">${escapeHtml(time)}</div>
+      <div style="margin-top:8px;white-space:pre-wrap">${escapeHtml(p.content)}</div>
+      <div style="margin-top:8px"><button class="delete-btn pending-delete" data-temp="${escapeHtml(p._tempId)}">Supprimer (local)</button></div>
     </article>`;
   }
 
-  // ---------- MULTI-METHOD SAVE ----------
-  async function trySaveToServer(item, filename){
-    const md = generateMarkdown(item);
-    // 1) /create
-    try {
-      const payload = { path: BASE_PATH + filename, content: md, title: item.title || 'Remarque', pseudo: item.pseudo || '', section:'remarks' };
-      const r = await fetch(WORKER_URL + '/create', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-      let j = null; try{ j = await r.json(); }catch(e){ j = null; }
-      if(r.ok && (j && j.success || (!j && r.ok))) return { ok:true, json:j || { success:true, path: payload.path, item } };
-    } catch(e){ debug('create error: ' + String(e)); }
-    // 2) root POST
-    try {
-      const payload = { section: 'remarks', title: item.title || 'Remarque', pseudo: item.pseudo || '', content: item.content };
-      const r = await fetch(WORKER_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-      let j = null; try{ j = await r.json(); }catch(e){ j = null; }
-      if(r.ok && (j && j.success || (!j && r.ok))) return { ok:true, json:j || { success:true, item } };
-    } catch(e){ debug('root-post error: ' + String(e)); }
-    // 3) /save
-    try {
-      const payload = { path: BASE_PATH + filename, content: md, title: item.title || 'Remarque', pseudo: item.pseudo || '' };
-      const r = await fetch(WORKER_URL + '/save', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-      let j = null; try{ j = await r.json(); }catch(e){ j = null; }
-      if(r.ok && (j && j.success || (!j && r.ok))) return { ok:true, json:j || { success:true, path: payload.path, item } };
-    } catch(e){ debug('save error: ' + String(e)); }
-    return { ok:false, json:null };
+  function buildServerHtml(s){
+    const time = s.date ? new Date(s.date).toLocaleString() : '';
+    return `<article style="border-top:1px solid #f1f5f9;padding:10px 0">
+      <div style="font-weight:700">${escapeHtml(s.pseudo || 'Anonyme')}</div>
+      <div class="muted" style="font-size:12px;margin-top:4px">${escapeHtml(time)}</div>
+      <div style="margin-top:8px;white-space:pre-wrap">${escapeHtml(s.content || '')}</div>
+    </article>`;
   }
 
-  // ---------- SYNC PENDING ----------
+  function renderPendingList(){
+    const listEl = $('#remarks-list');
+    if(!listEl) return;
+    if(!pending.length){
+      listEl.innerHTML = '<div class="muted">Aucune remarque enregistrée localement.</div>';
+      return;
+    }
+    listEl.innerHTML = pending.map(buildPendingHtml).join('');
+  }
+
+  // --- communication vers le worker / backend (3 tentatives comme "Films") ---
+  async function trySaveToServer(item, filename){
+    // attempt 1: /create (worker create endpoint)
+    try{
+      const md = generateMarkdown(item);
+      const payload = { path: BASE_PATH + filename, content: md, title: item.title || 'Remarque', pseudo: item.pseudo || 'Anonyme' };
+      const r = await fetch(WORKER_URL + '/create', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      let j = null;
+      try{ j = await r.json(); }catch(e){ j = null; }
+      if(r.ok && (j?.success || !j)) return { ok:true, json:j || { success:true, path:payload.path, item } };
+    } catch(e){ console.warn('create error', e); }
+
+    // attempt 2: root POST (some workers accept root)
+    try{
+      const payload = { section: 'droit-ue', title: item.title || 'Remarque', pseudo: item.pseudo || 'Anonyme', content: item.content };
+      const r = await fetch(WORKER_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      let j = null; try{ j = await r.json(); }catch(e){ j = null; }
+      if(r.ok && (j?.success || !j)) return { ok:true, json:j || { success:true, item } };
+    } catch(e){ console.warn('root post error', e); }
+
+    // attempt 3: /save
+    try{
+      const md = generateMarkdown(item);
+      const payload = { path: BASE_PATH + filename, content: md, title: item.title || 'Remarque', pseudo: item.pseudo || 'Anonyme' };
+      const r = await fetch(WORKER_URL + '/save', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      let j = null; try{ j = await r.json(); }catch(e){ j = null; }
+      if(r.ok && (j?.success || !j)) return { ok:true, json:j || { success:true, path:payload.path, item } };
+    } catch(e){ console.warn('save error', e); }
+
+    return { ok:false };
+  }
+
+  // --- sync pending (try to send unsynced items) ---
   async function syncPending(){
-    if(!pending || pending.length === 0) return;
-    const toTry = pending.slice();
-    for(const p of toTry){
+    if(!pending.length) return;
+    for(const p of pending.slice()){
       if(p.synced) continue;
       const filename = p.filename || generateFilename(p);
       try{
-        const res = await trySaveToServer({ title: p.title, pseudo: p.pseudo || '', content: p.content }, filename);
+        const res = await trySaveToServer(p, filename);
         if(res.ok){
-          const serverPath = (res.json && (res.json.path || (res.json.item && res.json.item.path))) || null;
-          const serverItem = (res.json && res.json.item) ? res.json.item : { title: p.title, pseudo: p.pseudo, content: p.content };
+          const serverPath = res.json?.path || null;
+          const serverItem = res.json?.item ? res.json.item : { title: p.title || 'Remarque', pseudo: p.pseudo, content: p.content };
           markPendingSyncedByServerItem(serverItem, serverPath);
         } else {
-          console.warn('syncPending: could not save', p.title);
+          // could not save this item now — keep trying later
+          console.warn('syncPending: could not save', p.title || p.pseudo);
         }
-      }catch(err){
+      } catch(err){
         console.warn('syncPending network error', err);
-        debug(String(err));
-        return; // stop trying further on network failure
+        return; // on network failure, stop the loop and retry later
       }
     }
   }
 
-  // ---------- RENDER ----------
-  function renderPendingList(){
-    const listEl = document.getElementById('remarks-list');
-    if(!listEl) return;
-    if(!pending || pending.length === 0){
-      // no pending: fetch server items instead
-      fetchServerRemarks();
-      return;
-    }
-    const html = pending.map(p => buildItemHtml(p, { pending:true })).join('');
-    listEl.innerHTML = html;
+  // --- fetch server items (index + md) and render together with local pending ---
+  async function fetchIndexNoCache(){
+    const url = WORKER_URL + '/index?t=' + Date.now();
+    const r = await fetch(url, { cache: 'no-store' });
+    if(!r.ok) throw new Error('index status ' + r.status);
+    return await r.json();
+  }
+  async function fetchMarkdownNoCache(path){
+    let p = path || '';
+    while(p.charAt(0) === '/') p = p.slice(1);
+    const url = WORKER_URL + '/md?path=' + encodeURIComponent(p) + '&t=' + Date.now();
+    const r = await fetch(url, { cache: 'no-store' });
+    if(!r.ok) throw new Error('md status ' + r.status + ' ' + p);
+    return await r.text();
   }
 
-  // ---------- FETCH SERVER-SIDE REMARKS ----------
-  async function fetchServerRemarks(){
-    const listEl = document.getElementById('remarks-list');
+  async function loadAndRenderServer(){
+    const listEl = $('#remarks-list');
+    if(!listEl) return;
     listEl.innerHTML = '<div class="muted">Chargement…</div>';
-    // show pending on top if present
-    const pendingHtml = (pending && pending.length) ? pending.map(p => buildItemHtml(p, { pending:true })).join('') : '';
-    // 1) try local API `/api/remarks`
     try{
-      const res = await fetch('/api/remarks', { cache: 'no-store' });
-      if(!res.ok) throw new Error('no local api');
-      const items = await res.json();
-      const serverHtml = (items || []).map(it => {
-        const si = { pseudo: it.pseudo || 'Anonyme', content: it.content || '', createdAt: it.createdAt || it.date || '' , serverPath: it.path || null, title: it.title || '' };
-        return buildItemHtml(si, { pending:false });
-      }).join('');
-      listEl.innerHTML = (pendingHtml + serverHtml) || '<div class="muted">Aucune remarque enregistrée.</div>';
-      return;
-    }catch(e){
-      // ignore, try worker index next
-    }
-
-    // 2) try WORKER_URL index/md
-    try{
-      const idxRes = await fetch(WORKER_URL + '/index?t=' + Date.now(), { cache:'no-store' });
-      if(!idxRes.ok) throw new Error('worker index not available');
-      const idx = await idxRes.json();
-      const items = (idx || []).filter(i => i.section === 'remarks' || (i.path && i.path.startsWith(BASE_PATH)));
-      const serverItems = await Promise.all(items.map(async i => {
+      const index = await fetchIndexNoCache();
+      const items = (index || []).filter(i => i.path && i.path.startsWith(BASE_PATH));
+      if(items.length === 0){
+        // render pending (local) if no server items found
+        renderPendingList();
+        return;
+      }
+      // fetch markdown bodies
+      const serverItems = await Promise.all(items.map(async it => {
         try{
-          let md = await fetch(WORKER_URL + '/md?path=' + encodeURIComponent(i.path) + '&t=' + Date.now(), { cache:'no-store' }).then(r => r.text());
-          md = md.replace(/^---[\s\S]*?---\s*/, '');
-          return { pseudo: i.pseudo || 'Anonyme', content: md, createdAt: i.date || i.createdAt || '', serverPath: i.path, title: i.title || '' };
+          const md = await fetchMarkdownNoCache(it.path);
+          // remove frontmatter if present
+          const body = md.replace(/^---[\s\S]*?---\s*/, '');
+          return { pseudo: it.pseudo || it.author || 'Anonyme', date: it.date || it.createdAt || '', content: body, path: it.path };
         }catch(e){
-          return { pseudo: i.pseudo || 'Anonyme', content: '(erreur lecture)', createdAt: i.date || i.createdAt || '', serverPath: i.path || null, title: i.title || '' };
+          return { pseudo: it.pseudo || 'Anonyme', date: '', content: '(erreur lecture)', path: it.path };
         }
       }));
-      const serverHtml = serverItems.map(si => buildItemHtml(si, { pending:false })).join('');
-      listEl.innerHTML = (pendingHtml + serverHtml) || '<div class="muted">Aucune remarque enregistrée.</div>';
-      return;
-    }catch(e){
-      // fallback
+      // render: first pending (local) then server items
+      const pendingHtml = pending.length ? pending.map(buildPendingHtml).join('') : '<div class="muted">Aucune remarque locale.</div>';
+      const serverHtml = serverItems.map(buildServerHtml).join('') || '<div class="muted">Aucune remarque sur le serveur.</div>';
+      listEl.innerHTML = `<div><strong>Remarques locales</strong>${pendingHtml}</div><div style="margin-top:14px"><strong>Remarques sur le serveur</strong>${serverHtml}</div>`;
+    }catch(err){
+      console.warn('loadAndRenderServer failed', err);
+      // fallback: show local pending only
+      renderPendingList();
     }
-
-    // final fallback: only pending or empty
-    if(pending && pending.length){ listEl.innerHTML = pendingHtml; return; }
-    listEl.innerHTML = '<div class="muted">Aucune remarque enregistrée.</div>';
   }
 
-  // ---------- POLLING ----------
-  let pollHandle = null; let pollAttempts = 0;
+  // --- polling/backoff to try to sync pending ---
+  let pollHandle = null, pollAttempts = 0;
   function pollOnce(){
     pollAttempts++;
-    syncPending().then(()=> fetchServerRemarks() ).then(()=> {
-      if(pending.length === 0 || pollAttempts >= POLL_MAX_ATTEMPTS){ clearPoll(); } else {
+    syncPending().then(()=> loadAndRenderServer()).then(()=> {
+      if(pending.length === 0 || pollAttempts >= 8){ clearPoll(); } else {
         const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000);
         pollHandle = setTimeout(pollOnce, delay);
       }
-    }).catch(()=>{ const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); });
+    }).catch(()=> {
+      const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000);
+      pollHandle = setTimeout(pollOnce, delay);
+    });
   }
   function ensurePolling(){ if(pollHandle) return; pollAttempts = 0; pollOnce(); }
   function clearPoll(){ if(pollHandle) clearTimeout(pollHandle); pollHandle = null; pollAttempts = 0; }
 
-  // ---------- FORM SUBMIT ----------
-  const form = document.getElementById('remark-form');
-  const resultEl = document.getElementById('remark-result');
+  // --- form handling (submit) ---
+  const form = $('#remark-form');
+  const resultEl = $('#remark-result');
   if(form){
     form.addEventListener('submit', async (ev) => {
       ev.preventDefault();
-      resultEl.textContent = '';
+      resultEl.textContent = 'Envoi…';
       const fd = new FormData(form);
-      const pseudo = (fd.get('pseudo') || '').toString().slice(0,200).trim();
-      const content = (fd.get('content') || '').toString().slice(0,5000).trim();
-
+      const pseudo = (fd.get('pseudo') || '').toString().slice(0,200).trim() || 'Anonyme';
+      const content = (fd.get('content') || '').toString().slice(0,4000).trim();
       if(!content){ resultEl.textContent = 'Le champ "Remarque" est requis.'; return; }
 
-      const item = { title: content.slice(0,60), pseudo: pseudo || 'Anonyme', content };
+      const item = { title: 'Remarque', pseudo, content, createdAt: Date.now() };
       const filename = generateFilename(item);
-      const temp = Object.assign({}, item, { _tempId: 't'+Date.now()+Math.random().toString(36).slice(2,6), createdAt: new Date().toISOString(), filename, synced:false });
+      const temp = Object.assign({}, item, { _tempId: 't' + Date.now() + Math.random().toString(36).slice(2,6), filename, synced:false });
       addPending(temp);
       renderPendingList();
       ensurePolling();
 
-      resultEl.textContent = 'Envoi…';
-      form.reset();
-
       try{
-        const res = await trySaveToServer(item, filename);
-        if(res.ok){
-          resultEl.textContent = '✔ Remarque synchronisée sur le serveur';
-          const serverPath = (res.json && (res.json.path || (res.json.item && res.json.item.path))) || null;
-          const serverItem = (res.json && res.json.item) ? res.json.item : { title: item.title, pseudo: item.pseudo, content: item.content };
+        const r = await trySaveToServer(item, filename);
+        if(r.ok){
+          resultEl.textContent = '✔ Remarque enregistrée sur le serveur';
+          const serverPath = r.json?.path || null;
+          const serverItem = r.json?.item ? r.json.item : item;
           markPendingSyncedByServerItem(serverItem, serverPath);
-          setTimeout(()=> fetchServerRemarks(), 300);
+          await loadAndRenderServer();
         } else {
-          resultEl.textContent = 'Remarque sauvegardée localement (en attente)';
+          resultEl.textContent = 'Proposition sauvegardée localement (en attente de synchronisation).';
         }
       }catch(err){
-        console.warn(err);
-        resultEl.textContent = 'Hors-ligne : remarque sauvegardée localement (en attente)';
-        debug(String(err));
-      }
-    });
-  }
-
-  // ---------- DELETE HANDLERS ----------
-  document.getElementById('remarks-list').addEventListener('click', async (e) => {
-    const btn = e.target.closest('button.delete-btn'); if(!btn) return;
-    if(btn.classList.contains('pending-delete')){
-      const temp = btn.dataset.temp; if(!confirm('Supprimer cette remarque locale ?')) return;
-      if(removePendingByTempId(temp)){ resultEl.textContent = 'Remarque locale supprimée'; renderPendingList(); } else { resultEl.textContent = 'Introuvable'; }
-      return;
-    }
-    if(btn.classList.contains('server-delete')){
-      const path = btn.dataset.path; if(!path){ resultEl.textContent = 'Impossible : pas de chemin connu pour cette remarque.'; return; }
-      if(!confirm('Confirmer suppression sur le serveur ? Cette action est irréversible sur le serveur.')) return;
-      try{
-        btn.disabled = true; resultEl.textContent = 'Suppression…';
-        const r = await fetch(WORKER_URL + '/delete', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ path }) });
-        let j = {}; try{ j = await r.json(); }catch(e){ j = { success: r.ok } }
-        if(r.ok && j.success){
-          resultEl.textContent = '✔ Supprimé sur le serveur';
-          const idx = pending.findIndex(p => p.serverPath === path);
-          if(idx !== -1){ delete pending[idx].serverPath; pending[idx].synced = false; savePendingToStorage(); renderPendingList(); }
-          await fetchServerRemarks();
-        } else { resultEl.textContent = 'Erreur suppression: ' + (j.error || r.status || 'inconnue'); btn.disabled = false; }
-      }catch(err){ resultEl.textContent = 'Erreur réseau'; btn.disabled = false; debug(String(err)); }
-    }
-  });
-
-  // ---------- DOWNLOAD BUTTON (simple export of server remarks if available) ----------
-  const downloadBtn = document.getElementById('download-remarks');
-  if(downloadBtn){
-    downloadBtn.addEventListener('click', async () => {
-      downloadBtn.disabled = true;
-      downloadBtn.textContent = 'Préparation…';
-      try{
-        // try /api/remarks first
-        let items = [];
-        try{
-          const r = await fetch('/api/remarks', { cache:'no-store' });
-          if(r.ok) items = await r.json();
-        }catch(e){}
-        // fallback to worker index/md if needed
-        if(!items.length){
-          try{
-            const idxRes = await fetch(WORKER_URL + '/index?t=' + Date.now(), { cache:'no-store' });
-            if(idxRes.ok){
-              const idx = await idxRes.json();
-              const list = (idx || []).filter(i => i.section === 'remarks' || (i.path && i.path.startsWith(BASE_PATH)));
-              items = await Promise.all(list.map(async i => {
-                try{ let md = await fetch(WORKER_URL + '/md?path=' + encodeURIComponent(i.path) + '&t=' + Date.now(), { cache:'no-store' }).then(r => r.text()); md = md.replace(/^---[\s\S]*?---\s*/, ''); return { pseudo: i.pseudo || 'Anonyme', content: md, date: i.date || '' }; }catch(e){ return { pseudo: i.pseudo||'Anonyme', content:'(erreur lecture)', date: i.date||'' }; }
-              }));
-            }
-          }catch(e){}
-        }
-        const txt = (items || []).map(it => `Pseudo: ${it.pseudo || 'Anonyme'}\nDate: ${it.createdAt||it.date||''}\n\n${it.content||''}\n\n-----\n`).join('\n');
-        if(!txt) { resultEl.textContent = 'Aucune remarque disponible à télécharger.'; downloadBtn.disabled = false; downloadBtn.textContent = 'Télécharger'; return; }
-        const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = 'remarques.txt'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-        downloadBtn.textContent = 'Téléchargé';
-      }catch(err){
-        console.warn(err);
-        resultEl.textContent = 'Impossible de télécharger les remarques.';
-        downloadBtn.textContent = 'Télécharger';
+        console.warn('submit error', err);
+        resultEl.textContent = 'Hors-ligne : proposition sauvegardée localement (en attente).';
       } finally {
-        downloadBtn.disabled = false;
-        setTimeout(()=>{ downloadBtn.textContent = 'Télécharger'; }, 1200);
+        form.reset();
       }
     });
   }
 
-  // ---------- INIT ----------
-  // render pending first then try load server ones
-  renderPendingList();
-  fetchServerRemarks().then(()=>{ if(pending.length) ensurePolling(); });
-  setInterval(()=>{ fetchServerRemarks(); }, 5*60*1000);
+  // --- delete local pending (UI) ---
+  const proposalsList = $('#remarks-list');
+  if(proposalsList){
+    proposalsList.addEventListener('click', (e) => {
+      const btn = e.target.closest('button.pending-delete');
+      if(!btn) return;
+      const temp = btn.dataset.temp;
+      if(!confirm('Supprimer cette remarque locale ?')) return;
+      if(removePendingByTempId(temp)){ resultEl.textContent = 'Remarque locale supprimée.'; renderPendingList(); } else { resultEl.textContent = 'Introuvable.'; }
+    });
+  }
 
+  // --- init render + polling ---
+  document.getElementById('year') && (document.getElementById('year').textContent = new Date().getFullYear());
+  renderPendingList();
+  loadAndRenderServer().then(()=> { if(pending.length) ensurePolling(); });
+  // periodic refresh of server list
+  setInterval(()=> loadAndRenderServer(), 5*60*1000);
 })();
 </script>
+
 
 
 </body>
