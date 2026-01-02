@@ -785,249 +785,380 @@
           </dl>
         </article>
 
-        <!-- Remarque simple : bas de page -->
-        <!-- Remplacer ici : formulaire de remarque + liste -->
-<article class="card" id="remarks" aria-labelledby="remarks-title" style="margin-top:18px">
-  <h2 id="remarks-title" class="item-title">Remarque / commentaire</h2>
-  <p class="meta">Formulaire </p>
-
-  <!-- FORMULAIRE : garder les mêmes id/name que le JS -->
-  <form id="contact-form" class="proposal-form" aria-label="Formulaire de contact">
-      <input type="hidden" name="section" value="contacts">
-      <label for="cf-name" class="hidden">Nom</label>
-      <input name="pseudo" id="cf-name" placeholder="Nom" required aria-required="true">
-
-      <label for="cf-email" class="hidden">Email</label>
-      <input name="email" id="cf-email" type="email" placeholder="Email" required aria-required="true">
-
-      <label for="cf-message" class="hidden">Message</label>
-      <textarea name="message" id="cf-message" rows="5" placeholder="Message" required aria-required="true"></textarea>
-
-      <div class="controls">
-        <!-- Bouton principal : envoi / sauvegarde -->
-        <button type="submit" id="cf-submit" class="btn btn-primary" aria-live="polite">
-          Envoyer
-        </button>
-      </div>
-
-      <p id="cf-result" class="meta" role="status" aria-live="polite"></p>
-    </form>
-
-  </section>
-</main>
-
-<footer>
-  © <span id="year"></span> — Blog personnel
-</footer>
-
-<script>
-  // Met à jour l'année dans le footer
-  document.getElementById('year').textContent = new Date().getFullYear();
-
-  // Fonction pour scroller en haut
-  function showHome(){ window.scrollTo({top:0,behavior:'smooth'}) }
-
-  // Gestion des langues avec localStorage + accessibilité
-  (function() {
-    const LANG_KEY = 'blog_lang';
-
-    function setLang(lang) {
-      document.querySelectorAll('.lang-block').forEach(el => {
-        el.classList.toggle('hidden', el.dataset.lang !== lang);
-      });
-      document.querySelectorAll('.langs img[data-lang]').forEach(img => {
-        const isActive = (img.dataset.lang === lang);
-        img.classList.toggle('active', isActive);
-        img.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-      });
-      document.documentElement.lang = lang;
-      try { localStorage.setItem(LANG_KEY, lang); } catch (e) { console.warn('localStorage inaccessible :', e); }
+        <section class="main-column">
+            <h2 style="margin-top:26px">
+              Remarques récentes
+              <small style="color:var(--muted);font-size:13px">(en attente d'ajout)</small>
+            </h2>
+          
+            <div id="proposals-list" class="panel">
+              Chargement…
+            </div>
+          
+            <div class="panel" style="margin-top:24px">
+              <h3 style="margin:0 0 8px 0">Faire une remarque</h3>
+              <form id="proposal-form">
+                <input type="hidden" name="section" value="remarques">
+                <input name="pseudo" placeholder="Pseudo" required>
+                <input name="title" placeholder="Sujet" required>
+                <textarea name="content" rows="5" placeholder="Remarque" required></textarea>
+                <button class="primary">Envoyer</button>
+              </form>
+          
+              <p id="result" class="muted" style="margin-top:10px"></p>
+            </div>
+          </section>
+          
+    
+    <pre id="debug" class="debug"></pre>
+    </main>
+    
+    <footer class="site-footer">
+    © <span id="year"></span> — Blog personnel
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
+    
+    <script>
+    // ---------- CONFIG ----------
+    const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev";
+    const LOCAL_KEY = 'remarques_pending_v1';
+    const BASE_PATH = 'lealotimesmaceo/content/remarques/';
+    const LOCK_FEATURED = true; // do not overwrite the featured remark automatically
+    
+    // ---------- HELPERS ----------
+    const $ = s => document.querySelector(s);
+    function escapeHtml(s){ return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') }
+    function debug(t){ const el = $('#debug'); if(!el) return; el.style.display = t ? 'block' : 'none'; el.textContent = t || '' }
+    
+    // ---------- PENDING STORAGE ----------
+    // pending shape: { title, pseudo, author, content, _tempId, createdAt, filename, synced:bool, serverPath?:string }
+    let pending = loadPendingFromStorage();
+    
+    function loadPendingFromStorage(){
+    try{ const raw = localStorage.getItem(LOCAL_KEY); if(!raw) return []; return JSON.parse(raw); }catch(e){ console.error('failed parse pending', e); return []; }
     }
-
-    function initFlagListeners() {
-      document.querySelectorAll('.langs img[data-lang]').forEach(img => {
-        img.addEventListener('click', () => setLang(img.dataset.lang));
-        img.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            setLang(img.dataset.lang);
-          }
-        });
-      });
+    function savePendingToStorage(){ try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(pending)); }catch(e){ console.warn('localStorage full?'); } }
+    function addPending(item){ pending.unshift(item); savePendingToStorage(); }
+    function removePendingByTempId(tempId){ const idx = pending.findIndex(p => p._tempId === tempId); if(idx !== -1){ pending.splice(idx,1); savePendingToStorage(); return true;} return false; }
+    
+    // Mark a pending item as synced (but keep it displayed)
+    function markPendingSyncedByServerItem(serverItem, serverPath){
+    const sContent = (serverItem.content||'').trim().slice(0,120);
+    const idx = pending.findIndex(p => p.title === serverItem.title && p.pseudo === serverItem.pseudo && (p.content||'').trim().slice(0,120) === sContent);
+    if(idx !== -1){
+      pending[idx].synced = true;
+      if(serverPath) pending[idx].serverPath = serverPath;
+      savePendingToStorage();
+      return true;
     }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      initFlagListeners();
-      const stored = (function(){ try { return localStorage.getItem(LANG_KEY); } catch(e){ return null; } })();
-      const initial = stored || document.documentElement.lang || 'fr';
-      setLang(initial);
-    });
-  })();
-</script>
-
-<script>
-/* === Configuration ===
-   Remplacez ces valeurs par les vôtres :
-   - WORKER_URL : (optionnel) endpoint serveur qui accepte POST JSON pour stocker les messages
-   - OWNER_EMAIL : adresse email du propriétaire pour le bouton "Me contacter"
-*/
-const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev"; // <-- remplacez par votre Worker si vous en avez un, sinon laissez vide
-const OWNER_EMAIL = "maceo@example.com"; // <-- remplacez par votre adresse email réelle
-
-// Utilitaire : formate un timestamp lisible pour le nom de fichier
-function filenameTimestamp() {
-  return new Date().toISOString().replace(/[:.]/g, "-");
-}
-
-// Sauvegarde locale : crée et déclenche le téléchargement d'un fichier JSON
-function saveLocally(payload) {
-  try {
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-    const safeName = (payload.pseudo || "anonyme").replace(/[^\w\-]/g, "_").slice(0, 60) || "anonyme";
-    const filename = `contact-${safeName}-${filenameTimestamp()}.json`;
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-    return true;
-  } catch (err) {
-    console.error("Erreur lors de la sauvegarde locale :", err);
     return false;
-  }
-}
-
-// Envoi vers le serveur avec timeout
-async function postToWorker(url, payload, timeout = 8000) {
-  if (!url || url.includes("TON-WORKER") || url.trim() === "") {
-    return { ok: false, reason: "no-worker-configured" };
-  }
-
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeout);
-
-  try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-      signal: controller.signal
-    });
-    clearTimeout(id);
-    const text = await res.text().catch(()=>"");
-    return { ok: res.ok, status: res.status, text };
-  } catch (err) {
-    clearTimeout(id);
-    return { ok: false, reason: err.name === "AbortError" ? "timeout" : err.message };
-  }
-}
-
-// Encodage mailto
-function buildMailtoLink(email, subject, body) {
-  const s = encodeURIComponent(subject || "");
-  const b = encodeURIComponent(body || "");
-  return `mailto:${encodeURIComponent(email)}?subject=${s}&body=${b}`;
-}
-
-// Gestion du formulaire
-(function() {
-  const form = document.getElementById("contact-form");
-  const nameEl = document.getElementById("cf-name");
-  const emailEl = document.getElementById("cf-email");
-  const msgEl = document.getElementById("cf-message");
-  const submitBtn = document.getElementById("cf-submit");
-  const mailBtn = document.getElementById("cf-mailto");
-  const resultEl = document.getElementById("cf-result");
-
-  // action du bouton "Me contacter" : ouvre le client mail local avec le contenu du formulaire
-  mailBtn.addEventListener("click", () => {
-    const pseudo = (nameEl.value || "Anonyme").trim();
-    const email = (emailEl.value || "").trim();
-    const message = (msgEl.value || "").trim();
-    const subject = `Message depuis votre blog — ${pseudo}`;
-    const body = `Nom: ${pseudo}\nEmail de l'expéditeur: ${email}\n\nMessage:\n${message}`;
-    const mailto = buildMailtoLink(OWNER_EMAIL, subject, body);
-    // ouvrir le client mail
-    window.location.href = mailto;
-  });
-
-  // soumission principale
-  form.addEventListener("submit", async (e) => {
+    }
+    
+    // fallback remove if user wants explicit removal behavior
+    function removePendingMatchedByServerItem(serverItem){
+    const sContent = (serverItem.content||'').trim().slice(0,120);
+    const idx = pending.findIndex(p => p.title === serverItem.title && p.pseudo === serverItem.pseudo && (p.content||'').trim().slice(0,120) === sContent);
+    if(idx!==-1){ pending.splice(idx,1); savePendingToStorage(); return true; }
+    return false;
+    }
+    
+    // ---------- SANITIZE / MARKDOWN ----------
+    function sanitizeHtml(html){ if(window.DOMPurify && typeof DOMPurify.sanitize === 'function') return DOMPurify.sanitize(html); return escapeHtml(html); }
+    function renderMarkdown(md){ try{ return sanitizeHtml(marked.parse(md || '')); }catch(e){ return sanitizeHtml(escapeHtml(md || '')); } }
+    
+    // ---------- BUILD ARTICLE ----------
+    function buildArticleHtml(obj, opts = {}){
+    const isPending = !!opts.pending;
+    let badge = '';
+    if(isPending){
+      badge = obj.synced ? '<span class="synced-badge">(ajouté)</span>' : '<span class="pending-badge">(en attente)</span>';
+    }
+    const contentHtml = obj.contentHtml ? sanitizeHtml(obj.contentHtml) : renderMarkdown(obj.content || '');
+    const authorLine = obj.author ? '<div class="meta">Auteur : '+escapeHtml(obj.author)+'</div>' : '';
+    
+    let actionsHtml = '';
+    const actions = [];
+    // always allow local delete
+    if(obj._tempId){ actions.push(`<button class="delete-btn pending-delete" data-temp="${escapeHtml(obj._tempId)}">Supprimer</button>`); }
+    // if server path exists, show server delete button as well
+    if(obj.serverPath){ actions.push(`<button class="delete-btn server-delete" data-path="${escapeHtml(obj.serverPath)}">Supprimer (serveur)</button>`); }
+    
+    if(actions.length) actionsHtml = '<div class="actions">'+actions.join('')+'</div>';
+    
+    const articleAttrs = (obj._tempId ? 'data-temp="'+escapeHtml(obj._tempId)+'"' : '') + (obj.serverPath ? ' data-path="'+escapeHtml(obj.serverPath)+'"' : '');
+    
+    return '<article '+articleAttrs+'>'
+      +'<h3>'+escapeHtml(obj.title || 'Sans titre')+' '+badge+'</h3>'
+      +'<div class="meta">Par '+escapeHtml(obj.pseudo || 'Anonyme')+'</div>'
+      +authorLine
+      +'<div class="content">'+contentHtml+'</div>'
+      +actionsHtml
+      +'</article>';
+    }
+    
+    function stripHtml(html){ const tmp = document.createElement('div'); tmp.innerHTML = html || ''; return tmp.textContent || tmp.innerText || ''; }
+    
+    // ---------- MARKDOWN / FILENAME ----------
+    function slugify(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70); }
+    function generateMarkdown(item){
+    const now = new Date().toISOString();
+    const frontmatter = [
+      '---',
+      `title: "${(item.title||'').replace(/"/g,'\\"')}"`,
+      `pseudo: "${(item.pseudo||'').replace(/"/g,'\\"')}"`,
+      item.author ? `author: "${(item.author||'').replace(/"/g,'\\"')}"` : '',
+      `date: "${now}"`,
+      '---',
+      ''
+    ].filter(Boolean).join('\n');
+    const body = (item.content || '').trim();
+    return frontmatter + '\n' + body + '\n';
+    }
+    function generateFilename(item){
+    const base = slugify(item.title || (item.pseudo ? item.pseudo + '-remarque' : 'proposition'));
+    const uniq = Date.now().toString(36).slice(-6);
+    return `${base}-${uniq}.md`;
+    }
+    
+    // ---------- MULTI-METHOD SAVE (try same methods as musique/films) ----------
+    async function trySaveToServer(item, filename){
+    // 1) POST /create (markdown)
+    try {
+      const md = generateMarkdown(item);
+      const payload = { path: BASE_PATH + filename, content: md, title: item.title, pseudo: item.pseudo, author: item.author || '' };
+      const r = await fetch(WORKER_URL + '/create', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+      let j = null;
+      try{ j = await r.json(); }catch(e){ j = null; }
+      if(r.ok && (j && j.success || (!j && r.ok))){
+        return { ok: true, json: j || { success:true, path: payload.path, item: { title: item.title, pseudo: item.pseudo, content: item.content } } };
+      }
+    } catch(e){ debug('create error: ' + String(e)); }
+    
+    // 2) POST to root worker with JSON form (legacy)
+    try {
+      const payload = { section: 'remarques', title: item.title, pseudo: item.pseudo, author: item.author || '', content: item.content };
+      const r = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+      let j = null;
+      try{ j = await r.json(); }catch(e){ j = null; }
+      if(r.ok && (j && j.success || (!j && r.ok))){
+        return { ok: true, json: j || { success:true, item: { title: item.title, pseudo: item.pseudo, content: item.content } } };
+      }
+    } catch(e){ debug('root-post error: ' + String(e)); }
+    
+    // 3) POST /save fallback
+    try {
+      const md = generateMarkdown(item);
+      const payload = { path: BASE_PATH + filename, content: md, title: item.title, pseudo: item.pseudo, author: item.author || '' };
+      const r = await fetch(WORKER_URL + '/save', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+      let j = null;
+      try{ j = await r.json(); }catch(e){ j = null; }
+      if(r.ok && (j && j.success || (!j && r.ok))){
+        return { ok: true, json: j || { success:true, path: payload.path, item: { title: item.title, pseudo: item.pseudo, content: item.content } } };
+      }
+    } catch(e){ debug('save error: ' + String(e)); }
+    
+    return { ok: false, json: null };
+    }
+    
+    // ---------- SYNC PENDING ----------
+    async function syncPending(){
+    if(!pending || pending.length === 0) return;
+    const toTry = pending.slice();
+    for(const p of toTry){
+      if(p.synced) continue; // skip already synced
+      const filename = p.filename || generateFilename(p);
+      try{
+        const res = await trySaveToServer({ title: p.title, pseudo: p.pseudo, author: p.author || '', content: p.content }, filename);
+        if(res.ok){
+          const serverPath = (res.json && (res.json.path || (res.json.item && res.json.item.path))) || null;
+          const serverItem = (res.json && res.json.item) ? res.json.item : { title: p.title, pseudo: p.pseudo, content: p.content };
+          markPendingSyncedByServerItem(serverItem, serverPath);
+        } else {
+          console.warn('syncPending: could not save', p.title);
+        }
+      }catch(err){
+        console.warn('syncPending network error', err);
+        debug(String(err));
+        return; // stop further tries on network error
+      }
+    }
+    }
+    
+    // ---------- RENDER PENDING (Remarques récentes) ----------
+    function renderPendingList(){
+    if(!pending || pending.length === 0){
+      $('#proposals-list').innerHTML = '<div class="muted">Aucune remarque en attente.</div>';
+      return;
+    }
+    const html = pending.map(p => buildArticleHtml(p, { pending: true })).join('');
+    $('#proposals-list').innerHTML = html;
+    }
+    
+    // ---------- FETCH FUNCTIONS ----------
+    async function fetchIndexNoCache(){ const url = WORKER_URL + '/index?t=' + Date.now(); const r = await fetch(url, { cache: 'no-store' }); if(!r.ok) throw new Error('status ' + r.status); return await r.json(); }
+    async function fetchMarkdownNoCache(path){ let p = path || ''; while(p.charAt(0) === '/') p = p.slice(1); const url = WORKER_URL + '/md?path=' + encodeURIComponent(p) + '&t=' + Date.now(); const r = await fetch(url, { cache: 'no-store' }); if(!r.ok) throw new Error('md status ' + r.status + ' ' + p); return await r.text(); }
+    
+    // ---------- LOAD & RENDER ----------
+    async function loadAndRenderNow(forceServerOnly = false){
+    try{
+      const index = await fetchIndexNoCache();
+      const items = (index || []).filter(i => i.section === 'remarques' || (i.path && i.path.startsWith(BASE_PATH)));
+    
+      const serverItems = await Promise.all(items.map(async i => {
+        try{
+          let md = await fetchMarkdownNoCache(i.path);
+          md = md.replace(/^---[\s\S]*?---\s*/, '');
+          const body = md;
+          return { title: i.title, pseudo: i.pseudo, author: i.author || '', contentHtml: marked.parse(body), path: i.path };
+        }catch(e){ return { title: i.title, pseudo: i.pseudo, contentHtml: '<div class="meta">Erreur lecture contenu</div>', path: i.path }; }
+      }));
+    
+      // We do not remove synced pending here; syncPending will mark items as synced.
+      renderPendingList();
+    
+      // keep featured locked unless unlocked
+      if(!LOCK_FEATURED){
+        if(serverItems && serverItems.length){
+          renderFeaturedBook({ title: serverItems[0].title, pseudo: serverItems[0].pseudo, author: serverItems[0].author || '', contentHtml: serverItems[0].contentHtml });
+        } else if(pending && pending.length){
+          const p = pending[0];
+          renderFeaturedBook({ title: p.title, pseudo: p.pseudo, author: p.author || '', contentHtml: renderMarkdown(p.content) });
+        }
+      }
+    }catch(e){
+      console.warn('loadAndRenderNow failed', e);
+      renderPendingList();
+      debug(String(e));
+    }
+    }
+    
+    // ---------- POLLING (backoff) with syncPending ----------
+    let pollHandle = null; let pollAttempts = 0; const POLL_MAX_ATTEMPTS = 8;
+    function pollOnce(){
+    pollAttempts++;
+    syncPending().then(()=> loadAndRenderNow() ).then(()=> {
+      if(pending.length === 0 || pollAttempts >= POLL_MAX_ATTEMPTS){ clearPoll(); } else { const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); }
+    }).catch(()=>{ const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000); pollHandle = setTimeout(pollOnce, delay); });
+    }
+    function ensurePolling(){ if(pollHandle) return; pollAttempts = 0; pollOnce(); }
+    function clearPoll(){ if(pollHandle) clearTimeout(pollHandle); pollHandle = null; pollAttempts = 0; }
+    
+    // ---------- FORM SUBMIT ----------
+    document.getElementById('proposal-form').onsubmit = async e => {
     e.preventDefault();
-    // lecture & trim
-    const pseudo = (nameEl.value || "Anonyme").trim();
-    const email = (emailEl.value || "").trim();
-    const message = (msgEl.value || "").trim();
-
-    // simple validation côté client
-    if (!email || !message) {
-      resultEl.textContent = "Veuillez renseigner au minimum l'email et le message.";
-      resultEl.style.color = "var(--accent-cta)";
-      return;
+    $('#result').textContent = 'Envoi…';
+    
+    const data = Object.fromEntries(new FormData(e.target).entries());
+    if(!data.title || !data.content || !data.pseudo){ $('#result').textContent = 'Remplis tous les champs.'; return; }
+    
+    const item = { title: data.title, pseudo: data.pseudo, author: data.author || '', content: data.content };
+    const filename = generateFilename(item);
+    const temp = Object.assign({}, item, { _tempId: 't'+Date.now()+Math.random().toString(36).slice(2,6), createdAt: Date.now(), filename, synced:false });
+    addPending(temp);
+    renderPendingList();
+    ensurePolling();
+    
+    try{
+      const res = await trySaveToServer(item, filename);
+      if(res.ok){
+        $('#result').textContent = '✔ Proposition enregistrée sur le serveur';
+        const serverPath = (res.json && (res.json.path || (res.json.item && res.json.item.path))) || null;
+        const serverItem = (res.json && res.json.item) ? res.json.item : { title: item.title, pseudo: item.pseudo, content: item.content };
+        markPendingSyncedByServerItem(serverItem, serverPath);
+        setTimeout(()=>loadAndRenderNow(true),300);
+      } else {
+        $('#result').textContent = 'Proposition sauvegardée localement (en attente)';
+      }
+    }catch(err){
+      $('#result').textContent = 'Hors-ligne : proposition sauvegardée localement (en attente)';
+      debug(String(err));
+    } finally {
+      e.target.reset();
     }
-
-    const payload = {
-      title: "Contact",
-      pseudo,
-      email,
-      content: message,
-      section: "contacts",
-      timestamp: new Date().toISOString()
     };
-
-    // Mise à jour UI : disable boutons
-    submitBtn.disabled = true;
-    mailBtn.disabled = true;
-    const prevSubmitText = submitBtn.textContent;
-    submitBtn.textContent = "Envoi…";
-    resultEl.textContent = "";
-
-    // Tentative d'envoi serveur (si WORKER_URL fourni)
-    const serverResp = await postToWorker(WORKER_URL, payload);
-
-    if (serverResp.ok) {
-      resultEl.textContent = "Message envoyé et enregistré sur le serveur ✔";
-      resultEl.style.color = "green";
-      // vider le formulaire
-      nameEl.value = "";
-      emailEl.value = "";
-      msgEl.value = "";
-      submitBtn.disabled = false;
-      mailBtn.disabled = false;
-      submitBtn.textContent = prevSubmitText;
-      return;
+    
+    // ---------- DELETE HANDLERS ----------
+    document.getElementById('proposals-list').addEventListener('click', async (e) => {
+    const btn = e.target.closest('button.delete-btn'); if(!btn) return;
+    
+    if(btn.classList.contains('pending-delete')){
+      const temp = btn.dataset.temp; if(!confirm('Supprimer cette remarque locale ?')) return; if(removePendingByTempId(temp)){ $('#result').textContent = 'Remarque locale supprimée'; renderPendingList(); } else { $('#result').textContent = 'Introuvable'; } return;
     }
-
-    // Si envoi serveur échoue ou non configuré -> sauvegarde locale
-    const saved = saveLocally(payload);
-
-    if (serverResp.reason && serverResp.reason !== "no-worker-configured") {
-      console.warn("Envoi au serveur échoué :", serverResp);
+    
+    if(btn.classList.contains('server-delete')){
+      const path = btn.dataset.path; if(!path){ $('#result').textContent = 'Impossible : pas de chemin connu pour cette proposition.'; return; } if(!confirm('Confirmer suppression sur le serveur ? Cette action est irréversible sur le serveur.')) return;
+      try{ btn.disabled = true; $('#result').textContent = 'Suppression…'; const r = await fetch(WORKER_URL + '/delete', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ path }) }); let j = {}; try{ j = await r.json(); }catch(e){ j = { success: r.ok } }
+        if(r.ok && j.success){ $('#result').textContent = '✔ Supprimé sur le serveur'; // unset serverPath & synced flag for local pending if present
+          const idx = pending.findIndex(p => p.serverPath === path);
+          if(idx !== -1){ delete pending[idx].serverPath; pending[idx].synced = false; savePendingToStorage(); renderPendingList(); }
+          await loadAndRenderNow(true);
+        } else { $('#result').textContent = 'Erreur suppression: ' + (j.error || r.status || 'inconnue'); btn.disabled = false; }
+      }catch(err){ $('#result').textContent = 'Erreur réseau'; btn.disabled = false; debug(String(err)); }
     }
-
-    if (saved) {
-      resultEl.textContent = (serverResp.reason === "no-worker-configured")
-        ? "Aucun serveur configuré — votre message a été téléchargé en local (fichier JSON)."
-        : "Le serveur est indisponible — votre message a été sauvegardé en local (fichier JSON).";
-      resultEl.style.color = "orange";
-      // vider le formulaire
-      nameEl.value = "";
-      emailEl.value = "";
-      msgEl.value = "";
-    } else {
-      resultEl.textContent = "Erreur : impossible d'enregistrer le message localement.";
-      resultEl.style.color = "crimson";
+    });
+    
+    // ---------- FEATURED (simple-remark block) ----------
+    function renderFeaturedBook(book){
+    const titleEl = document.getElementById('simple-title');
+    const pseudoEl = document.getElementById('simple-pseudo');
+    const authorEl = document.getElementById('simple-author');
+    const descEl = document.getElementById('simple-description');
+    
+    if(!titleEl) return;
+    
+    titleEl.textContent = book.title || 'Sans titre';
+    pseudoEl.textContent = 'Pseudo : ' + (book.pseudo || 'Anonyme');
+    authorEl.textContent = 'Auteur : ' + (book.author || '—');
+    
+    if(book.contentHtml) descEl.innerHTML = book.contentHtml;
+    else descEl.textContent = book.content || '';
     }
-
-    submitBtn.disabled = false;
-    mailBtn.disabled = false;
-    submitBtn.textContent = prevSubmitText;
-  });
-})();
-</script>
+    
+    // copy markdown helper
+    function copyMarkdown(){
+    const title = document.getElementById('simple-title')?.textContent || 'Sans titre';
+    const pseudo = document.getElementById('simple-pseudo')?.textContent.replace(/^Pseudo\s*:\s*/, '') || 'Anonyme';
+    const author = document.getElementById('simple-author')?.textContent.replace(/^Auteur\s*:\s*/, '') || '—';
+    const desc = document.getElementById('simple-description')?.textContent || '';
+    
+    const md = `# ${title}
+    
+    **Pseudo:** ${pseudo}
+    
+    **Auteur:** ${author}
+    
+    **Description:**
+    
+    ${desc}`;
+    navigator.clipboard?.writeText(md).then(()=>{ alert('Markdown copié dans le presse-papiers.'); },()=>{ alert('Impossible de copier — autorisez le presse-papiers.'); });
+    }
+    
+    document.addEventListener('click', (e) => {
+    if(e.target && e.target.id === 'print-simple') window.print();
+    if(e.target && e.target.id === 'copy-simple') copyMarkdown();
+    });
+    
+    // ---------- INIT ----------
+    document.getElementById('year').textContent = new Date().getFullYear();
+    renderPendingList(); // show local pending first
+    loadAndRenderNow().then(()=>{ if(pending.length) ensurePolling(); });
+    setInterval(()=>{ loadAndRenderNow(); }, 5*60*1000);
+    </script>
+    
 
 
 </body>
