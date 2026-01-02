@@ -790,28 +790,94 @@
           <h2 id="remarks-title" class="item-title">Remarque / commentaire</h2>
           <p class="meta">Formulaire </p>
 
-          <form id="remark-form" style="margin-top:10px">
-            <input id="pseudo" name="pseudo" placeholder="Pseudo (optionnel)" aria-label="Pseudo">
-            <textarea id="content" name="content" rows="5" placeholder="Votre remarque, suggestion ou correction..." required aria-label="Remarque"></textarea>
-            <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
-              <button class="primary" type="submit">Enregistrer la remarque</button>
-            </div>
-            <p id="remark-result" class="muted" style="margin-top:8px"></p>
-          </form>
-  
-          <div style="margin-top:12px">
-            <strong>Remarques enregistrées </strong>
-            <div class="remarks-list" id="remarks-list" style="margin-top:8px">
-              <div class="muted">Chargement…</div>
-            </div>
+         <form id="remark-form" style="margin-top:10px">
+          <input id="pseudo" name="pseudo" placeholder="Pseudo (optionnel)" aria-label="Pseudo">
+          <textarea id="content" name="content" rows="5" placeholder="Votre remarque, suggestion ou correction..." required aria-label="Remarque"></textarea>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+            <button class="primary" type="submit">Enregistrer la remarque</button>
           </div>
-        </article>
-      </section>
-    </div>
+          <p id="remark-result" class="muted" style="margin-top:8px"></p>
+        </form>
 
-    <pre id="debug" class="debug"></pre>
-  </main>
+        <div style="margin-top:12px">
+          <strong>Remarques enregistrées </strong>
+          <div class="remarks-list" id="remarks-list" style="margin-top:8px">
+            <div class="muted">Chargement…</div>
+          </div>
+        </div>
+      </article>
+    </section>
+  </div>
 
+  <script>
+    async function fetchRemarks() {
+      const list = document.getElementById('remarks-list');
+      list.innerHTML = '<div class="muted">Chargement…</div>';
+      try {
+        const res = await fetch('/api/remarks');
+        if (!res.ok) throw new Error('Erreur réseau');
+        const items = await res.json();
+        if (!items.length) {
+          list.innerHTML = '<div class="muted">Aucune remarque enregistrée.</div>';
+          return;
+        }
+        list.innerHTML = '';
+        items.forEach(it => {
+          const el = document.createElement('div');
+          el.className = 'remarks-item';
+          el.innerHTML = `<strong>${it.pseudo ? escapeHtml(it.pseudo) : 'Anonyme'}</strong>
+                          <div style="font-size:.9rem;margin-top:6px;white-space:pre-wrap">${escapeHtml(it.content)}</div>
+                          <div class="muted" style="margin-top:6px;font-size:.8rem">${new Date(it.createdAt).toLocaleString()}</div>`;
+          list.appendChild(el);
+        });
+      } catch (err) {
+        list.innerHTML = '<div class="muted">Impossible de charger les remarques.</div>';
+        console.error(err);
+      }
+    }
+
+    function escapeHtml(s = '') {
+      return s
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    document.getElementById('remark-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const pseudo = document.getElementById('pseudo').value.trim();
+      const content = document.getElementById('content').value.trim();
+      const result = document.getElementById('remark-result');
+
+      if (!content) {
+        result.textContent = 'Le champ "Remarque" est requis.';
+        return;
+      }
+
+      result.textContent = 'Envoi en cours…';
+      try {
+        const res = await fetch('/api/remarks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pseudo, content })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error || 'Erreur serveur');
+        result.textContent = 'Remarque enregistrée.';
+        document.getElementById('content').value = '';
+        // recharge la liste
+        await fetchRemarks();
+      } catch (err) {
+        console.error(err);
+        result.textContent = 'Erreur lors de l\'enregistrement.';
+      }
+    });
+
+    // Chargement initial
+    fetchRemarks();
+  </script>
   <footer class="site-footer">
     © <span id="year"></span> — Blog personnel — page pédagogique non officielle
   </footer>
