@@ -762,10 +762,20 @@
           </div>
         </article>
 
-        <header>
-      <img src="UE de manière simplifiée.png" alt="Logo de mon site">
-    </header>
+        <section class="ue-section" id="union-europeenne-en-image">
+<h2>Union européenne — en image</h2>
+<p class="ue-caption">Exemple de recadrage réactif et accessible de votre logo / image.</p>
 
+
+<!-- Méthode 1 : <picture> + <img> + object-fit (recommandée si l'image est "content") -->
+<div class="image-crop" aria-hidden="false">
+<picture>
+<!-- si vous avez plusieurs tailles, utilisez srcset pour charger la meilleure -->
+<!-- <source srcset="ue-1280.png 1280w, ue-640.png 640w" sizes="(max-width:600px) 100vw, 1200px"> -->
+<img src="UE de manière simplifiée.png" alt="Carte stylisée de l'Union européenne" loading="lazy">
+</picture>
+</div>
+</section>
         <article class="card" id="procedure" aria-labelledby="procedure-title" style="margin-top:18px">
           <h2 id="procedure-title" class="item-title">Procédure législative</h2>
           <p class="meta">Procédure ordinaire & principaux mécanismes</p>
