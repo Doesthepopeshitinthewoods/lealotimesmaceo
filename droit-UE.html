@@ -1,1 +1,941 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Droit institutionnel — Blog de l'intranquilité</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
 
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --maxw:1100px;
+      --bg:#fbfcfe;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --text:#0f172a;
+      --accent:#8b0000;
+      --accent-600:#7a0000;
+      --glass:rgba(15,23,42,0.04);
+      --radius:12px;
+      --gap:18px;
+      --toc-w:220px;
+      --header-h:78px; /* adapte si besoin */
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+      background:linear-gradient(180deg,var(--bg),#eef2f6);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.6;
+      scroll-behavior:smooth;
+    }
+    header{
+      background:linear-gradient(90deg,var(--accent),var(--accent-600));
+      color:#fff;
+      border-bottom:1px solid rgba(0,0,0,0.06);
+    }
+    .wrap{
+      max-width:var(--maxw);
+      margin:0 auto;
+      padding:18px 20px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    h1.site-title{margin:0;font-family:Merriweather,serif;font-size:20px;font-weight:700}
+    nav{display:flex;gap:12px;align-items:center}
+    nav a{color:rgba(255,255,255,0.92);text-decoration:none;font-size:14px}
+    nav a:hover{text-decoration:underline}
+
+    main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
+    .grid{
+      display:grid;
+      grid-template-columns: var(--toc-w) 1fr;
+      gap:28px;
+      align-items:start;
+    }
+    @media (max-width:980px){
+      .grid{grid-template-columns:1fr}
+      .toc{order:-1} /* put toc above content on small screens */
+    }
+
+    /* TOC vertical : sticky but scrollable to avoid chevauchement */
+    .toc{
+      align-self:start;
+      z-index:2;
+    }
+    .toc .panel{
+      padding:12px;
+      border-radius:10px;
+      background:var(--card);
+      box-shadow:0 6px 20px rgba(16,24,40,0.04);
+      max-height: calc(100vh - var(--header-h) - 40px); /* reserve space for header + margin */
+      overflow:auto; /* scroll inside toc instead of overlapping content */
+    }
+    .toc nav{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      margin-top:8px;
+    }
+    .toc nav a{
+      display:block;
+      padding:8px 10px;
+      text-decoration:none;
+      color:var(--text);
+      border-radius:8px;
+      font-size:14px;
+      white-space:normal; /* wrap long labels */
+      line-height:1.3;
+    }
+    .toc nav a:hover{background:rgba(0,0,0,0.03)}
+    .toc nav a.active{background:var(--glass);font-weight:600}
+
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:0 8px 30px rgba(16,24,40,0.06);padding:18px;display:flex;gap:18px;align-items:flex-start;flex-direction:column}
+    .meta{color:var(--muted);font-size:13px;margin:6px 0}
+    h2.item-title{margin:0;font-size:20px}
+    .description{margin-top:8px;color:#111827}
+
+    .panel{background:var(--card);border-radius:12px;padding:16px;box-shadow:0 6px 20px rgba(16,24,40,0.04)}
+    input,textarea,select{width:100%;padding:10px;border:1px solid #e6e9ef;border-radius:8px;font-size:14px}
+    button.primary{padding:10px 14px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer}
+    .muted{color:var(--muted);font-size:13px}
+    .badge{display:inline-block;background:var(--glass);padding:6px 8px;border-radius:999px;font-size:12px}
+
+    .remarks-list article{border-top:1px dashed #eee;padding:10px 0}
+    .remarks-list .meta{font-size:12px;color:var(--muted)}
+
+    footer.site-footer{max-width:var(--maxw);margin:48px auto 30px;padding:0 20px;color:var(--muted);font-size:13px}
+    pre.debug{display:none}
+
+    .timeline{font-size:14px;margin-top:8px}
+    .timeline dt{font-weight:700;margin-top:12px}
+    .institution{margin-top:8px}
+    .institution h4{margin:6px 0}
+
+    @media print{ body{background:#fff} header,footer.site-footer{display:none} .card{box-shadow:none;border-radius:0} .toc{display:none} }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1 class="site-title">Blog de l'intranquilité</h1>
+      <nav aria-label="Navigation principale">
+        <a href="index.html">Accueil</a>
+        <a href="projets-libres-pensees.html">Libres pensées</a>
+        <a href="projets-hieroglyphes.html">Introduction aux hiéroglyphes égyptiens</a>
+        <a href="droit-UE.html" style="font-weight:600;text-decoration:underline">Droit : Union européenne</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="grid" role="main">
+      <!-- Sommaire à gauche -->
+      <aside class="toc" aria-label="Sommaire">
+        <div class="panel">
+          <strong>Sommaire</strong>
+          <nav id="toc-nav" aria-label="Plan de la page" style="margin-top:8px">
+            <a href="#intro" data-target="intro">Introduction</a>
+            <a href="#history" data-target="history">Chronologie / Histoire</a>
+            <a href="#institutions" data-target="institutions">Institutions principales</a>
+            <a href="#procedure" data-target="procedure">Procédure législative</a>
+            <a href="#glossary" data-target="glossary">Glossaire</a>
+            <a href="#remarks" data-target="remarks">Remarques (bas de page)</a>
+          </nav>
+        </div>
+      </aside>
+
+      <!-- Contenu principal -->
+      <section>
+        <article class="card" id="intro" aria-labelledby="intro-title">
+            <h2 id="intro-title" class="item-title">Droit institutionnel de l'Union européenne</h2>
+            <p class="meta">Présentation</p>
+          
+            <p class="description">
+              Cette page tente d'expliquer le fonctionnement des institutions de l'Union européenne.
+              Mais alors que tout citoyen européen bénéficie de la citoyenneté de l'Union, se pose la question de la valeur de la démocratie représentative lorsque la complexité des institutions empêche les non-spécialistes d'en comprendre correctement le fonctionnement.
+            </p>
+          
+            <p class="warning" style="margin-top:8px; font-size:0.85em; color:#555;">
+              <strong>Mise en garde :</strong> Je ne suis pas juriste. Vérifiez l'exactitude des informations auprès de sources
+              officielles ou d'un professionnel du droit. Vos remarques et corrections sont les bienvenues dans la section prévue
+              en bas de page.
+            </p>
+          
+            <div style="margin-top:10px"><span class="badge">Résumé</span></div>
+          </article>
+          
+
+        <article class="card" id="history" aria-labelledby="history-title" style="margin-top:18px">
+          <h2 id="history-title" class="item-title">Chronologie essentielle</h2>
+          <p class="meta">Chronologie de la construction européenne </p>
+          <dl class="timeline" style="margin-top:8px">
+            <dt>1951 — CECA</dt>
+            <dd>Création de la Communauté européenne du charbon et de l'acier, premier pas supranational.</dd>
+
+            <dt>1957 — Traités de Rome</dt>
+            <dd>Création de la CEE et d'Euratom ; mise en place de structures institutionnelles durables.</dd>
+
+            <dt>1986 — Acte unique</dt>
+            <dd>Relance de l'intégration avec l'objectif d'un marché intérieur achevé.</dd>
+
+            <dt>1992 — Traité de Maastricht</dt>
+            <dd>Fondation de l'Union européenne : citoyenneté, nouvelles politiques et architecture en piliers (jusqu'à Lisbonne).</dd>
+
+            <dt>2007 — Traité de Lisbonne (2009 entrée en vigueur)</dt>
+            <dd>Transformation majeure : simplification de la structure, renforcement du Parlement, rôle clair du Conseil européen et clarification des compétences.</dd>
+          </dl>
+        </article>
+        <article class="card" id="history" aria-labelledby="history-title" style="margin-top:18px">
+            <h2 id="history-title" class="item-title">Chronologie détaillée</h2>
+            <p class="meta">Chronologie de la construction européenne </p>
+            <dl class="timeline" style="margin-top:8px">
+              <dt>1948</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-01-01">1er janvier</time> : Entrée en vigueur du traité de Benelux.</li>
+                  <li><time datetime="1948-03-17">17 mars </time> : Signature du pacte de Bruxelles créant l'Union occidentale.</li>
+                  <li><time datetime="1948-04-16">16 avril </time> : Création de l'Organisation européenne de coopération économique (OECE).</li>
+                  <li><time datetime="1948-05-07">7–11 mai </time> : Congrès de l'Europe à La Haye.</li>
+                  <li><time datetime="1948-10-25">25 octobre </time> : Création du Mouvement européen.</li>
+                </ul>
+              </dd>
+              <dt>1949</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-01-01">29 janvier</time> : Création du Conseil d'assistance économique (COMECON)</li>
+                  <li><time datetime="1948-03-17">4 avril </time> : Signature du pacte de l'Atlantique Nord (OTAN).</li>
+                  <li><time datetime="1948-04-16">5 mai </time> : Signature du status du Conseil de l'Europe.</li>
+                </ul>
+              </dd>
+              <dt>1950</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-01-01">9 mai</time> : Déclaration de Robert Schuman</li>
+                  <li><time datetime="1948-03-17">4 novembre </time> : Signature de la convention européenne de sauvegarde des droits de l'homme et des libertés fondamentales (CEDH).</li>
+                </ul>
+              </dd>
+              <dt>1951</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-01-01">18 avril</time> : Signature à Paris du traité instituant la Communauté européenne du charbon et de l'acier (CECA).</li>
+                </ul>
+              </dd>
+              <dt>1952</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-01-01">27 mai</time> : Signature à Paris du traité créant la Communauté européenne de défense (CED).</li>
+                  <li><time datetime="1948-03-17">25 juillet </time> : Entrée en vigueur du traité CECA.</li>
+                </ul>
+              </dd>
+              <dt>1954</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-01-01">18 avril</time> : Transformation de l'Union occidentale en Union de l'Europe occidentale (UEO).</li>
+                </ul>
+              </dd>
+              <dt>1955</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-01-01">1er - 2 juin</time> : Conférence de Messine - Création du Comité Spaak.</li>
+                </ul>
+              </dd>
+              <dt>1956</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-01-01">29 mai</time> : Approbation par les Six du rapport Spaak.</li>
+                </ul>
+              </dd>
+              <dt>1957</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-01-01">25 mars</time> : Signature à Rome des traités instituant la Communauté économique européenne (CEE) et la Communauté européennne de l'énergie atomique (CEEA ou Euratom).</li>
+                </ul>
+              </dd>
+              <dt>1958</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-01-01">5 janvier</time> : Entrée en vigueur des traités de Rome.</li>
+                </ul>
+              </dd>
+
+              <dt>1959</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-01-01">1er janvier</time> : Première réduction des droits de douane à l'intérieur de la Communauté.</li>
+
+                </ul>
+              </dd>
+              <dt>1960</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-01-01">4 janvier</time> : Signature du traité créant l'Association européenne de libre-échange (AELE).</li>
+                  <li><time datetime="1948-01-01">14 décembre</time> : Création de l'Organisation de coopération et de développement économiques (OCDE), (ex-OECE élargie aux États-Unis et au Canada).</li>
+                </ul>
+              </dd>
+              <dt>1961</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-01-01"> 10-11 février</time> : Sommet de Paris consacré à la recherche des moyens propres à organiser une coopération politique plus étroite.</li>
+                  <li><time datetime="1948-03-17"> 20 mars </time> : Premier recours en manquement introduit par la Commission devant la Cour de justice, dirigé contre l'Italie.</li>
+                  <li><time datetime="1948-04-16"> 9 août </time> : Première demande d'adhésion du Royaume-Uni.</li>
+                </ul>
+              </dd>
+              <dt>1962</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-01-01"> 14 janvier</time> : Accord sur la politique agricole commune (PAC).</li>
+                  <li><time datetime="1948-03-17"> 30 mars </time> : L'assemblée commune décide de prendre le nom de Parlement européen.</li>
+                  <li><time datetime="1948-04-16"> 4 avril </time> : Création du Fonds européen d'orientation et de garantie agricole (FEOGA).</li>
+                  <li><time datetime="1948-01-01"> 17 avril</time> : Échec du plan Fouchet sur la création d'une "Union d'États européens".</li>
+                </ul>
+              </dd>
+              <dt>1963</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-01-01"> 14 janvier</time> : Veto du général de Gaulle à l'égard de la candidature britannique.</li>
+                  <li><time datetime="1948-03-17"> 5 février </time> : Arrêt Van Gend and Loos, qui consacre l'effet direct du traité CEE.</li>
+                </ul>
+              </dd>
+              <dt>1964</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-01-01"> 15 juillet</time> : Arrêt Costa c. Enel qui consacre la primauté du droit communautaire.</li>
+                </ul>
+              </dd>
+              <dt>1965</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-01-01"> 8 avril</time> : Signature du traité de fusion des exécutifs (CEE, CECA, CEEA).</li>
+                  <li><time datetime="1948-03-17"> 1er juillet </time> : Rupture par le gouvernement français des négociations sur le financement de la PAC et rappel du représentant (crise de la chaise vide).</li>
+                </ul>
+              </dd>
+              <dt>1966</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 30 janvier </time> : Compromis de Luxembourg.</li>
+                </ul>
+              </dd>
+              <dt>1967</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 9 février </time> : Adoption d'un système de taxe sur la valeur ajoutée (TVA).</li>
+                  <li><time datetime="1948-03-17"> 10-11 mai </time> : Deuxième candidature du Royaume-Uni, de l'Irlande, du Danemark et de la Norvège.</li>
+                  <li><time datetime="1948-03-17"> 19 décembre </time> : Veto de la France à la poursuite des négociations avec le Royaume-Uni.</li>
+                </ul>
+              </dd>
+              <dt>1968</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 1er juillet </time> : Entrée en vigueur de l'Union douanière avec dix-huit mois d'avance sur le calendrier prévu.</li>
+                  <li><time datetime="1948-03-17"> 18 décembre </time> : Plan Mannsholt sur la réforme des structures agricoles.</li>
+                </ul>
+              </dd>
+              <dt>1969</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 1er juillet </time> : Entrée en vigueur de l'Union douanière avec dix-huit mois d'avance sur le calendrier prévu.</li>
+                  <li><time datetime="1948-03-17"> 18 décembre </time> : Plan Mannsholt sur la réforme des structures agricoles.</li>
+                </ul>
+              </dd>
+              <dt>1969</dt> 
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 1er-2 décembre </time> : Sommet de La Haye et annonce d'une Union économique et monétaire dans les dix ans.</li>
+                </ul>
+              </dd>
+              <dt>1970</dt> 
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 27 octobre </time> : Adoption par le conseil du rapport Davignon sur "les progrès réalisables dans le domaine de l'union politique de l'Europe".</li>
+                  
+                </ul>
+              </dd>
+              <dt>1971</dt> 
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 17 octobre </time> : Adoption par le Conseil d'une résolution sur la réalisation en plusieurs étapes de l'Union économique et monétaire à partir du 1er anvier 1971 (plan Werner).</li>
+                </ul>
+              </dd>
+              <dt>1972</dt> 
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 22 janvier</time> : Signature de l'acte d'adhésion du Royaume-Uni, de l'Irlande, du Danemark et de la Norvège.</li>
+                  <li><time datetime="1948-03-17"> 19-21 octobre </time> : Sommet de Paris. Définition de nouveaux domaines d'intervention (environnement, politique régionale, politique sociale, politique industrielle). Engagement des États memebres de transformer avant 1980 "l'ensemble de leurs relations en une Union européenne".</li>
+                </ul>
+              </dd>
+              <dt>1973</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 1er janvier </time> : Entrée de la Grande-Bretagne, de l'Irlande et du Danemark dans les Communautés européennes</li>
+                  <li><time datetime="1948-03-17"> 6 octobre </time> : Début de la guerre du Kippour et de la première crise pétrolière.</li>
+                </ul>
+              </dd>
+              <dt>1974</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 1er avril </time> : Au Royaume-Uni, le gouvernement travailliste demande la renéggociation du traité d'adhésion.</li>
+                  <li><time datetime="1948-03-17"> 21 juin </time> : Arrêt Reyners </li>
+                  <li><time datetime="1948-03-17"> 9-10 décembre </time> : Sommet de Paris. Décisions importantes sur le plan institutionnel. Accord sur l'élection du Parlement européen au suffrage direct. Création du Conseil européen. Léo Tindemans est chargé de présenter un rapport sur l'Union européenne.</li>
+                </ul>
+              </dd>
+              <dt>1975</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 5 juin </time> : Référendum au Royaume-Uni sur le maintien dans la Communauté : le oui l'emporte avec 67,2%.</li>
+                  <li><time datetime="1948-03-17"> 12 juin </time> : Demande d'adhésion de la Grèce. </li>
+                  <li><time datetime="1948-03-17"> 22 juillet </time> : Signature à Bruxelles du traité sur le renforcement des pouvoirs budgétaires du Parlement européen et la création de la Cour des Comptes. </li>
+                  <li><time datetime="1948-03-17"> 1er août </time> : Signature à Helsinki de l'acte final de la conférence sur la sécurité et la coopération en Europe (CSCE). </li>
+                </ul>
+              </dd>
+
+
+              <dt>1976</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 7 janvier </time> : Rapport Tindemans sur l'Union européenne.</li>
+                  <li><time datetime="1948-03-17"> 20 septembre </time> : Acte portant élection au suffrage universel des membres de l'Assemblée parlementaire des Communautés. </li>
+              </dd>
+
+              <dt>1977</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 28 mars </time> : Candidature du Portugal. </li>
+                  <li><time datetime="1948-03-17"> 28 juillet  </time> : Candidature de l'Espagne. </li>
+              </dd>
+
+
+              <dt>1979</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 20 février </time> : Arrêt Cassis de Dijon, posant le principe de la reconnaissance mutuelle comme base de la libre circulation des marchandises.</li>
+                  <li><time datetime="1948-03-17"> 13 mars </time> : Entrée en vigueur du Système monétaire européen.  </li>
+                  <li><time datetime="1948-03-17"> 28 mai </time> : Signature des actes relatifs à l'adhésion de la Grèce. </li>
+                  <li><time datetime="1948-03-17"> 7-10 juin </time> : Première élection du Parlement européen au suffrage universel direct</li>
+                  <li><time datetime="1948-03-17"> 17 juillet </time> : Simone Weil est élue président du Parlement européen. </li>
+              </dd>
+
+
+              <dt>1981</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 1er janvier </time> : Entrée de la Grèce dans les Communautés européennes.</li>
+                
+              </dd>
+              <dt>1984</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 14 février </time> : Adoption par le Parlement européen du projet de traité sur l'Union européenne (projet Spinelli) </li>
+                  <li><time datetime="1948-03-17">  25-26 juin </time> :  Conseil européen de Fontainebleau. Accord sur la réduction de la contribution britannique au budget communautaire. Mise en place des Comités Dooge et Adonnino. </li>
+              </dd>
+
+
+              <dt>1985</dt>
+              <dd class="timeline-events">
+                <ul>
+                    <li><time datetime="1948-03-17"> 1er janvier </time> : Entrée de l'Espagne et du Portugal dans les Communautés européennes.</li>
+                  <li><time datetime="1948-03-17"> 7 janvier </time> : Jacques Delors devient président de la Commission.</li>
+                  <li><time datetime="1948-03-17"> 17-28 février </time> : Signature de l'Acte unique européen.</li>
+                  <li><time datetime="1948-03-17"> 1er février </time> : Le Groenland (devenu membre de la Communauté européenne en tant que partie du Danemark) quitte la Communauté, suite aux résultats d'un référendum organisé le 23 février 1982. </li>
+                  <li><time datetime="1948-03-17"> 14 juin </time> : La Commission présente son "livre blanc concernant l'achèvement du marché intérieur pour 1992". </li>
+                  <li><time datetime="1948-03-17"> 14 juin </time> : Accord de Schengen </li>
+                 
+              </dd>
+
+
+
+
+              <dt>1987</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 15 juin </time> : Adoption du programme Erasmus</li>
+                  <li><time datetime="1948-03-17"> 1er juillet </time> : Entrée en vigueur de l'Acte unique européen. </li>
+              </dd>
+
+
+              <dt>1989</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 9 novembre </time> : Chute du mur de Berlin. </li>
+                  <li><time datetime="1948-03-17">  8-9 décembre </time> : Conseil européen de Strasbourg. Réunion de la CIG (conférence intergouvernementale) sur l'UEM (Union économique et monétaire). Adoption de la charte communautaire des droits sociaux fondamentaux des travailleurs par onze États membres (sauf le Royaume-Uni). </li>
+                  
+              </dd>
+              <dt>1990</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 18 avril  </time> : Déclaration commune Mitterand-Kohl demandant la réunion d'une CIG sur l'Union politique.</li>
+                  <li><time datetime="1948-03-17"> 19 juin </time> : Signature de la convention d'application de l'accord de Schengen.  </li>
+                  <li><time datetime="1948-03-17"> 3 juillet </time> : Demande d'adhésion de Chypre. </li>
+                  <li><time datetime="1948-03-17">  16 juillet</time> : Demande d'adhésion de Malte. </li>
+                  <li><time datetime="1948-03-17">  3 octobre </time> : Réunification de l'Allemagne.</li>
+              </dd>
+
+              <dt>1991</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17">  14 octobre </time> : Création de l'Eurocorps.</li>
+                  <li><time datetime="1948-03-17">  6 novembre </time> :  Institution de l'Office européen des aides humanitaires (ECHO) </li>
+                  <li><time datetime="1948-03-17">  16 décembre</time> : Signature des accords européens avec la Pologne, la Hongrie et la Tchécoslovaquie.</li>
+                  
+              </dd>
+              <dt>1992</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 7 février  </time> : Signature du traité de Maastricht sur l'Union européenne</li>
+                  <li><time datetime="1948-03-17"> 18 mars </time> :  Demande d'adhésion de la Finlande. </li>
+                  <li><time datetime="1948-03-17"> 2 mai </time> : Signature de l'accord sur l'espace économique européen (EEE).</li>
+                  <li><time datetime="1948-03-17">  20 mai</time> : Demande d'adhésion de la Suisse.  </li>
+                  <li><time datetime="1948-03-17">   2 juin </time> : Référendum au Danemark et rejet du traité de Maastricht.</li>
+                  <li><time datetime="1948-03-17">  25 novembre </time> : Demande d'adhésion de la Norvège. </li>
+                  <li><time datetime="1948-03-17">  6 décembre </time> : Référendum en Suisse : rejet par les Suisses de l'EEE, la Suisse retire sa demande d'adhésion à la Communauté. </li>
+                  <li><time datetime="1948-03-17">   11-12 décembre </time> : Conseil européen d'Édimbourg. Décision des chefs d'État ou de gouvernement accordant des dérogations au Danemark, permettant l'organisation d'un nouveau référendum. </li>
+              </dd>
+              <dt>1993</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17">   1er février </time> : Ouverture des négociations pour l'adhésion de l'Autriche, de la Finlande et de la Suède. </li>
+                  <li><time datetime="1948-03-17">  18 mai </time> : Deuxième référendum au Danemark, positif cette fois.  </li>
+                  <li><time datetime="1948-03-17">  1er octobre </time> : La cour constitutionnelle allemande autorise la ratification du traité de Maastricht. </li>
+                  
+              </dd>
+
+              <dt>1994</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17">  14-25 juin </time> : Signature des actes d'adhésion de l'Autriche, de la Finlande, de la Suède et de la Norvège.</li>
+                  <li><time datetime="1948-03-17">  26 juillet</time> : Jacques Santer président de la Commission.  </li>
+                  <li><time datetime="1948-03-17"> 28 novembre </time> : Référendum en Norvège : rejet de l'adhésion par une majorité de Norvégiens.</li>
+              </dd>
+              <dt>1995</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17">  12 juillet </time> : Le Parlement européen nomme Jacob Söderman comme premier médiateur de l'Union européenne. </li>
+                  <li><time datetime="1948-03-17">  26 juillet</time> : Signature de la convention d'Europol.   </li>
+              </dd>
+              <dt>1996</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17">  1er janvier </time> : Entrée en vigueur de l'Union douanière avec la Turquie. </li>
+                  <li><time datetime="1948-03-17">  22-23 juin </time> : Conseil européen de Florence. Accord sur les objectifs et le calendrier de la CIG. Accord sur les solutions à apporter à la crise de la vache folle.  </li>
+                  <li><time datetime="1948-03-17">  19 décembre</time> : Le Danemark, la Finlande et la Suède signent l'accord de Schengen. </li>
+              </dd>
+
+              <dt>1997</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 16-17 juin  </time> : Conseil européen d'Amsterdam. Accord sur un projet de traité. Résolution sur la croissance et l'emploi. Accord sur le cadre juridique de l'euro et adoption du pacte de stabilité de croissance.</li>
+                  <li><time datetime="1948-03-17">  2 octobre </time> :  Signature du traité d'Amsterdam. </li>
+                  <li><time datetime="1948-03-17">  22 novembre </time> : </li>
+                  <li><time datetime="1948-03-17">  1er - 10 décembre</time> : Conférence de Kyoto sur le changement climatique- engagement des pays industrialisés de réduire leurs émissions de gaz à effet de serre. </li>
+              </dd>
+              <dt>1998</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17">  1er juin </time> : Établissement de la Banque Centrale européenne.</li>
+                  <li><time datetime="1948-03-17">  11-12 décembre</time> : Conseil européen à Vienne. Définition des conditions de la représentation externe de l'euro.  </li>
+                  <li><time datetime="1948-03-17">  31 décembre </time> : Le Conseil adopte les taux de conversion fixes et irrévocables entre les monnaies nationales des onzes États membres participants et l'euro.</li>
+                  
+              </dd>
+              <dt>1999</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17">15 mars   </time> : Démission collective de la Commission à la suite du rapport du comité d'experts indépendants sur les allégations de fraude, de mauvaise gestion et de népotisme à la Commission.</li>
+                  <li><time datetime="1948-03-17">  5 mai </time> : Nomination de Romano Prodi comme président de la Commission.   </li>
+                  <li><time datetime="1948-03-17"> 20 juillet </time> : Nicole Fontaine élue présidente du Parlement européen.</li>
+                  
+              </dd>
+              <dt>2000</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17">  28 septembre </time> : Référendum au Danemark sur l'adhésion à la monnaie unique. Le non l'emporte.</li>
+                  <li><time datetime="1948-03-17"> 7-9 décembre </time> : Conseil européen à Nice. Accord politique sur le traité de Nice et proclamation de la charte des droits fondamentaux.  </li>
+              </dd>
+
+              <dt>2001</dt>
+
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17">  2 janvier </time> : La Grèce devient le douzième membre de la zone euro.</li>
+                  <li><time datetime="1948-03-17"> 26 février </time> : Signature du traité de Nice.  </li>
+                  <li><time datetime="1948-03-17">  14 juin</time> : Un référendum à lieu en Irlande. La population vote contre le traité de Nice. </li>
+              </dd>
+              <dt>2002</dt>
+
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17">  1er janvier  </time> : Mise en circulation des billets et pièces libellés en euros. </li>
+                  <li><time datetime="1948-03-17"> 26 janvier</time> : Lancement du système européen de positionnement ett de navigation par satellite GALILEO.  </li>
+                  <li><time datetime="1948-03-17">  19 octobre </time> : Deuxième référendum, positif cette fois, sur le traité de Nice en Irlande. </li>
+                  <li><time datetime="1948-03-17">  </time> :  </li>
+              </dd>
+              <dt>2003</dt>
+
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17">  21 février </time> : Demande d'adhésion de la Croatie.</li>
+                  <li><time datetime="1948-03-17"> 16 avril </time> : Signature d'adhésion de Chypre, de l'Estonie, de la Hongrie, de la Lettonie, de la Lituanie, de Malte, de la Pologne, de la République tchèque, de la Slovaquie et de la Slovénie, à Athènes.  </li>
+                  <li><time datetime="1948-03-17">  14 septembre</time> :  Référendum en Suède sur l'adhésion de la monnaie unique, le non l'emporte.</li>
+                  <li><time datetime="1948-03-17"> 1er novembre </time> : Jean-Paul Trichet succède à Wim Duisenberg à la présidence de la BCE.  </li>
+              </dd>
+              <dt>2004</dt>
+
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17">  22 mars </time> : Demande d'adhésion de l'Ancienne République yougoslave de Macédoine. </li>
+                  <li><time datetime="1948-03-17"> 17-18 juin </time> : Conseil européen à Bruxelles (à partir de cette date, tous les Conseils européens se dérouleront à Bruxelles). Accord sur le traité établissant une Constitution pour l'Europe.   </li>
+                  <li><time datetime="1948-03-17"> 15-16 décembre </time> : Conseil européen. Accord pour l'adhésion de la Bulgarie et de la Roumanie et pour l'ouverture des négociations d'adhésion avec la Croatie et la Turquie.</li>
+                
+              </dd>
+              <dt>2005</dt>
+
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17">  29 mai </time> : Référendum sur le traité constitutionnel en France. Le non l'emporte avec 54,6% des voix.</li>
+                  <li><time datetime="1948-03-17"> 1er Juin </time> : Référendum sur le traité constitutionnel aux Pays-Bas. Le non l'emporte avec 61.6% des voix.  </li>
+                  <li><time datetime="1948-03-17">  16-17 juin</time> : Conseil Européen. Discussions sur les conséquences du non aux référendums en France et aux Pays-Bas. Décision de ménager une période de réflexion, d'explication et de débat sur le traité constitutionnel.</li>
+                  
+              </dd>
+              <dt>2007</dt>
+
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 18-19 octobre  </time> : Conseil européen informel à Lisbonne. Accord sur le traité de Lisbonne modifiant le traité sur l'Union européenne et le traité instituant la Communauté européenne. </li>
+                  <li><time datetime="1948-03-17">  12 décembre </time> : Cérémonie officielle de la signature de la charte des droits fondamentaux révisée par Hans-Gert Pöttering, président du Parlement européen, José Manuel Barroso, président de la Commission européenne, et José Sócrates, Premier ministre portugais et président en exercice du Conseil de l'Union Européenne. </li>
+                  <li><time datetime="1948-03-17"> 13 décembre </time> : Signature du traité de Lisbonne.</li>
+                  <li><time datetime="1948-03-17">  21 décembre</time> : élargissement de l'espace Schengen à l'Estonie, la Hongrie, la Lituanie, la Lettonie, Malte, la Pologne, la République tchèque, la Slovaquie et la Slovénie.  </li>
+              </dd>
+              <dt>2008</dt>
+
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 12 juin  </time> : Référendum sur le traité de lisbonne en Irlande, le non l'emporte avec 53,4 %. </li>
+                  <li><time datetime="1948-03-17"> 11-12 décembre </time> :  Conseil européen. Adoption d'une démarche pour permettre à l'Irlande d'organiser un nouveau référendum sur le traité de Lisbonne. Accord sur un pla pour réponde à la crise économique et financière. Accord sur le paquet climat énergie. </li>
+                  <li><time datetime="1948-03-17"> 15 décembre </time> : Demande d'adhésion du Monténégro </li>
+              </dd>
+              <dt>2009</dt>
+
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17">  24 avril  </time> : Demande d'adhésion de l'Albanie.</li>
+                  <li><time datetime="1948-03-17">  17 juillet </time> :  Demande d'adhésion de l'Islande. </li>
+                  <li><time datetime="1948-03-17">  16 septembre</time> : José Manuel Barroso est élu par le Parlement européen comme nouveau président de la Commission.</li>
+                  <li><time datetime="1948-03-17">  3 octobre </time> : Lors d'un deuxième référendum les Irlandais se prononcent en faveur du traité de Lisbonne à plus de 67% des voix. </li>
+                  <li><time datetime="1948-03-17">  16 octobre </time> : Le nouveau gouvernement grec doit avouer que son déficit sera nettement plus élevé que prévu. C'est le début de la crise des dettes souveraines.</li>
+              </dd>
+              <dt>2010</dt>
+
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 1er décembre  </time> : Nommination d'Herman Van Rompuy comme président du Conseil européen.</li>
+                  <li><time datetime="1948-03-17">  4 décembre</time> : Catherine Ashton commé par le Conseil européen haute réprésentante.  </li>
+                  <li><time datetime="1948-03-17">  22 décembre</time> : Demande d'adhésion de la Serbie. </li>
+                  <li><time datetime="1948-03-17">  </time> :  </li>
+              </dd>
+              <dt>2011</dt>
+
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 16 février  </time> : Adoption par le Parlement européen et le Conseil du règlement fixant les procédureset conditions d'exercice du droit initiative citoyenne.</li>
+                  <li><time datetime="1948-03-17">  16 novembre</time> : Adoption du six-pac renforçant la discipline budgétaire et macroéconomique. </li>
+              </dd>
+              <dt>2012</dt>
+
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 10 décembre  </time> : L'union européenne reçoit le prix Nobel de la paix.</li>
+                  <li><time datetime="1948-03-17">  14-15 décembre</time> : Le conseil européen donne son feu vert au projet d'union bancaire.  </li>
+                  
+              </dd>
+              <dt>2013</dt>
+
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17">  1er janvier </time> : Entrée en vigueur du traité de stabilité, de coordination et de gouvernance. </li>
+                  <li><time datetime="1948-03-17"> 21 janvier </time> : Jeroen Dijsselbloem, ministre des Finances néerlandais, élu président de l'Eurogroupe.  </li>
+                  <li><time datetime="1948-03-17">  22 janvier</time> : Le Conseil autorise une coopération renforcé entre onze pays pour l'introduction d'une taxe sur les transactions financières.</li>
+                  <li><time datetime="1948-03-17"> 23 janvier </time> :  Discours du Premier ministre Britannique David Cameron. Annonce d'un référendum sur le maintien ou non du Royaume-Uni avant fin 2017.</li>
+                  <li><time datetime="1948-03-17">  21 mai </time> : Adoption du two-pack renforçant la gouvernance économique dans la zone euro. </li>
+                  <li><time datetime="1948-03-17">  1er juillet </time> : Entrée de la Croatie de dans l'UE. </li>
+                  <li><time datetime="1948-03-17">  12 septembre </time> : gouvernement islandais annonce la suspension des négociations d'adhésion.</li>
+                  <li><time datetime="1948-03-17">   15 octobre</time> : Adoption du mécanisme de surveillance unique des établissements bancaires.</li>
+              </dd>
+              <dt>2014</dt>
+
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17">  28 avril </time> : Les principaux partis politiques européens désignent pour la première fois leurs candidats pour le poste de président de la Commission.</li>
+                  <li><time datetime="1948-03-17">  22-25 mai</time> : Élection des membres du parlement, le nombre de députés européens est ramené à 751, conformément au traité de Lisbonne.  </li>
+                  <li><time datetime="1948-03-17"> 15 juillet </time> : Adoption du mécanisme unique de prévention et de résolution des défaillances des établissementes de crédit, élément central de l'Union bancaire. Élection par le Parlement européen de Jean-Claude Juncker à la présidence de la Commission.</li>
+                  <li><time datetime="1948-03-17">  30 août</time> : Élection de Donald Tusk comme président du Conseil européen.</li>
+                  <li><time datetime="1948-03-17">  26 novembre </time> : Annonce par la Commission européenne d'un plan d'investissement de 315 milliards d'euros visant à relancer la croissance en Europe. </li>
+                  <li><time datetime="1948-03-17">   8 décembre</time> : La Cour de justice déclare le projet d'accord d'adhésion de l'Union à la CEDH incompatible avec les traités.</li>
+              </dd>
+              <dt>2015</dt>
+
+
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17">   7 mai</time> : Au Royaume-Uni, après la victoire du parti conservateur, le premier ministre, David Cameron, confirme l'organisation d'un référendum sur le maintien de son paus dans l'Union européenne.</li>
+                  <li><time datetime="1948-03-17">  5 juillet</time> : Référendum organisé en Grèce sur la proposition faite par l'UE, la BCE, et le FMI. Le non l'emporte à 61.3%  </li>
+        
+              </dd>
+              <dt>2016</dt>
+
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17">  5 février </time> : Demande d'adhésion de la Bosnie-Herzégovine.</li>
+                  <li><time datetime="1948-03-17">  30 septembre</time> : L'Union ratifie les accords de Paris sur le changement climatique, ce qui permet son entrée en vigueur.  </li>
+                  <li><time datetime="1948-03-17"> 6 octobre </time> : Mise en place du corps européen de gardes-frontières, pour renforcer la gestion et la sécurité des frontières extérieures de l'Union</li>
+                  <li><time datetime="1948-03-17">  </time> :  </li>
+              </dd>
+              <dt>2017</dt>
+
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17"> 29 mars  </time> : Theresa May, Première ministre britannique, notifie officiellement au Conseil européen l'intention du Royaume-Uni de quitter l'Union, lançant ainsi la procédure de retrait de l'article 50 TUE.</li>
+                  <li><time datetime="1948-03-17">  </time> :   </li>
+                  <li><time datetime="1948-03-17">  </time> : </li>
+                  <li><time datetime="1948-03-17">  </time> :  </li>
+              </dd>
+              <dt>2018</dt>
+
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17">  20 août </time> : Aboutissement réussi du programme de soutien à la stabilité mis en oeuvre par la Grèce au titre du MES.</li>
+                  <li><time datetime="1948-03-17"> 12 septembre </time> : Le parlement initie la procédure de l'article 7 par 2 TUE contre la Hongrie </li>
+                  <li><time datetime="1948-03-17"> 16 octobre </time> : La Cour de justice ordonne à la Pologne de susoendre iimmédiatement l'application d'une nouvelle loi qui abaisse l'âge de départ à la retraite des juges de la Cour suprême de 70 à 65 ans. </li>
+                  <li><time datetime="1948-03-17">  10 décembre</time> : Arrêt Wightman : La Cour jjuge qu'un État membre peut retirer sa demande de retrait tant que celui-ci n'est pas devenu effectif.  </li>
+              </dd>
+              <dt>2019</dt>
+
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17">  16 juillet </time> : Ursula Van der Leyen élue présidente de la Commission par le Parlement européen. </li>
+                  <li><time datetime="1948-03-17">  1er décembre </time> :   Charles Michel prend la succession de Donald Tusk à la présidence du Conseil européen et du Sommet de la zone euro.</li>
+                  
+                  
+              <dt>2020</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17">  13 juillet </time> : Pascal Donohoe ministre irlandais des Finances, est élu président de l'Eurogroupe. </li>
+                  <li><time datetime="1948-03-17"> 17-21 juin </time> : Conseil européen. Accord sur le plan de relance Next Generation UE et le cadre financier pluriannuel 2021-2027.  </li>
+                
+              </dd>
+              <dt>2021</dt>
+              <dd class="timeline-events">
+                <ul>
+                  <li><time datetime="1948-03-17">  20 mai </time> : Adoption des nouveaux programmes "Erasmus plus", "Europe créative" et "Corps européen de solidarité". </li>
+                  <li><time datetime="1948-03-17">  </time> :   </li>
+                  <li><time datetime="1948-03-17">  </time> : </li>
+                  <li><time datetime="1948-03-17">  </time> :  </li>
+              </dd>              
+          </article>
+
+        <article class="card" id="institutions" aria-labelledby="institutions-title" style="margin-top:18px">
+          <h2 id="institutions-title" class="item-title">Panorama des institutions</h2>
+          <p class="meta">Rôle, composition et fonctionnement</p>
+
+          <div class="institution" id="commission">
+            <h4>Commission européenne</h4>
+            <p>Initie les actes législatifs, veille à l'application du droit de l'Union, gère le budget et propose des politiques. Composée de commissaires nommés et approuvés par le Parlement.</p>
+          </div>
+
+          <div class="institution" id="parliament">
+            <h4>Parlement européen</h4>
+            <p>Élu au suffrage universel direct ; co-législateur avec le Conseil dans la procédure ordinaire, contrôle la Commission et adopte le budget.</p>
+          </div>
+
+          <div class="institution" id="council">
+            <h4>Conseil de l'Union européenne (Conseil)</h4>
+            <p>Réunit les ministres nationaux par formation sectorielle ; collabore au processus législatif et adopte des actes avec le Parlement.</p>
+          </div>
+
+          <div class="institution" id="european-council">
+            <h4>Conseil européen</h4>
+            <p>Réunit chefs d'État et de gouvernement : fixe les orientations politiques générales — rôle de pilotage stratégique.</p>
+          </div>
+
+          <div class="institution" id="cjue">
+            <h4>Cour de justice de l'Union européenne (CJUE)</h4>
+            <p>Assure l'interprétation uniforme du droit de l'UE, reçoit les renvois préjudiciels des juridictions nationales et statue sur les manquements des États.</p>
+          </div>
+
+          <div class="institution" id="bce">
+            <h4>Banque centrale européenne (BCE)</h4>
+            <p>Conduit la politique monétaire de la zone euro, indépendante et chargée principalement de la stabilité des prix.</p>
+          </div>
+        </article>
+
+        <article class="card" id="procedure" aria-labelledby="procedure-title" style="margin-top:18px">
+          <h2 id="procedure-title" class="item-title">Procédure législative — aperçu</h2>
+          <p class="meta">Procédure ordinaire & principaux mécanismes</p>
+          <p class="description">La procédure ordinaire (codécision) implique la Commission (initiative), le Parlement et le Conseil (adoption). En pratique : proposition de la Commission → lecture(s) du Parlement et du Conseil → conciliation si désaccord → vote final et publication au Journal officiel.</p>
+        </article>
+
+        <article class="card" id="glossary" aria-labelledby="glossary-title" style="margin-top:18px">
+          <h2 id="glossary-title" class="item-title">Glossaire rapide</h2>
+          <dl style="margin-top:8px">
+            <dt>Traité</dt><dd>Acte fondateur et cadre juridique suprême de l'Union.</dd>
+            <dt>Règlement</dt><dd>Acte directement applicable et obligatoire pour les États membres.</dd>
+            <dt>Directive</dt><dd>Acte fixant un objectif ; les États décident les moyens pour y parvenir.</dd>
+            <dt>Renvoi préjudiciel</dt><dd>Mécanisme permettant aux juridictions nationales de demander l'interprétation de la CJUE.</dd>
+          </dl>
+        </article>
+
+        <!-- Remarque simple : bas de page -->
+        <article class="card" id="remarks" aria-labelledby="remarks-title" style="margin-top:18px">
+          <h2 id="remarks-title" class="item-title">Remarque / commentaire</h2>
+          <p class="meta">Formulaire très simple — stocké localement (aucun envoi serveur)</p>
+
+          <form id="remark-form" style="margin-top:10px">
+            <input name="pseudo" placeholder="Pseudo (optionnel)" aria-label="Pseudo">
+            <textarea name="content" rows="5" placeholder="Votre remarque, suggestion ou correction..." required aria-label="Remarque"></textarea>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+              <button class="primary" type="submit">Enregistrer la remarque</button>
+              <button type="button" id="download-remarks" style="padding:10px;border-radius:8px;border:1px solid #e6e9ef;background:#fff;cursor:pointer">Télécharger (MD)</button>
+            </div>
+            <p id="remark-result" class="muted" style="margin-top:8px"></p>
+          </form>
+
+          <div style="margin-top:12px">
+            <strong>Remarques enregistrées (local)</strong>
+            <div class="remarks-list" id="remarks-list" style="margin-top:8px">
+              <div class="muted">Aucune remarque enregistrée.</div>
+            </div>
+          </div>
+        </article>
+
+      </section>
+    </div>
+
+    <pre id="debug" class="debug"></pre>
+  </main>
+
+  <footer class="site-footer">
+    © <span id="year"></span> — Blog personnel — page pédagogique non officielle
+  </footer>
+
+  <script>
+  // ----- INIT YEAR -----
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // ----- TOC : mise à jour active + scroll interne du TOC (script complet demandé) -----
+  const tocLinks = Array.from(document.querySelectorAll('#toc-nav a'));
+  const sections = tocLinks.map(a => document.getElementById(a.getAttribute('href').slice(1)));
+  let lastActiveId = null;
+
+  function scrollActiveIntoView() {
+    const active = document.querySelector('#toc-nav a.active');
+    if (!active) return;
+    const tocPanel = document.querySelector('.toc .panel');
+    if (!tocPanel) {
+      // fallback : scrollIntoView sur le lien lui-même
+      active.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      return;
+    }
+    const tocRect = tocPanel.getBoundingClientRect();
+    const activeRect = active.getBoundingClientRect();
+    const topOffset = activeRect.top - tocRect.top;
+    const target = topOffset - (tocPanel.clientHeight / 2) + (active.clientHeight / 2);
+    // perform a relative scroll
+    tocPanel.scrollBy({ top: target, left: 0, behavior: 'smooth' });
+  }
+
+  function onScrollToc(){
+    const offset = 100; // header offset (safety)
+    let current = sections[0];
+    for(const sec of sections){
+      if(!sec) continue;
+      const rect = sec.getBoundingClientRect();
+      if(rect.top - offset <= 0) current = sec;
+    }
+    const curId = current && current.id;
+    if (curId === lastActiveId) return; // avoid repeated actions
+    lastActiveId = curId;
+
+    tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + curId));
+
+    // keep the active link visible in the TOC
+    requestAnimationFrame(() => {
+      scrollActiveIntoView();
+    });
+  }
+
+  document.addEventListener('scroll', onScrollToc, {passive:true});
+  window.addEventListener('resize', onScrollToc);
+  onScrollToc();
+
+  // Fix for clicks: after native jump, update active state and center the link
+  tocLinks.forEach(a=>{
+    a.addEventListener('click', (e)=>{
+      setTimeout(()=>{ 
+        onScrollToc(); 
+        setTimeout(()=> scrollActiveIntoView(), 120);
+      }, 60);
+    });
+  });
+
+  // ----- Simple local remark storage (localStorage) -----
+  const REMARKS_KEY = 'droit_ue_remarks_v1';
+  function loadRemarks(){ try{ const raw = localStorage.getItem(REMARKS_KEY); return raw ? JSON.parse(raw) : []; } catch(e){ console.warn(e); return []; } }
+  function saveRemarks(list){ try{ localStorage.setItem(REMARKS_KEY, JSON.stringify(list)); } catch(e){ console.warn('save failed', e); } }
+
+  function escapeHtml(s){ return String(s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('\\n','<br>'); }
+
+  function renderRemarks(){
+    const list = loadRemarks();
+    const container = document.getElementById('remarks-list');
+    if(!list.length){ container.innerHTML = '<div class="muted">Aucune remarque enregistrée.</div>'; return; }
+    container.innerHTML = list.map(r => {
+      const time = new Date(r.createdAt).toLocaleString();
+      return `<article><div style="font-weight:600">${escapeHtml(r.pseudo || 'Anonyme')}</div><div class="meta">${time}</div><div style="margin-top:6px">${escapeHtml(r.content)}</div></article>`;
+    }).join('');
+  }
+
+  document.getElementById('remark-form').addEventListener('submit', function(e){
+    e.preventDefault();
+    const form = e.currentTarget;
+    const pseudo = form.elements['pseudo'].value.trim();
+    const content = form.elements['content'].value.trim();
+    if(!content){ document.getElementById('remark-result').textContent = 'La remarque est vide.'; return; }
+    const list = loadRemarks();
+    const entry = { pseudo: pseudo || 'Anonyme', content, createdAt: Date.now() };
+    list.unshift(entry);
+    saveRemarks(list);
+    renderRemarks();
+    form.reset();
+    document.getElementById('remark-result').textContent = '✔ Remarque enregistrée localement.';
+    setTimeout(()=>{ document.getElementById('remark-result').textContent = ''; }, 3000);
+  });
+
+  // Download remarks as a single markdown file
+  document.getElementById('download-remarks').addEventListener('click', function(){
+    const list = loadRemarks();
+    if(!list.length){ alert('Aucune remarque à télécharger.'); return; }
+    const md = list.map(r => {
+      const date = new Date(r.createdAt).toISOString();
+      return `### ${r.pseudo} — ${date}\n\n${r.content.replaceAll('\n','\n')}\n`;
+    }).join('\n---\n\n');
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'remarques-droit-ue.md';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  // Init render of remarks
+  renderRemarks();
+  </script>
+</body>
+</html>
