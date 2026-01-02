@@ -887,125 +887,285 @@
 
     // Chargement initial
     fetchRemarks();
-  </script>
-  <footer class="site-footer">
-    © <span id="year"></span> — Blog personnel — page pédagogique non officielle
-  </footer>
-
   <script>
-  // ----- INIT YEAR -----
-  document.getElementById('year').textContent = new Date().getFullYear();
+/* --- Remark form: same approach as culture-films --- */
+(function(){
+  // CONFIG
+  const WORKER_URL = 'https://steep-dawn-b94d.ettae634.workers.dev'; // adapte si besoin
+  const LOCAL_KEY = 'remarks_pending_v1';
+  const BASE_PATH = 'lealotimesmaceo/content/remarks/';
 
-  // ----- TOC : mise à jour active + scroll interne du TOC (script complet demandé) -----
-  const tocLinks = Array.from(document.querySelectorAll('#toc-nav a'));
-  const sections = tocLinks.map(a => document.getElementById(a.getAttribute('href').slice(1)));
-  let lastActiveId = null;
+  // ELEMENTS
+  const form = document.getElementById('remark-form');
+  const resultEl = document.getElementById('remark-result');
+  const listEl = document.getElementById('remarks-list');
 
-  function scrollActiveIntoView() {
-    const active = document.querySelector('#toc-nav a.active');
-    if (!active) return;
-    const tocPanel = document.querySelector('.toc .panel');
-    if (!tocPanel) {
-      // fallback : scrollIntoView sur le lien lui-même
-      active.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  if(!form || !listEl){
+    console.warn('remark form or list not found');
+    return;
+  }
+
+  // HELPERS
+  const $ = s => document.querySelector(s);
+  function escapeHtmlLocal(s=''){ return String(s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;'); }
+  function fmtDate(iso){ try{ return new Date(iso).toLocaleString(); }catch(e){ return iso; } }
+
+  // PENDING STORAGE
+  let pending = loadPending();
+  function loadPending(){
+    try{ const raw = localStorage.getItem(LOCAL_KEY); return raw ? JSON.parse(raw) : []; }catch(e){ console.warn('parse pending fail', e); return []; }
+  }
+  function savePending(){ try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(pending)); }catch(e){ console.warn('save pending fail', e); } }
+  function addPending(item){ pending.unshift(item); savePending(); }
+  function removePendingByTempId(id){ const i = pending.findIndex(p => p._tempId === id); if(i>-1){ pending.splice(i,1); savePending(); return true;} return false; }
+
+  // Matching / marking from server response
+  function markPendingSyncedByServerItem(serverItem, serverPath){
+    const sContent = (serverItem.content||'').trim().slice(0,120);
+    const idx = pending.findIndex(p => p.title === (serverItem.title||'') && p.pseudo === (serverItem.pseudo||'') && (p.content||'').trim().slice(0,120) === sContent);
+    if(idx !== -1){
+      pending[idx].synced = true;
+      if(serverPath) pending[idx].serverPath = serverPath;
+      savePending();
+      renderList();
+      return true;
+    }
+    return false;
+  }
+
+  // RENDER single item (pending or server)
+  function buildItemHtml(obj, opts = {}){
+    const isPending = !!opts.pending;
+    const badge = isPending ? (obj.synced ? '<span class="synced-badge">(ajouté)</span>' : '<span class="pending-badge">(en attente)</span>') : '';
+    const header = `<div style="display:flex;justify-content:space-between;align-items:center"><strong>${escapeHtmlLocal(obj.pseudo || 'Anonyme')}</strong><span class="muted" style="font-size:12px">${fmtDate(obj.createdAt || obj.date || obj.created)}</span></div>`;
+    const content = `<div style="margin-top:6px;white-space:pre-wrap">${escapeHtmlLocal(obj.content || '')}</div>`;
+    const actions = isPending ? `<div style="margin-top:8px"><button class="delete-btn pending-delete" data-temp="${escapeHtmlLocal(obj._tempId||'')}">Supprimer</button></div>` : (obj.serverPath ? `<div style="margin-top:8px"><button class="delete-btn server-delete" data-path="${escapeHtmlLocal(obj.serverPath)}">Supprimer (serveur)</button></div>` : '');
+    return `<article style="border:1px solid #f1f5f9;padding:12px;border-radius:8px;margin-bottom:8px;background:linear-gradient(180deg,#fff,#fbfdff)">${header}${badge}${content}${actions}</article>`;
+  }
+
+  function renderList(){
+    // show pending first; then optionally we keep server-provided list by fetching /api/remarks
+    if((pending||[]).length === 0){
+      // we still call fetchServerRemarks to display server items
+      fetchServerRemarks();
       return;
     }
-    const tocRect = tocPanel.getBoundingClientRect();
-    const activeRect = active.getBoundingClientRect();
-    const topOffset = activeRect.top - tocRect.top;
-    const target = topOffset - (tocPanel.clientHeight / 2) + (active.clientHeight / 2);
-    // perform a relative scroll
-    tocPanel.scrollBy({ top: target, left: 0, behavior: 'smooth' });
+    listEl.innerHTML = pending.map(p => buildItemHtml(p, { pending:true })).join('');
   }
 
-  function onScrollToc(){
-    const offset = 100; // header offset (safety)
-    let current = sections[0];
-    for(const sec of sections){
-      if(!sec) continue;
-      const rect = sec.getBoundingClientRect();
-      if(rect.top - offset <= 0) current = sec;
+  // MARKDOWN / FILENAME helpers (same approach as films)
+  function slugify(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,70); }
+  function generateMarkdown(item){
+    const now = new Date().toISOString();
+    const fm = [
+      '---',
+      `title: "${(item.title||'Remarque').replace(/"/g,'\\"')}"`,
+      `pseudo: "${(item.pseudo||'').replace(/"/g,'\\"')}"`,
+      `date: "${now}"`,
+      '---',
+      ''
+    ].join('\n');
+    return fm + '\n' + (item.content||'') + '\n';
+  }
+  function generateFilename(item){
+    const base = slugify(item.title || (item.pseudo ? item.pseudo + '-remark' : 'remarque'));
+    const uniq = Date.now().toString(36).slice(-6);
+    return `${base}-${uniq}.md`;
+  }
+
+  // MULTI-METHOD SAVE (try /create, then root POST, then /save)
+  async function trySaveToServer(item, filename){
+    // returns { ok: bool, json: object|null }
+    const md = generateMarkdown(item);
+    // 1) /create
+    try {
+      const payload = { path: BASE_PATH + filename, content: md, title: item.title||'Remarque', pseudo: item.pseudo||'', section:'remarks' };
+      const r = await fetch(WORKER_URL + '/create', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      let j = null; try{ j = await r.json(); }catch(e){ j = null; }
+      if(r.ok && (j && j.success || (!j && r.ok))) return { ok:true, json:j || { success:true, path: payload.path, item } };
+    } catch(e){ console.warn('create error', e); }
+
+    // 2) root POST (some workers expect a plain POST)
+    try {
+      const payload = { section: 'remarks', title: item.title||'Remarque', pseudo: item.pseudo||'', content: item.content };
+      const r = await fetch(WORKER_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      let j = null; try{ j = await r.json(); }catch(e){ j = null; }
+      if(r.ok && (j && j.success || (!j && r.ok))) return { ok:true, json:j || { success:true, item } };
+    } catch(e){ console.warn('root-post error', e); }
+
+    // 3) /save
+    try {
+      const payload = { path: BASE_PATH + filename, content: md, title: item.title||'Remarque', pseudo: item.pseudo||'' };
+      const r = await fetch(WORKER_URL + '/save', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      let j = null; try{ j = await r.json(); }catch(e){ j = null; }
+      if(r.ok && (j && j.success || (!j && r.ok))) return { ok:true, json:j || { success:true, path: payload.path, item } };
+    } catch(e){ console.warn('save error', e); }
+
+    return { ok:false, json:null };
+  }
+
+  // SYNC PENDING (iterate and try to save pending items)
+  async function syncPending(){
+    if(!pending || pending.length === 0) return;
+    const toTry = pending.slice();
+    for(const p of toTry){
+      if(p.synced) continue;
+      const filename = p.filename || generateFilename(p);
+      try{
+        const res = await trySaveToServer({ title: p.title || 'Remarque', pseudo: p.pseudo || '', content: p.content }, filename);
+        if(res.ok){
+          const serverPath = (res.json && (res.json.path || (res.json.item && res.json.item.path))) || null;
+          const serverItem = (res.json && res.json.item) ? res.json.item : { title: p.title, pseudo: p.pseudo, content: p.content };
+          markPendingSyncedByServerItem(serverItem, serverPath);
+        } else {
+          console.warn('Could not persist pending item', p.title);
+        }
+      }catch(err){
+        console.warn('syncPending network error', err);
+        return; // stop on network failure to avoid hammering
+      }
     }
-    const curId = current && current.id;
-    if (curId === lastActiveId) return; // avoid repeated actions
-    lastActiveId = curId;
-
-    tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + curId));
-
-    // keep the active link visible in the TOC
-    requestAnimationFrame(() => {
-      scrollActiveIntoView();
-    });
   }
 
-  document.addEventListener('scroll', onScrollToc, {passive:true});
-  window.addEventListener('resize', onScrollToc);
-  onScrollToc();
-
-  // Fix for clicks: after native jump, update active state and center the link
-  tocLinks.forEach(a=>{
-    a.addEventListener('click', (e)=>{
-      setTimeout(()=>{ 
-        onScrollToc(); 
-        setTimeout(()=> scrollActiveIntoView(), 120);
-      }, 60);
+  // POLLING (exponential backoff)
+  let pollHandle = null, pollAttempts = 0;
+  function pollOnce(){
+    pollAttempts++;
+    syncPending().then(()=> fetchServerRemarks()).then(()=> {
+      if(pending.length === 0 || pollAttempts >= 8){ clearPoll(); } else {
+        const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000);
+        pollHandle = setTimeout(pollOnce, delay);
+      }
+    }).catch(()=> {
+      const delay = Math.min(1000 * Math.pow(2, pollAttempts-1), 30000);
+      pollHandle = setTimeout(pollOnce, delay);
     });
-  });
+  }
+  function ensurePolling(){ if(pollHandle) return; pollAttempts = 0; pollOnce(); }
+  function clearPoll(){ if(pollHandle) clearTimeout(pollHandle); pollHandle = null; pollAttempts = 0; }
 
-  // ----- Simple local remark storage (localStorage) -----
-  const REMARKS_KEY = 'droit_ue_remarks_v1';
-  function loadRemarks(){ try{ const raw = localStorage.getItem(REMARKS_KEY); return raw ? JSON.parse(raw) : []; } catch(e){ console.warn(e); return []; } }
-  function saveRemarks(list){ try{ localStorage.setItem(REMARKS_KEY, JSON.stringify(list)); } catch(e){ console.warn('save failed', e); } }
+  // FETCH server remarks (fallback to /api/remarks if present)
+  async function fetchServerRemarks(){
+    // first render pending at top
+    if(pending && pending.length) renderList();
 
-  function escapeHtml(s){ return String(s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('\\n','<br>'); }
+    // try to GET /api/remarks (local server) — if not available, ignore
+    try{
+      const r = await fetch('/api/remarks', { cache:'no-store' });
+      if(!r.ok) throw new Error('no local api');
+      const items = await r.json();
+      // merge: show server items after pending (do not remove pending)
+      const html = (pending && pending.length ? pending.map(p => buildItemHtml(p, {pending:true})).join('') : '')
+                 + items.map(it => {
+                    // server items may not have createdAt field but have createdAt in our server code
+                    return buildItemHtml(Object.assign({}, it, { serverPath: it.path || null }), { pending: false });
+                  }).join('');
+      listEl.innerHTML = html || '<div class="muted">Aucune remarque enregistrée.</div>';
+      return;
+    }catch(e){
+      // if /api/remarks not available, try to fetch index from worker and md if you use worker
+    }
 
-  function renderRemarks(){
-    const list = loadRemarks();
-    const container = document.getElementById('remarks-list');
-    if(!list.length){ container.innerHTML = '<div class="muted">Aucune remarque enregistrée.</div>'; return; }
-    container.innerHTML = list.map(r => {
-      const time = new Date(r.createdAt).toLocaleString();
-      return `<article><div style="font-weight:600">${escapeHtml(r.pseudo || 'Anonyme')}</div><div class="meta">${time}</div><div style="margin-top:6px">${escapeHtml(r.content)}</div></article>`;
-    }).join('');
+    // Try worker index approach (if WORKER_URL supports /index and /md)
+    try{
+      const idxRes = await fetch(WORKER_URL + '/index?t=' + Date.now(), { cache:'no-store' });
+      if(!idxRes.ok) throw new Error('worker index not available');
+      const idx = await idxRes.json();
+      const items = (idx || []).filter(i => i.section === 'remarks' || (i.path && i.path.startsWith(BASE_PATH)));
+      const serverItems = await Promise.all(items.map(async i => {
+        try{
+          let md = await (await fetch(WORKER_URL + '/md?path=' + encodeURIComponent(i.path) + '&t=' + Date.now(), { cache:'no-store' })).text();
+          md = md.replace(/^---[\s\S]*?---\s*/, '');
+          return { pseudo: i.pseudo || '', title: i.title || '', content: md, path: i.path, createdAt: i.date || i.createdAt || (new Date().toISOString()) };
+        }catch(e){ return { pseudo: i.pseudo||'', title:i.title||'', content:'(erreur lecture)', path:i.path, createdAt: i.date||new Date().toISOString() }; }
+      }));
+      const html = (pending && pending.length ? pending.map(p => buildItemHtml(p, {pending:true})).join('') : '') + serverItems.map(si => buildItemHtml(Object.assign({}, si, { serverPath: si.path }), { pending:false })).join('');
+      listEl.innerHTML = html || '<div class="muted">Aucune remarque enregistrée.</div>';
+      return;
+    }catch(e){
+      // fallback: if nothing available, display pending or empty
+      if(pending && pending.length) return renderList();
+      listEl.innerHTML = '<div class="muted">Aucune remarque enregistrée.</div>';
+    }
   }
 
-  document.getElementById('remark-form').addEventListener('submit', function(e){
-    e.preventDefault();
-    const form = e.currentTarget;
-    const pseudo = form.elements['pseudo'].value.trim();
-    const content = form.elements['content'].value.trim();
-    if(!content){ document.getElementById('remark-result').textContent = 'La remarque est vide.'; return; }
-    const list = loadRemarks();
-    const entry = { pseudo: pseudo || 'Anonyme', content, createdAt: Date.now() };
-    list.unshift(entry);
-    saveRemarks(list);
-    renderRemarks();
+  // FORM submit handler: save locally as pending immediately, then attempt server save
+  form.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    resultEl.textContent = '';
+    const fd = new FormData(form);
+    const pseudo = (fd.get('pseudo') || '').toString().slice(0,200).trim();
+    const content = (fd.get('content') || '').toString().slice(0,5000).trim();
+    if(!content){ resultEl.textContent = 'Le champ "Remarque" est requis.'; return; }
+
+    const item = { title: content.slice(0,60), pseudo: pseudo || 'Anonyme', content };
+    const filename = generateFilename(item);
+    const temp = Object.assign({}, item, { _tempId: 't'+Date.now()+Math.random().toString(36).slice(2,6), createdAt: new Date().toISOString(), filename, synced:false });
+    addPending(temp);
+    renderList();
+    ensurePolling();
+    resultEl.textContent = 'Enregistré localement (en attente de synchronisation)…';
     form.reset();
-    document.getElementById('remark-result').textContent = '✔ Remarque enregistrée localement.';
-    setTimeout(()=>{ document.getElementById('remark-result').textContent = ''; }, 3000);
+
+    // Try immediate save (best-effort)
+    try {
+      const res = await trySaveToServer(item, filename);
+      if(res.ok){
+        resultEl.textContent = '✔ Remarque synchronisée sur le serveur';
+        const serverPath = (res.json && (res.json.path || (res.json.item && res.json.item.path))) || null;
+        const serverItem = (res.json && res.json.item) ? res.json.item : { title: item.title, pseudo: item.pseudo, content: item.content };
+        markPendingSyncedByServerItem(serverItem, serverPath);
+        // refresh to show remote items too
+        setTimeout(()=> fetchServerRemarks(), 300);
+      } else {
+        resultEl.textContent = 'Proposition sauvegardée localement (en attente)';
+      }
+    } catch(err){
+      console.warn('immediate save failed', err);
+      resultEl.textContent = 'Hors-ligne : proposition sauvegardée localement (en attente)';
+    }
   });
 
-  // Download remarks as a single markdown file
-  document.getElementById('download-remarks').addEventListener('click', function(){
-    const list = loadRemarks();
-    if(!list.length){ alert('Aucune remarque à télécharger.'); return; }
-    const md = list.map(r => {
-      const date = new Date(r.createdAt).toISOString();
-      return `### ${r.pseudo} — ${date}\n\n${r.content.replaceAll('\n','\n')}\n`;
-    }).join('\n---\n\n');
-    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'remarques-droit-ue.md';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+  // DELETE handlers (delegated)
+  listEl.addEventListener('click', async (ev) => {
+    const btn = ev.target.closest('button');
+    if(!btn) return;
+    if(btn.classList.contains('pending-delete')){
+      const temp = btn.dataset.temp;
+      if(!confirm('Supprimer cette remarque locale ?')) return;
+      if(removePendingByTempId(temp)){ resultEl.textContent = 'Remarque locale supprimée'; renderList(); } else { resultEl.textContent = 'Introuvable.'; }
+      setTimeout(()=>{ resultEl.textContent = ''; }, 2500);
+      return;
+    }
+    if(btn.classList.contains('server-delete')){
+      const path = btn.dataset.path;
+      if(!path){ resultEl.textContent = 'Impossible : pas de chemin serveur connu.'; return; }
+      if(!confirm('Confirmer suppression sur le serveur ?')) return;
+      try{
+        btn.disabled = true; resultEl.textContent = 'Suppression…';
+        const r = await fetch(WORKER_URL + '/delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ path }) });
+        let j = {}; try{ j = await r.json(); }catch(e){ j = { success: r.ok }; }
+        if(r.ok && j.success){
+          resultEl.textContent = '✔ Supprimé sur le serveur';
+          // clear serverPath from matching pending item
+          const idx = pending.findIndex(p => p.serverPath === path);
+          if(idx !== -1){ delete pending[idx].serverPath; pending[idx].synced = false; savePending(); renderList(); }
+          await fetchServerRemarks();
+        } else {
+          resultEl.textContent = 'Erreur suppression: ' + (j.error || r.status || 'inconnue');
+          btn.disabled = false;
+        }
+      }catch(err){ resultEl.textContent = 'Erreur réseau'; btn.disabled = false; console.warn(err); }
+    }
   });
 
-  // Init render of remarks
-  renderRemarks();
-  </script>
+  // INIT load
+  renderList();
+  fetchServerRemarks().then(()=> { if(pending && pending.length) ensurePolling(); });
+  // periodic refresh of server list
+  setInterval(fetchServerRemarks, 5*60*1000);
+})();
+</script>
+
 </body>
 </html>
