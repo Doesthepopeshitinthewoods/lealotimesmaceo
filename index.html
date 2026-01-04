@@ -253,10 +253,10 @@ trinta graus e uma humidade relativa de setenta por cento.</p>
 <script>
 /* === Configuration ===
    Remplacez ces valeurs par les vôtres :
-   - WORKER_URL : (optionnel) endpoint serveur qui accepte POST JSON pour stocker les messages
+   - WORKER_URL : endpoint Cloudflare Worker (ex: "https://mon-worker.example.workers.dev")
    - OWNER_EMAIL : adresse email du propriétaire pour le bouton "Me contacter"
 */
-const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev"; // <-- remplacez par votre Worker si vous en avez un, sinon laissez vide
+const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev"; // <-- remplacez par votre Worker si vous en avez un
 const OWNER_EMAIL = "maceo@example.com"; // <-- remplacez par votre adresse email réelle
 
 // Utilitaire : formate un timestamp lisible pour le nom de fichier
@@ -285,25 +285,33 @@ function saveLocally(payload) {
   }
 }
 
-// Envoi vers le serveur avec timeout
+// Envoi vers le serveur avec timeout + parsing JSON
 async function postToWorker(url, payload, timeout = 8000) {
-  if (!url || url.includes("TON-WORKER") || url.trim() === "") {
+  const trimmed = (url || "").trim();
+  if (!trimmed || trimmed.includes("TON-WORKER")) {
     return { ok: false, reason: "no-worker-configured" };
   }
+
+  // Forcer la requête vers la racine '/' du worker (assure pathname '/')
+  const endpoint = trimmed.replace(/\/+$/, "") + "/";
 
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
 
   try {
-    const res = await fetch(url, {
+    const res = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
       signal: controller.signal
     });
     clearTimeout(id);
-    const text = await res.text().catch(()=>"");
-    return { ok: res.ok, status: res.status, text };
+
+    const text = await res.text().catch(() => "");
+    let json = null;
+    try { json = text ? JSON.parse(text) : null; } catch (e) { json = null; }
+
+    return { ok: res.ok, status: res.status, json, text };
   } catch (err) {
     clearTimeout(id);
     return { ok: false, reason: err.name === "AbortError" ? "timeout" : err.message };
@@ -324,30 +332,32 @@ function buildMailtoLink(email, subject, body) {
   const emailEl = document.getElementById("cf-email");
   const msgEl = document.getElementById("cf-message");
   const submitBtn = document.getElementById("cf-submit");
-  const mailBtn = document.getElementById("cf-mailto");
+  const mailBtn = document.getElementById("cf-mailto"); // peut être null si non présent
   const resultEl = document.getElementById("cf-result");
 
-  // action du bouton "Me contacter" : ouvre le client mail local avec le contenu du formulaire
-  mailBtn.addEventListener("click", () => {
-    const pseudo = (nameEl.value || "Anonyme").trim();
-    const email = (emailEl.value || "").trim();
-    const message = (msgEl.value || "").trim();
-    const subject = `Message depuis votre blog — ${pseudo}`;
-    const body = `Nom: ${pseudo}\nEmail de l'expéditeur: ${email}\n\nMessage:\n${message}`;
-    const mailto = buildMailtoLink(OWNER_EMAIL, subject, body);
-    // ouvrir le client mail
-    window.location.href = mailto;
-  });
+  // Si bouton "Me contacter" est présent, active son comportement
+  if (mailBtn) {
+    mailBtn.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      const pseudo = (nameEl.value || "Anonyme").trim();
+      const email = (emailEl.value || "").trim();
+      const message = (msgEl.value || "").trim();
+      const subject = `Message depuis votre blog — ${pseudo}`;
+      const body = `Nom: ${pseudo}\nEmail de l'expéditeur: ${email}\n\nMessage:\n${message}`;
+      const mailto = buildMailtoLink(OWNER_EMAIL, subject, body);
+      window.location.href = mailto;
+    });
+  }
 
   // soumission principale
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    // lecture & trim
+
     const pseudo = (nameEl.value || "Anonyme").trim();
     const email = (emailEl.value || "").trim();
     const message = (msgEl.value || "").trim();
 
-    // simple validation côté client
+    // validation simple côté client
     if (!email || !message) {
       resultEl.textContent = "Veuillez renseigner au minimum l'email et le message.";
       resultEl.style.color = "var(--accent-cta)";
@@ -355,17 +365,17 @@ function buildMailtoLink(email, subject, body) {
     }
 
     const payload = {
-      title: "Contact",
+      title: "Contact",          // requis par le worker
       pseudo,
-      email,
+      email,                     // utile en plus (worker ignore mais on stocke)
       content: message,
       section: "contacts",
       timestamp: new Date().toISOString()
     };
 
-    // Mise à jour UI : disable boutons
+    // Mise à jour UI : disable boutons (si existants)
     submitBtn.disabled = true;
-    mailBtn.disabled = true;
+    if (mailBtn) mailBtn.disabled = true;
     const prevSubmitText = submitBtn.textContent;
     submitBtn.textContent = "Envoi…";
     resultEl.textContent = "";
@@ -373,24 +383,36 @@ function buildMailtoLink(email, subject, body) {
     // Tentative d'envoi serveur (si WORKER_URL fourni)
     const serverResp = await postToWorker(WORKER_URL, payload);
 
+    // Cas réussite HTTP
     if (serverResp.ok) {
-      resultEl.textContent = "Message envoyé et enregistré sur le serveur ✔";
-      resultEl.style.color = "green";
-      // vider le formulaire
-      nameEl.value = "";
-      emailEl.value = "";
-      msgEl.value = "";
-      submitBtn.disabled = false;
-      mailBtn.disabled = false;
-      submitBtn.textContent = prevSubmitText;
-      return;
+      // si le worker renvoie un JSON { success: true } on affiche succès, sinon on vérifie le JSON
+      const successFlag = serverResp.json && (serverResp.json.success === true);
+      if (successFlag || serverResp.status === 200) {
+        resultEl.textContent = "Message envoyé et enregistré sur le serveur ✔";
+        resultEl.style.color = "green";
+        // vider le formulaire
+        nameEl.value = "";
+        emailEl.value = "";
+        msgEl.value = "";
+        submitBtn.disabled = false;
+        if (mailBtn) mailBtn.disabled = false;
+        submitBtn.textContent = prevSubmitText;
+        return;
+      } else {
+        // réponse 200 mais content indique échec : on log et fallback
+        console.warn("Worker returned non-success payload:", serverResp.json || serverResp.text);
+      }
+    } else {
+      // erreur HTTP / timeout / réseau
+      console.warn("Envoi au serveur échoué :", serverResp);
     }
 
-    // Si envoi serveur échoue ou non configuré -> sauvegarde locale
+    // Si on arrive ici -> sauvegarde locale en fallback
     const saved = saveLocally(payload);
 
     if (serverResp.reason && serverResp.reason !== "no-worker-configured") {
-      console.warn("Envoi au serveur échoué :", serverResp);
+      // détail utile pour debug
+      console.warn("Détail erreur serveur :", serverResp);
     }
 
     if (saved) {
@@ -408,11 +430,12 @@ function buildMailtoLink(email, subject, body) {
     }
 
     submitBtn.disabled = false;
-    mailBtn.disabled = false;
+    if (mailBtn) mailBtn.disabled = false;
     submitBtn.textContent = prevSubmitText;
   });
 })();
 </script>
+
 
 </body>
 </html>
