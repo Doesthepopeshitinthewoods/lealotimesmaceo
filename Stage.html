@@ -1,208 +1,333 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <title>Simulation — Blog de l'intranquilité</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
+  <meta charset="utf-8" />
+  <title>Stage — Simulation</title>
+
+  <!-- Plotly et Pyodide -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.0/full/pyodide.js"></script>
+
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <style>
-    :root{
-      --maxw:760px; --bg:#ffffff; --text:#111827; --muted:#6b7280; --accent:#1f2937;
-      --brand:#8b0000;
+    /* Typographie / conteneur */
+    :root {
+      --muted: #6a737d;
+      --line: #e1e4e8;
+      --bg: #ffffff;
+      --file-bg: #fafbfc;
+      --accent: #0366d6;
+      --radius: 6px;
     }
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.7}
-    a{color:var(--accent);text-decoration:none}
-    header{background:var(--brand);border-bottom:1px solid #7a0000}
-    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
-    h1{margin:0;font-family:Merriweather,serif;font-size:20px;font-weight:700;color:#fff}
-    nav{display:flex;align-items:center;gap:14px;flex-wrap:nowrap}
-    nav a{color:#f3f4f6;font-size:14px}
-    nav a.active{text-decoration:underline;font-weight:600}
-    main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
-    .toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
-    .card{border:1px solid #e6e6e9;border-radius:8px;padding:14px;background:#fff}
-    .controls{display:flex;gap:10px;align-items:center}
-    button{background:var(--brand);color:#fff;border:none;padding:7px 12px;border-radius:6px;cursor:pointer}
-    button.secondary{background:#f3f4f6;color:#111827;border:1px solid #d1d5db}
-    button:disabled{opacity:.6}
-    #status{font-size:13px;color:var(--muted)}
-    .progress-wrap{margin-top:12px;background:#f3f4f6;border-radius:8px;overflow:hidden}
-    .progress-bar{height:12px;width:0%;background:linear-gradient(90deg,#8b0000,#ff6b6b)}
-    .progress-text{font-size:12px;color:var(--muted);margin-top:6px}
-    canvas{display:block;width:100%;height:360px;border:1px solid #e5e7eb;border-radius:6px;margin-top:12px}
-    footer{border-top:1px solid #e5e7eb;text-align:center;font-size:14px;color:var(--muted);padding:18px 20px}
-    @media (max-width:640px){
-      .wrap{padding:14px}
-      .toolbar{flex-direction:column;align-items:stretch}
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: #f6f8fa;
+      margin: 24px;
+      color: #24292e;
+    }
+    .panel {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      max-width: 980px;
+      margin: 0 auto;
+      box-shadow: 0 1px 0 rgba(27,31,35,0.04);
+      overflow: hidden;
+    }
+
+    /* Entête */
+    .panel-header {
+      display:flex;
+      align-items:center;
+      padding:16px 20px;
+      border-bottom:1px solid var(--line);
+      gap:12px;
+    }
+    .title {
+      font-weight:600;
+      font-size:16px;
+    }
+    .subtitle {
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    /* Liste de fichiers style GitHub */
+    .file-list {
+      width:100%;
+    }
+    .file-row {
+      display:grid;
+      grid-template-columns: 40% 45% 15%;
+      align-items:center;
+      padding:12px 20px;
+      gap:12px;
+      border-bottom:1px solid var(--line);
+      background: var(--file-bg);
+    }
+    .file-row:nth-child(odd){ background: #fff; }
+    .file-info {
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .icon {
+      width:20px; height:20px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--muted);
+    }
+    .fname {
+      font-size:14px;
+    }
+    .commit {
+      color:var(--muted);
+      font-size:13px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .time {
+      text-align:right;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .file-row:hover { background: #f3f6fb; }
+
+    /* Active file highlight */
+    .file-row.active { background: linear-gradient(90deg,#fffefc,#f7fbff); }
+    .file-row.active .fname { color:var(--accent); font-weight:600; }
+
+    /* Right panel: controls + plot */
+    .right-panel {
+      padding:18px 20px;
+    }
+    .controls {
+      display:flex;
+      gap:12px;
+      align-items:center;
+      margin-bottom:12px;
+    }
+    .btn {
+      background: var(--accent);
+      color:white;
+      border:none;
+      padding:8px 12px;
+      border-radius:6px;
+      cursor:pointer;
+      font-weight:600;
+    }
+    .btn:disabled { opacity:0.6; cursor:wait; }
+    #status { color:var(--muted); font-size:13px; padding-top:6px; }
+
+    #plot {
+      width:100%;
+      height:480px;
+      margin-top:12px;
+      border-radius:6px;
+      border:1px solid var(--line);
+      background:white;
+      overflow:hidden;
+    }
+
+    /* Responsive */
+    @media (max-width:800px){
+      .file-row { grid-template-columns: 1fr; gap:8px; padding:10px; }
+      .time { text-align:left; }
+      .panel { margin:8px; }
     }
   </style>
 </head>
 <body>
-
-<header>
-  <div class="wrap">
-    <h1>Blog de l'intranquilité</h1>
-
-    <nav aria-label="Navigation principale">
-      <a href="index.html">Accueil</a>
-      <a href="articles.html">Articles</a>
-      <a href="projets-libres-pensees.html">Projets</a>
-      <a href="#" class="culture-btn">Culture</a>
-    </nav>
-  </div>
-</header>
-
-<main>
-  <div class="toolbar">
-    <h2 style="margin:0;font-family:Merriweather,serif">Simulation Python</h2>
-    <div style="color:var(--muted);font-size:14px">Exemple Pyodide — canvas & progression</div>
-  </div>
-
-  <div class="card" role="region" aria-label="Simulation">
-    <div class="controls" style="margin-bottom:8px">
-      <button id="start">Lancer</button>
-      <button id="stop" class="secondary" disabled>Arrêter</button>
-      <span id="status">Chargement…</span>
+  <div class="panel" role="main">
+    <div class="panel-header">
+      <div>
+        <div class="title">Mon projet — dépôt</div>
+        <div class="subtitle">Aperçu · lancer la simulation depuis le site</div>
+      </div>
     </div>
 
-    <div class="progress-wrap" aria-hidden="false">
-      <div id="progress-bar" class="progress-bar"></div>
+    <!-- Mockup liste fichiers -->
+    <div class="file-list" aria-hidden="true">
+      <div class="file-row">
+        <div class="file-info">
+          <div class="icon" title="folder">
+            <!-- folder SVG -->
+            <svg width="18" height="14" viewBox="0 0 20 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 3.2C2 2.6 2.6 2 3.2 2h3.6l1.2 1.4h7c.6 0 1.2.6 1.2 1.2V10c0 .6-.6 1.2-1.2 1.2H3.2C2.6 11.2 2 10.6 2 10V3.2z" fill="#6a737d"/></svg>
+          </div>
+          <div class="fname">.github</div>
+        </div>
+        <div class="commit">Create generate-index.yml</div>
+        <div class="time">2 weeks ago</div>
+      </div>
+
+      <div class="file-row">
+        <div class="file-info">
+          <div class="icon" title="folder"><svg width="18" height="14" viewBox="0 0 20 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 3.2C2 2.6 2.6 2 3.2 2h3.6l1.2 1.4h7c.6 0 1.2.6 1.2 1.2V10c0 .6-.6 1.2-1.2 1.2H3.2C2.6 11.2 2 10.6 2 10V3.2z" fill="#6a737d"/></svg></div>
+          <div class="fname">content</div>
+        </div>
+        <div class="commit">Update content index</div>
+        <div class="time">10 hours ago</div>
+      </div>
+
+      <!-- simulation.py row -->
+      <div class="file-row">
+        <div class="file-info">
+          <div class="icon" title="file">
+            <!-- file SVG -->
+            <svg width="14" height="18" viewBox="0 0 14 18" xmlns="http://www.w3.org/2000/svg"><path d="M2 0h6l4 4v14a0 0 0 0 1 0 0H2z" fill="#6a737d"/></svg>
+          </div>
+          <div class="fname">simulation.py</div>
+        </div>
+        <div class="commit">Update simulation.py</div>
+        <div class="time">32 minutes ago</div>
+      </div>
+
+      <!-- Stage.html (active) -->
+      <div class="file-row active" id="row-stage">
+        <div class="file-info">
+          <div class="icon" title="file">
+            <svg width="14" height="18" viewBox="0 0 14 18" xmlns="http://www.w3.org/2000/svg"><path d="M2 0h6l4 4v14a0 0 0 0 1 0 0H2z" fill="#0366d6"/></svg>
+          </div>
+          <div class="fname">Stage.html</div>
+        </div>
+        <div class="commit">Update Stage.html</div>
+        <div class="time">34 minutes ago</div>
+      </div>
+
+      <!-- autres fichiers (exemples) -->
+      <div class="file-row">
+        <div class="file-info">
+          <div class="icon" title="file"><svg width="14" height="18" viewBox="0 0 14 18" xmlns="http://www.w3.org/2000/svg"><path d="M2 0h6l4 4v14a0 0 0 0 1 0 0H2z" fill="#6a737d"/></svg></div>
+          <div class="fname">index.html</div>
+        </div>
+        <div class="commit">Update index.html</div>
+        <div class="time">53 minutes ago</div>
+      </div>
     </div>
-    <div class="progress-text" id="progress-text">0%</div>
 
-    <canvas id="simCanvas" width="700" height="360" aria-label="Canvas de simulation"></canvas>
+    <!-- Right panel: contrôle + affichage -->
+    <div class="right-panel">
+      <div class="controls" role="region" aria-label="Contrôles simulation">
+        <button id="run" class="btn">Lancer la simulation</button>
+        <label style="font-size:13px;color:var(--muted)">
+          Pas à pas:
+          <input id="steps" type="number" value="400" style="width:80px;margin-left:6px;padding:4px;border:1px solid var(--line);border-radius:4px"/>
+        </label>
+        <label style="font-size:13px;color:var(--muted)">
+          dt:
+          <input id="dt" type="number" step="0.01" value="0.05" style="width:80px;margin-left:6px;padding:4px;border:1px solid var(--line);border-radius:4px"/>
+        </label>
+      </div>
+      <div id="status">Prêt — Pyodide non chargé.</div>
+      <div id="plot" role="img" aria-label="Graphique résultat de la simulation"></div>
+    </div>
   </div>
-</main>
 
-<footer>
-  © <span id="year"></span> — Blog personnel
-</footer>
+  <script>
+    // ---------- PYODIDE + Simulation ----------
+    const statusEl = document.getElementById('status');
+    const runBtn = document.getElementById('run');
+    const stepsInput = document.getElementById('steps');
+    const dtInput = document.getElementById('dt');
 
-<!-- Python embarqué (simulation.py) -->
-<script id="py-src" type="text/plain">
-from js import update, set_progress
-import asyncio
+    let pyodideReady = false;
 
-running = False
+    async function initPyodide() {
+      statusEl.textContent = 'Chargement de Pyodide (cela peut prendre quelques secondes)...';
+      window.pyodide = await loadPyodide();
+      // si tu utilises numpy/scipy lourds, charger explicitement:
+      // await pyodide.loadPackage(['numpy','micropip']);
+      pyodideReady = true;
+      statusEl.textContent = 'Pyodide chargé — prêt à lancer la simulation.';
+    }
 
-async def run():
-    global running
-    if running:
-        return
-    running = True
+    // Charge Pyodide au premier affichage (ou tu peux déclencher à l'ouverture)
+    initPyodide();
 
-    points = []
-    try:
-        for i in range(101):
-            if not running:
-                break
-            x = i / 100
-            y = 0.2 + 0.6 * x
-            points.append({"x": x, "y": y})
-            update(points)
-            set_progress(i)
-            await asyncio.sleep(0.03)
-    finally:
-        running = False
+    // Code python par défaut : remplace ce bloc par le code de ton simulation.py
+    // IMPORTANT : ta simulation doit définir une fonction `simulate(steps=..., dt=...)`
+    // qui renvoie un dict JSON-serialisable, par ex. {'t':[...], 'x':[...], 'y':[...]}
+    const pythonSimulationCode = `
+# --- EXEMPLE de simulation (remplace tout ce bloc par le contenu de ton simulation.py) ---
+import math
+import json
 
-def stop():
-    global running
-    running = False
-</script>
+def simulate(steps=200, dt=0.1):
+    t = [i*dt for i in range(steps)]
+    x = [math.cos(0.1*ti) * (1 + 0.2*math.sin(0.05*ti)) for ti in t]
+    y = [math.sin(0.1*ti) * (1 + 0.2*math.cos(0.07*ti)) for ti in t]
+    return {'t': t, 'x': x, 'y': y}
+# --- FIN exemple ---
+`;
 
-<!-- JS: UI + fonctions appelées depuis Python (doivent exister AVANT l'exécution Python) -->
-<script>
-  // Year
-  document.getElementById('year').textContent = new Date().getFullYear();
+    // injecte le code python dans l'interpréteur
+    async function loadSimulationCode() {
+      if (!pyodideReady) {
+        statusEl.textContent = 'Pyodide non encore prêt — chargement en cours...';
+        await initPyodide();
+      }
+      statusEl.textContent = 'Injection du code de simulation...';
+      // charge le code python (tu peux remplacer pythonSimulationCode par ton code réel)
+      await pyodide.runPythonAsync(pythonSimulationCode);
+      statusEl.textContent = 'Code de simulation chargé.';
+    }
 
-  // Canvas
-  const canvas = document.getElementById("simCanvas");
-  const ctx = canvas.getContext("2d");
-  function clearCanvas() {
-    ctx.fillStyle = "#f9fafb";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-  }
-  clearCanvas();
+    // Fonction pour lancer la simulation et récupérer JSON
+    async function runSimulation(steps, dt) {
+      runBtn.disabled = true;
+      statusEl.textContent = 'Exécution de la simulation...';
+      try {
+        // Appelle simulate et sérialise en JSON côté Python pour faciliter l'échange
+        const pyCmd = `
+import json
+res = simulate(steps=${steps}, dt=${dt})
+json.dumps(res)
+`;
+        const jsonStr = await pyodide.runPythonAsync(pyCmd);
+        const data = JSON.parse(jsonStr);
+        statusEl.textContent = 'Simulation terminée — affichage...';
+        return data;
+      } catch (err) {
+        statusEl.textContent = 'Erreur lors de la simulation : ' + err;
+        console.error(err);
+        return null;
+      } finally {
+        runBtn.disabled = false;
+      }
+    }
 
-  // Fonctions exposées à Python via `from js import update, set_progress`
-  window.update = function(points) {
-    clearCanvas();
-    ctx.strokeStyle = "#8b0000";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    points.forEach((p, i) => {
-      const x = p.x * canvas.width;
-      const y = canvas.height - p.y * canvas.height;
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
-    ctx.stroke();
-  };
+    // Affiche les résultats avec Plotly
+    function plotResult(data) {
+      if (!data) {
+        statusEl.textContent = 'Aucun résultat à afficher.';
+        return;
+      }
+      const t = data.t || [];
+      // cherche quelques clés plausibles
+      const keys = Object.keys(data).filter(k => k !== 't');
+      const traces = keys.map(k => ({ x: t, y: data[k], name: k }));
+      Plotly.newPlot('plot', traces, { margin:{t:30}, title:'Résultat de la simulation' });
+    }
 
-  window.set_progress = function(pct) {
-    const v = Math.max(0, Math.min(100, Math.round(pct)));
-    document.getElementById("progress-bar").style.width = v + "%";
-    document.getElementById("progress-text").textContent = v + "%";
-  };
-</script>
+    // On clique : charge le code (s'il n'est pas encore chargé), exécute et plot
+    runBtn.onclick = async () => {
+      runBtn.disabled = true;
+      if (!pyodideReady) {
+        await initPyodide();
+      }
+      await loadSimulationCode();
+      const steps = parseInt(stepsInput.value) || 400;
+      const dt = parseFloat(dtInput.value) || 0.05;
+      const data = await runSimulation(steps, dt);
+      plotResult(data);
+      runBtn.disabled = false;
+    };
 
-<!-- Pyodide bootstrap + wiring -->
-<script>
-  let pyodide = null;
-  let ready = false;
-  let currentRunPromise = null;
-
-  async function initPyodide() {
-    document.getElementById('status').textContent = 'Chargement de Pyodide…';
-    // Charge Pyodide (indexURL version testée)
-    pyodide = await loadPyodide({indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/'});
-
-    // Exécute le code Python embarqué
-    const pySrc = document.getElementById('py-src').textContent;
-    await pyodide.runPythonAsync(pySrc);
-
-    ready = true;
-    document.getElementById('status').textContent = 'Prêt';
-  }
-
-  initPyodide().catch(err => {
-    console.error('Erreur Pyodide:', err);
-    document.getElementById('status').textContent = 'Erreur de chargement';
-  });
-
-  const startBtn = document.getElementById('start');
-  const stopBtn = document.getElementById('stop');
-
-  startBtn.addEventListener('click', () => {
-    if (!ready) return;
-    startBtn.disabled = true;
-    stopBtn.disabled = false;
-    document.getElementById('status').textContent = 'Lecture en cours';
-
-    // Lancer la coroutine run() côté Python (non-bloquant)
-    currentRunPromise = pyodide.runPythonAsync('run()')
-      .catch(err => {
-        console.error('Erreur dans run():', err);
-      })
-      .finally(() => {
-        startBtn.disabled = false;
-        stopBtn.disabled = true;
-        document.getElementById('status').textContent = 'Prêt';
-        currentRunPromise = null;
-      });
-  });
-
-  stopBtn.addEventListener('click', () => {
-    if (!ready) return;
-    try { pyodide.runPython('stop()'); } catch(e) { console.error(e); }
-    startBtn.disabled = false;
-    stopBtn.disabled = true;
-    document.getElementById('status').textContent = 'Arrêté';
-  });
-</script>
-
-<!-- Pyodide loader (doit être inclus après le code qui appelle loadPyodide) -->
-<script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+    // Astuce avancée : si tu veux charger le code simulation.py depuis le repo via fetch,
+    // il te faut que le fichier soit accessible publiquement (raw.githubusercontent...)
+    // et adapter loadSimulationCode() pour faire fetch(...) puis pyodide.runPythonAsync(contents).
+  </script>
 </body>
 </html>
