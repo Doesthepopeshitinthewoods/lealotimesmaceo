@@ -4,55 +4,46 @@
   <meta charset="utf-8">
   <title>Stage — Simulation</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
+
   <style>
     :root{
-      --maxw:760px; --bg:#ffffff; --text:#111827; --muted:#6b7280; --accent:#1f2937;
+      --maxw:760px; --bg:#ffffff; --text:#111827; --muted:#6b7280;
       --brand:#8b0000;
     }
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.7}
-    a{color:var(--accent);text-decoration:none}
-    a:hover{text-decoration:underline}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui;line-height:1.7}
 
-    header{background:var(--brand);border-bottom:1px solid #7a0000}
-    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
-    h1{margin:0;font-family:Merriweather,serif;font-size:20px;font-weight:700;color:#fff}
-
-    nav{display:flex;align-items:center;gap:14px;flex-wrap:nowrap}
-    nav a{color:#f3f4f6;font-size:14px}
-    nav a.active{text-decoration:underline;font-weight:600}
+    header{background:var(--brand)}
+    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px;display:flex;justify-content:space-between}
+    h1{margin:0;font-family:Merriweather,serif;font-size:20px;color:#fff}
 
     main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
-    h2{margin:0 0 14px;font-family:Merriweather,serif;font-size:20px}
+    h2{margin-bottom:14px;font-family:Merriweather,serif}
 
-    .card{border:1px solid #e6e6e9;border-radius:8px;padding:14px}
-    .controls{display:flex;gap:10px;align-items:center;margin-bottom:10px}
-    button{background:var(--brand);color:#fff;border:none;padding:7px 12px;border-radius:6px;cursor:pointer;font-family:inherit}
+    .card{border:1px solid #e5e7eb;border-radius:8px;padding:14px}
+    .controls{display:flex;gap:10px;align-items:center}
+
+    button{background:var(--brand);color:#fff;border:none;padding:7px 12px;border-radius:6px;cursor:pointer}
     button.secondary{background:#f3f4f6;color:#111827;border:1px solid #d1d5db}
-    button:disabled{opacity:.6;cursor:not-allowed}
+    button:disabled{opacity:.6}
+
     #status{font-size:13px;color:var(--muted)}
 
-    /* progress bar */
-    .progress-wrap{margin-top:10px;background:#f3f4f6;border-radius:8px;overflow:hidden;border:1px solid #e6e7ea}
-    .progress-bar{height:12px;width:0%;background:linear-gradient(90deg,#8b0000,#ff6b6b);transition:width .15s ease}
+    .progress-wrap{margin-top:12px;background:#f3f4f6;border-radius:8px;overflow:hidden}
+    .progress-bar{height:12px;width:0%;background:linear-gradient(90deg,#8b0000,#ff6b6b)}
     .progress-text{font-size:12px;color:var(--muted);margin-top:6px}
 
     canvas{display:block;width:100%;height:360px;border:1px solid #e5e7eb;border-radius:6px;margin-top:12px}
-
-    footer{border-top:1px solid #e5e7eb;text-align:center;font-size:14px;color:var(--muted);padding:18px 20px}
   </style>
 </head>
+
 <body>
 
 <header>
   <div class="wrap">
     <h1>Blog de l'intranquilité</h1>
-    <nav aria-label="Navigation principale">
-      <a href="index.html">Accueil</a>
-      <a href="articles.html">Articles</a>
-      <a href="stage.html" class="active">Stage</a>
-    </nav>
   </div>
 </header>
 
@@ -63,68 +54,89 @@
     <div class="controls">
       <button id="start">Lancer</button>
       <button id="stop" class="secondary" disabled>Arrêter</button>
-      <span id="status">Pyodide non chargé</span>
+      <span id="status">Chargement…</span>
     </div>
 
-    <div class="progress-wrap" aria-hidden="false">
-      <div id="progress-bar" class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+    <div class="progress-wrap">
+      <div id="progress-bar" class="progress-bar"></div>
     </div>
-    <div class="progress-text" id="progress-text">Prêt</div>
+    <div class="progress-text" id="progress-text">0%</div>
 
     <canvas id="simCanvas" width="700" height="450"></canvas>
-
   </div>
 </main>
 
-<footer>
-  © <span id="year"></span> — Blog personnel
-</footer>
+<!-- ================= JS ================= -->
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
 
 <script>
-  const canvas = document.getElementById("simCanvas");
-  const ctx = canvas.getContext("2d");
+/* ===== Canvas ===== */
+const canvas = document.getElementById("simCanvas");
+const ctx = canvas.getContext("2d");
 
-  // DEBUG : fond gris clair pour voir le canvas
+function clearCanvas() {
   ctx.fillStyle = "#f9fafb";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
 
-  // fonction appelée depuis Python
-  window.update = function(points) {
-    console.log("update called:", points.length);
+clearCanvas();
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+/* ===== Fonctions appelées depuis Python ===== */
+window.update = function(points) {
+  clearCanvas();
 
-    // axes
-    ctx.strokeStyle = "#e5e7eb";
-    ctx.beginPath();
-    ctx.moveTo(0, canvas.height);
-    ctx.lineTo(canvas.width, 0);
-    ctx.stroke();
+  ctx.strokeStyle = "#8b0000";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
 
-    // droite
-    ctx.strokeStyle = "#8b0000";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
+  points.forEach((p, i) => {
+    const x = p.x * canvas.width;
+    const y = canvas.height - p.y * canvas.height;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
 
-    points.forEach((p, i) => {
-      const x = p.x * canvas.width;
-      const y = canvas.height - p.y * canvas.height;
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
+  ctx.stroke();
+};
 
-    ctx.stroke();
-  };
+window.set_progress = function(pct) {
+  document.getElementById("progress-bar").style.width = pct + "%";
+  document.getElementById("progress-text").textContent = pct + "%";
+};
 
-  // barre de progression
-  window.set_progress = function(pct) {
-    const bar = document.getElementById("progress-inner");
-    const label = document.getElementById("progress-label");
-    if (bar) bar.style.width = pct + "%";
-    if (label) label.textContent = pct + "%";
-  };
+/* ===== Pyodide ===== */
+let pyodide = null;
+let ready = false;
+
+async function initPyodide() {
+  pyodide = await loadPyodide();
+  const code = await fetch("simulation.py").then(r => r.text());
+  pyodide.runPython(code);
+
+  ready = true;
+  document.getElementById("status").textContent = "Prêt";
+}
+
+initPyodide();
+
+/* ===== Boutons ===== */
+document.getElementById("start").onclick = () => {
+  if (!ready) return;
+  pyodide.runPython("start()");
+  document.getElementById("start").disabled = true;
+  document.getElementById("stop").disabled = false;
+  document.getElementById("status").textContent = "Lecture en cours";
+};
+
+document.getElementById("stop").onclick = () => {
+  pyodide.runPython("stop()");
+  document.getElementById("start").disabled = false;
+  document.getElementById("stop").disabled = true;
+  document.getElementById("status").textContent = "Arrêté";
+};
 </script>
-
 
 </body>
 </html>
+
