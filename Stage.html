@@ -65,12 +65,17 @@
     <canvas id="simCanvas" width="700" height="450"></canvas>
   </div>
 </main>
-
-<!-- ================= JS ================= -->
-
-<script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
-
+=============== JS ================
 <script>
+fetch("simulation.py")
+  .then(r => {
+    console.log("status:", r.status);
+    return r.text();
+  })
+  .then(t => console.log("CONTENU REÇU ↓↓↓\n", t))
+  .catch(e => console.error("ERREUR FETCH :", e));
+</script>
+
 /* ===== Canvas ===== */
 const canvas = document.getElementById("simCanvas");
 const ctx = canvas.getContext("2d");
