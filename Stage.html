@@ -1,63 +1,39 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <title>Stage — Simulation (Pyodide intégré)</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
-
+  <meta charset="utf-8" />
+  <title>Simulation Pyodide — Exemple fonctionnel</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    :root{ --maxw:760px; --bg:#ffffff; --text:#111827; --muted:#6b7280; --brand:#8b0000; }
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui;line-height:1.7}
-    header{background:var(--brand)}
-    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px;display:flex;justify-content:space-between}
-    h1{margin:0;font-family:Merriweather,serif;font-size:20px;color:#fff}
-    main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
-    h2{margin-bottom:14px;font-family:Merriweather,serif}
-    .card{border:1px solid #e5e7eb;border-radius:8px;padding:14px}
-    .controls{display:flex;gap:10px;align-items:center}
-    button{background:var(--brand);color:#fff;border:none;padding:7px 12px;border-radius:6px;cursor:pointer}
-    button.secondary{background:#f3f4f6;color:#111827;border:1px solid #d1d5db}
-    button:disabled{opacity:.6}
-    #status{font-size:13px;color:var(--muted)}
-    .progress-wrap{margin-top:12px;background:#f3f4f6;border-radius:8px;overflow:hidden}
-    .progress-bar{height:12px;width:0%;background:linear-gradient(90deg,#8b0000,#ff6b6b)}
-    .progress-text{font-size:12px;color:var(--muted);margin-top:6px}
-    canvas{display:block;width:100%;height:360px;border:1px solid #e5e7eb;border-radius:6px;margin-top:12px}
+    body { font-family: Inter, system-ui, sans-serif; padding:20px; background:#fff; color:#111827; }
+    button{background:#8b0000;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer}
+    button.secondary{background:#f3f4f6;color:#111;border;border:1px solid #ddd}
+    button:disabled{opacity:.5}
+    #progress-wrap{width:100%;height:12px;background:#f3f4f6;border-radius:8px;overflow:hidden;margin-top:12px}
+    #bar{height:100%;width:0;background:linear-gradient(90deg,#8b0000,#ff6b6b)}
+    canvas{width:700px;height:360px;border:1px solid #e5e7eb;margin-top:12px}
+    #status{margin-left:12px;color:#6b7280}
+    pre { background:#f6f6f6;padding:10px;border-radius:6px; max-height:200px; overflow:auto; }
   </style>
 </head>
-
 <body>
+  <h2>Simulation Pyodide — Test</h2>
 
-<header>
-  <div class="wrap">
-    <h1>Blog de l'intranquilité</h1>
+  <div>
+    <button id="start">Lancer</button>
+    <button id="stop" class="secondary" disabled>Arrêter</button>
+    <span id="status">Chargement…</span>
   </div>
-</header>
 
-<main>
-  <h2>Simulation Python (Pyodide)</h2>
-
-  <div class="card">
-    <div class="controls">
-      <button id="start">Lancer</button>
-      <button id="stop" class="secondary" disabled>Arrêter</button>
-      <span id="status">Chargement…</span>
-    </div>
-
-    <div class="progress-wrap">
-      <div id="progress-bar" class="progress-bar"></div>
-    </div>
-    <div class="progress-text" id="progress-text">0%</div>
-
-    <canvas id="simCanvas" width="700" height="450"></canvas>
+  <div id="progress-wrap">
+    <div id="bar"></div>
   </div>
-</main>
+  <div id="pct">0%</div>
 
-<!-- ===== Contenu Python (simulation.py) placé inline pour faciliter le déploiement) -->
-<script id="py-src" type="text/plain">
+  <canvas id="simCanvas" width="700" height="360"></canvas>
+
+  <!-- Code Python embarqué -->
+  <script id="py-src" type="text/plain">
 from js import update, set_progress
 import asyncio
 
@@ -65,147 +41,123 @@ running = False
 
 async def run():
     global running
-    # if someone starts while already running, just return
     if running:
         return
     running = True
 
     points = []
-
-    for i in range(101):
-        if not running:
-            break
-
-        x = i / 100
-        y = 0.2 + 0.6 * x   # droite simple
-
-        points.append({"x": x, "y": y})
-
-        # appel JS
-        update(points)
-        set_progress(i)
-
-        # sleep non-bloquant
-        await asyncio.sleep(0.03)
-
-    running = False
-
-# fonctions utiles pour contrôle depuis JS
+    try:
+        for i in range(101):
+            if not running:
+                break
+            x = i / 100
+            y = 0.2 + 0.6 * x
+            points.append({"x": x, "y": y})
+            update(points)
+            set_progress(i)   # 0..100
+            await asyncio.sleep(0.03)
+    finally:
+        running = False
 
 def stop():
     global running
     running = False
+  </script>
 
-# Note: we do NOT create tasks here; JS will call run() via runPythonAsync
-</script>
+  <!-- Fonctions JS attendues par Python : doivent exister AVANT l'exécution Python -->
+  <script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
 
-<!-- ===== JS ===== -->
-<script type="module">
-// Canvas setup (identique à votre version, légèrement durci)
-const canvas = document.getElementById("simCanvas");
-const ctx = canvas.getContext("2d");
-function clearCanvas() {
-  ctx.fillStyle = "#f9fafb";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-}
-clearCanvas();
+    function clearCanvas(){
+      ctx.fillStyle = "#f9fafb";
+      ctx.fillRect(0,0, canvas.width, canvas.height);
+    }
+    clearCanvas();
 
-window.update = function(points) {
-  clearCanvas();
+    // Ces fonctions sont appelées depuis Python via `from js import update, set_progress`
+    window.update = function(points){
+      clearCanvas();
+      ctx.strokeStyle = "#8b0000";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      points.forEach((p,i) => {
+        const x = p.x * canvas.width;
+        const y = canvas.height - p.y * canvas.height;
+        if (i === 0) ctx.moveTo(x,y);
+        else ctx.lineTo(x,y);
+      });
+      ctx.stroke();
+    };
 
-  ctx.strokeStyle = "#8b0000";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
+    window.set_progress = function(pct){
+      const v = Math.max(0, Math.min(100, Math.round(pct)));
+      document.getElementById('bar').style.width = v + '%';
+      document.getElementById('pct').textContent = v + '%';
+    };
+  </script>
 
-  points.forEach((p, i) => {
-    const x = p.x * canvas.width;
-    const y = canvas.height - p.y * canvas.height;
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  });
+  <!-- Boot Pyodide et wiring -->
+  <script>
+    // State
+    let pyodide = null;
+    let ready = false;
+    const startBtn = document.getElementById('start');
+    const stopBtn  = document.getElementById('stop');
+    const statusEl = document.getElementById('status');
 
-  ctx.stroke();
-};
+    async function initPyodide(){
+      try {
+        statusEl.textContent = 'Chargement de Pyodide…';
+        // charge pyodide (version testée)
+        // NB: indexURL doit pointer vers le même répertoire que pyodide.js fournit
+        pyodide = await loadPyodide({indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/'});
+        // Exécute le code Python embarqué (définit run() et stop())
+        const pySrc = document.getElementById('py-src').textContent;
+        await pyodide.runPythonAsync(pySrc);
+        ready = true;
+        statusEl.textContent = 'Prêt';
+        console.log('Pyodide prêt');
+      } catch (err) {
+        console.error('Erreur initPyodide:', err);
+        statusEl.textContent = 'Erreur de chargement (voir console)';
+      }
+    }
 
-window.set_progress = function(pct) {
-  // clamp
-  const val = Math.max(0, Math.min(100, Math.round(pct)));
-  document.getElementById("progress-bar").style.width = val + "%";
-  document.getElementById("progress-text").textContent = val + "%";
-};
+    // Botons
+    startBtn.addEventListener('click', async () => {
+      if (!ready) return;
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+      statusEl.textContent = 'Lecture en cours';
+      try {
+        // run() est async -> runPythonAsync renvoie une Promise
+        await pyodide.runPythonAsync('run()');
+      } catch (err) {
+        console.error('Erreur pendant run():', err);
+      } finally {
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        statusEl.textContent = 'Prêt';
+      }
+    });
 
-// Pyodide boot and wiring
-let pyodide = null;
-let ready = false;
-let currentRunPromise = null;
-
-async function initPyodide() {
-  // charge Pyodide depuis le CDN officiel
-  document.getElementById('status').textContent = 'Chargement de Pyodide…';
-  self.languagePluginUrl = 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/';
-  // loadPyodide is provided by the pyodide script loaded below
-  pyodide = await loadPyodide({indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/'});
-
-  // Exécute le code Python embarqué pour définir run() et stop()
-  const pySrc = document.getElementById('py-src').textContent;
-  await pyodide.runPythonAsync(pySrc);
-
-  ready = true;
-  document.getElementById('status').textContent = 'Prêt';
-}
-
-// démarre l'environnement
-initPyodide().catch(err => {
-  console.error(err);
-  document.getElementById('status').textContent = 'Erreur de chargement';
-});
-
-// Boutons
-const startBtn = document.getElementById('start');
-const stopBtn = document.getElementById('stop');
-
-startBtn.addEventListener('click', async () => {
-  if (!ready) return;
-
-  // disable start while running
-  startBtn.disabled = true;
-  stopBtn.disabled = false;
-  document.getElementById('status').textContent = 'Lecture en cours';
-
-  // Lance la coroutine Python run() de façon non-bloquante
-  // run() est une coroutine async; runPythonAsync renvoie une Promise
-  currentRunPromise = pyodide.runPythonAsync('run()')
-    .catch(err => {
-      // Erreurs Python éventuelles
-      console.error('Erreur dans run():', err);
-    })
-    .finally(() => {
-      // remet les boutons dans l'état correct à la fin
+    stopBtn.addEventListener('click', () => {
+      if (!ready) return;
+      try {
+        pyodide.runPython('stop()'); // stop() est synchrone (set flag)
+      } catch (err) {
+        console.error('Erreur stop():', err);
+      }
       startBtn.disabled = false;
       stopBtn.disabled = true;
-      document.getElementById('status').textContent = 'Prêt';
-      currentRunPromise = null;
+      statusEl.textContent = 'Arrêté';
     });
-});
 
-stopBtn.addEventListener('click', () => {
-  if (!ready) return;
-  // demande l'arrêt côté Python
-  try {
-    pyodide.runPython('stop()');
-  } catch (err) {
-    console.error(err);
-  }
+    // charge le loader Pyodide (script externe)
+    // doit être inclus APRÈS les scripts qui appellent loadPyodide
+  </script>
 
-  // état UI
-  startBtn.disabled = false;
-  stopBtn.disabled = true;
-  document.getElementById('status').textContent = 'Arrêté';
-});
-</script>
-
-<!-- Pyodide loader (doit être chargé après notre code qui appelle loadPyodide) -->
-<script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
-
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
 </body>
 </html>
