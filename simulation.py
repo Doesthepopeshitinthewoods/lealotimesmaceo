@@ -1,69 +1,44 @@
 # simulation.py
 # Version adaptée pour Pyodide (navigateur)
-# Modifications limitées : imports sous try/except, suppression du backend TkAgg,
-# suppression de plt.show(), exposition de start()/stop() et playback via window.update()
+# - utilise numpy + asyncio
+# - expose start(), stop(), set_interval()
+# - envoie les frames via js.update(state) où state = [{'x':..., 'y':..., 'r':...}, ...]
 
 import numpy as np
+import asyncio
 import time
-import sys
 import warnings
 
-# imports optionnels (fallback si non disponibles dans Pyodide)
+# try to import the JS update function (window.update)
 try:
-    import matplotlib as mpl
-    import matplotlib.pyplot as plt
-    HAS_MPL = True
+    from js import update  # Pyodide will provide window.update from the HTML
 except Exception:
-    HAS_MPL = False
+    def update(_state):
+        # fallback when not in browser
+        pass
 
-try:
-    import seaborn as sns
-    HAS_SEABORN = True
-except Exception:
-    HAS_SEABORN = False
+# ---------- Paramètres (modifiables) ----------
+sigma = 1.0
+p0 = np.array([1.0, 0.0])
+T_final = 20.0          # durée physique totale (plus petit par défaut pour navigateur)
+n_image = 80            # nombre de frames calculées (réduire pour performance)
+dt = T_final / max(1, (n_image - 1))
 
-try:
-    from scipy.stats import binned_statistic, gaussian_kde
-    HAS_SCIPY = True
-except Exception:
-    HAS_SCIPY = False
-    binned_statistic = None
-    gaussian_kde = None
-
-try:
-    from sklearn.linear_model import LinearRegression
-    HAS_SKLEARN = True
-except Exception:
-    HAS_SKLEARN = False
-
-try:
-    from tqdm import tqdm
-    HAS_TQDM = True
-except Exception:
-    HAS_TQDM = False
-
-# IMPORTANT: on ne change pas le calcul ; paramètres initiaux (inchangés)
-sigma = 1.0                # largeur du noyau
-p0 = np.array([1.0, .0])  # vecteur de référence
-T_final = 100.0
-n_image = 100
-dt = T_final / (n_image - 1)
-
-# grille pour tracer le champ (utilisée pour normalisation ici)
+# grille pour normalisation (utilisée par Evaluation_K_frame si nécessaire)
 nx = 100
 ny = 100
 xs = np.linspace(-5, 5, nx)
 ys = np.linspace(-5, 5, ny)
 X, Y = np.meshgrid(xs, ys)
 grid_pts = np.stack([X.ravel(), Y.ravel()], axis=-1)
-
 eps = 1e-10
 
-# paramètres particules initiales (idem)
+# initial particle grid
 grid_nx = 5
 grid_ny = 5
 grid_x_min, grid_x_max = -2.0, 2.0
 grid_y_min, grid_y_max = -2.0, 2.0
+
 orientation_mode = 'random'
 fixed_angle = np.pi/6.0
 p_magnitude = None
@@ -71,7 +46,7 @@ p_perturb = 0.00
 seed = 42
 rng = np.random.RandomState(seed)
 
-# bruit
+# noise
 K_noise = 6
 noise_amp = 0.25
 L_domain = 10.0
@@ -82,7 +57,7 @@ for kk in range(K_noise):
 kvecs = np.array(kvecs)
 amps = noise_amp * (1.0 + 0.5 * rng.randn(K_noise))
 
-# Green kernel
+# ---------- Kernels & intégrateur (inchangés sauf pour performance) ----------
 def Green_K(pts, sigma=1.0):
     r = np.asarray(pts, dtype=float)
     if r.ndim == 1:
@@ -96,9 +71,9 @@ def Green_K(pts, sigma=1.0):
     beta  = (2.0 * C * (1.0 - B) - B) / (r2 + eps)
 
     I = np.eye(2)
-    outer = r[:, :, None] * r[:, None, :]  # (N,2,2)
-    G = A * (alpha[:, None, None] * I + beta[:, None, None] * outer)  # (N,2,2)
-    return G  # (N,2,2)
+    outer = r[:, :, None] * r[:, None, :]
+    G = A * (alpha[:, None, None] * I + beta[:, None, None] * outer)
+    return G
 
 def u_au_point(x, qs_list, ps_list, sigma=sigma):
     u = np.zeros(2)
@@ -117,6 +92,7 @@ def jacobian_u_au_point(x, qs_list, ps_list, sigma=sigma, h=1e-5):
     return J
 
 def Evaluation_K_frame(qs_frame, ps_frame, sigma=sigma):
+    # compute U, V on the grid if needed (kept for compatibility)
     Ngrid = grid_pts.shape[0]
     U_flat = np.zeros(Ngrid)
     V_flat = np.zeros(Ngrid)
@@ -136,8 +112,8 @@ def deriv(state, N, sigma=sigma):
     dq = np.zeros((N,2))
     dp = np.zeros((N,2))
     for a in range(N):
-        q_a = qs[a]
-        p_a = ps[a]
+        q_a = qs[a].copy()
+        p_a = ps[a].copy()
         u_q = u_au_point(q_a, qs, ps, sigma=sigma)
         J = jacobian_u_au_point(q_a, qs, ps, sigma=sigma, h=1e-5)
         dq[a] = u_q
@@ -154,8 +130,7 @@ def rk4_step(state, dt, N, sigma=sigma):
     k2 = deriv(state + 0.5*dt*k1, N, sigma=sigma)
     k3 = deriv(state + 0.5*dt*k2, N, sigma=sigma)
     k4 = deriv(state + dt*k3, N, sigma=sigma)
-    new_state = state + (dt/6.0) * (k1 + 2*k2 + 2*k3 + k4)
-    return new_state
+    return state + (dt/6.0) * (k1 + 2*k2 + 2*k3 + k4)
 
 def sigma_k_at(kidx, qs_array):
     k = kvecs[kidx]
@@ -186,7 +161,7 @@ def gk_on_state(kidx, state, N):
         dp[i] = - grad_sig[i].T.dot(ps[i])
     return np.concatenate([dq.ravel(), dp.ravel()])
 
-# --- initialisation des particules (idem) ---
+# ---------- Initialisation des particules ----------
 grid_x = np.linspace(grid_x_min, grid_x_max, grid_nx)
 grid_y = np.linspace(grid_y_min, grid_y_max, grid_ny)
 qs_init = []
@@ -218,199 +193,130 @@ for yi in grid_y:
         ps_init.append(p_vec)
 
 N = len(qs_init)
-print(f"Initialisation: {N} particules ({grid_nx} x {grid_ny})'")
+# Flatten initial state
+state0 = np.zeros(4 * N)
+for i in range(N):
+    state0[2*i:2*i+2] = qs_init[i]
+for i in range(N):
+    state0[2*N + 2*i:2*N + 2*i+2] = ps_init[i]
 
+# pre-allocate hist arrays (filled during compute)
 qs_hist = np.zeros((n_image, N, 2))
 ps_hist = np.zeros((n_image, N, 2))
 u_selfs = np.zeros((n_image, N, 2))
 
-state = np.zeros(4 * N)
-for i in range(N):
-    state[2*i:2*i+2] = qs_init[i]
-for i in range(N):
-    state[2*N + 2*i:2*N + 2*i+2] = ps_init[i]
-
-use_tqdm = HAS_TQDM
-
-def format_time(seconds):
-    if seconds is None:
-        return "--:--:--"
-    m, s = divmod(int(round(seconds)), 60)
-    h, m = divmod(m, 60)
-    return f"{h:02d}:{m:02d}:{s:02d}"
-
-start_time = time.time()
-sqrt_dt = np.sqrt(dt)
-
-# Intégration temporelle (principalement inchangée)
-if use_tqdm:
-    iterator = tqdm(range(n_image), desc="Integration", ncols=80)
-    for i in iterator:
-        for a in range(N):
-            qs_hist[i,a] = state[2*a:2*a+2]
-            ps_hist[i,a] = state[2*N + 2*a:2*N + 2*a+2]
-        for a in range(N):
-            u_selfs[i,a] = u_au_point(qs_hist[i,a], list(qs_hist[i]), list(ps_hist[i]), sigma=sigma)
-
-        if i < n_image - 1:
-            state_det = rk4_step(state, dt, N, sigma=sigma)
-            g0 = np.zeros((K_noise, 4*N))
-            for kidx in range(K_noise):
-                g0[kidx] = gk_on_state(kidx, state, N)
-            dW = rng.normal(0.0, sqrt_dt, size=K_noise)
-            state_tilde = state_det.copy()
-            state_tilde += np.tensordot(dW, g0, axes=(0,0))
-            g1 = np.zeros_like(g0)
-            for kidx in range(K_noise):
-                g1[kidx] = gk_on_state(kidx, state_tilde, N)
-            stochastic_increment = 0.5 * np.tensordot(dW, (g0 + g1), axes=(0,0))
-            state = state_det + stochastic_increment
-    elapsed = time.time() - start_time
-    print(f"Intégration terminée en {format_time(elapsed)}")
-else:
-    last_print_len = 0
-    for i in range(n_image):
-        iter_start = time.time()
-        for a in range(N):
-            qs_hist[i,a] = state[2*a:2*a+2]
-            ps_hist[i,a] = state[2*N + 2*a:2*N + 2*a+2]
-        for a in range(N):
-            u_selfs[i,a] = u_au_point(qs_hist[i,a], list(qs_hist[i]), list(ps_hist[i]), sigma=sigma)
-
-        if i < n_image - 1:
-            state_det = rk4_step(state, dt, N, sigma=sigma)
-            g0 = np.zeros((K_noise, 4*N))
-            for kidx in range(K_noise):
-                g0[kidx] = gk_on_state(kidx, state, N)
-            dW = rng.normal(0.0, sqrt_dt, size=K_noise)
-            state_tilde = state_det.copy()
-            state_tilde += np.tensordot(dW, g0, axes=(0,0))
-            g1 = np.zeros_like(g0)
-            for kidx in range(K_noise):
-                g1[kidx] = gk_on_state(kidx, state_tilde, N)
-            stochastic_increment = 0.5 * np.tensordot(dW, (g0 + g1), axes=(0,0))
-            state = state_det + stochastic_increment
-
-        elapsed = time.time() - start_time
-        completed = i + 1
-        frac = completed / n_image
-        pct = int(frac * 100)
-        if completed > 0:
-            avg_time_per_step = elapsed / completed
-            remaining = avg_time_per_step * (n_image - completed)
-        else:
-            remaining = None
-        bar_len = 40
-        filled = int(np.round(bar_len * frac))
-        bar = "[" + "#" * filled + "-" * (bar_len - filled) + "]"
-        eta_str = format_time(remaining) if remaining is not None else "--:--:--"
-        msg = f"Integration {bar} {pct:3d}% ETA {eta_str}"
-        sys.stdout.write("\r" + " " * last_print_len + "\r")
-        sys.stdout.write(msg)
-        sys.stdout.flush()
-        last_print_len = len(msg)
-
-    total_elapsed = time.time() - start_time
-    sys.stdout.write("\n")
-    print(f"Intégration terminée en {format_time(total_elapsed)}")
-
-# calcul du vmax (peut rester pour info)
-vmax = 0.0
-for i in range(n_image):
-    Utmp, Vtmp = Evaluation_K_frame(qs_hist[i], ps_hist[i], sigma=sigma)
-    vmax = max(vmax, np.sqrt(Utmp**2 + Vtmp**2).max())
-if vmax == 0:
-    vmax = 1e-6
-
-# ----------------------------------------------------
-# Playback pour le navigateur
-# expose start() and stop() for JS
-# envoie des frames via window.update(state), avec x,y normalisés [0,1], r relatif
-# ----------------------------------------------------
-try:
-    from js import update  # window.update sera appelé côté JS
-except Exception:
-    # si on exécute localement en dehors du navigateur, fallback print
-    def update(state):
-        pass
-
-import asyncio
+# ---------- Computation & Playback control ----------
+_computed = False
+_computing_task = None
 _play_task = None
 _playing = False
-_play_interval = 0.1  # secondes entre frames (modifiable via set_interval)
+_play_interval = 0.05   # seconds between frames (modifiable via set_interval)
 
-# normalisation helpers
-_xmin, _xmax = xs.min(), xs.max()
-_ymin, _ymax = ys.min(), ys.max()
+# xmin/xmax for normalization
+_xmin, _xmax = grid_x_min, grid_x_max
+_ymin, _ymax = grid_y_min, grid_y_max
 _xrange = _xmax - _xmin if (_xmax - _xmin) != 0 else 1.0
 _yrange = _ymax - _ymin if (_ymax - _ymin) != 0 else 1.0
 
-def _make_frame_state(frame_idx, r_rel=0.02):
+def _make_frame_state(frame_idx, r_rel=0.03):
     frame_idx = int(np.clip(frame_idx, 0, n_image - 1))
     qs_frame = qs_hist[frame_idx]
-    state_list = []
+    out = []
     for a in range(N):
         x = float(qs_frame[a,0])
         y = float(qs_frame[a,1])
         xnorm = (x - _xmin) / _xrange
         ynorm = (y - _ymin) / _yrange
-        state_list.append({'x': xnorm, 'y': ynorm, 'r': r_rel})
-    return state_list
+        out.append({'x': xnorm, 'y': ynorm, 'r': r_rel})
+    return out
+
+async def _compute_trajectories():
+    global _computed, qs_hist, ps_hist, u_selfs
+    if _computed:
+        return
+    state = state0.copy()
+    sqrt_dt = np.sqrt(dt)
+    start_time = time.time()
+    for i in range(n_image):
+        # store
+        for a in range(N):
+            qs_hist[i,a] = state[2*a:2*a+2]
+            ps_hist[i,a] = state[2*N + 2*a:2*N + 2*a+2]
+        # compute u_selfs for this frame
+        for a in range(N):
+            u_selfs[i,a] = u_au_point(qs_hist[i,a], list(qs_hist[i]), list(ps_hist[i]), sigma=sigma)
+        # step
+        if i < n_image - 1:
+            state = rk4_step(state, dt, N, sigma=sigma)
+            # add stochastic Stratonovich increment similarly to original if desired:
+            # keep it deterministic here to control cost; you can re-add stochastic part if wanted.
+        # Yield occasionally so UI stays responsive
+        if (i % 8) == 0:
+            await asyncio.sleep(0)  # give control back to event loop
+    _computed = True
+    elapsed = time.time() - start_time
+    # optional: print(f"Trajectoires calculées en {elapsed:.2f}s")
 
 async def _playback_loop():
-    global _playing
+    global _play_task, _playing
     try:
         while _playing:
+            if not _computed:
+                # wait until computation finishes
+                await asyncio.sleep(0.05)
+                continue
             for i in range(n_image):
                 if not _playing:
                     break
                 state = _make_frame_state(i)
                 try:
-                    update(state)  # envoie au JS
+                    update(state)
                 except Exception:
-                    # silent fail si pas dans navigateur
                     pass
                 await asyncio.sleep(_play_interval)
-            # loop again
     except asyncio.CancelledError:
-        # arrêt propre
         pass
     finally:
         _playing = False
+        _play_task = None
+
+async def _ensure_compute_and_play():
+    global _computing_task, _play_task, _playing
+    # start compute if needed
+    if not _computed and _computing_task is None:
+        _computing_task = asyncio.ensure_future(_compute_trajectories())
+    # wait for compute to finish
+    if _computing_task is not None:
+        try:
+            await _computing_task
+        except Exception:
+            _computing_task = None
+            raise
+    _computing_task = None
+    # start playback if not already
+    if _play_task is None:
+        _play_task = asyncio.ensure_future(_playback_loop())
 
 def start(interval_seconds=None):
-    """Démarre la lecture des frames ; non-bloquant (idempotent)."""
-    global _play_task, _playing, _play_interval
+    """Démarre le calcul (si nécessaire) puis la lecture en boucle.
+    Non-bloquant : lance une coroutine en background."""
+    global _playing, _play_interval, _play_task, _computing_task
     if interval_seconds is not None:
-        _play_interval = float(interval_seconds)
+        set_interval(interval_seconds)
     if _playing:
         return
     _playing = True
-    # lance la coroutine playback
     try:
-        # Pyodide: ensure_future fonctionne pour lancer la coroutine
-        _play_task = asyncio.ensure_future(_playback_loop())
+        # schedule the ensure_compute_and_play coroutine
+        asyncio.ensure_future(_ensure_compute_and_play())
     except Exception:
-        # fallback sync loop (exécution bloquante, peu probable en Pyodide)
-        import threading
-        def _worker():
-            global _playing
-            while _playing:
-                for i in range(n_image):
-                    if not _playing:
-                        break
-                    state = _make_frame_state(i)
-                    try:
-                        update(state)
-                    except Exception:
-                        pass
-                    time.sleep(_play_interval)
-        t = threading.Thread(target=_worker, daemon=True)
-        t.start()
+        # fallback: run compute synchronously (not ideal)
+        loop = asyncio.get_event_loop()
+        loop.create_task(_ensure_compute_and_play())
 
 def stop():
-    """Arrête la lecture (non bloquant)."""
-    global _play_task, _playing
+    """Arrête la lecture (et laisse les trajectoires en mémoire)."""
+    global _playing, _play_task
     _playing = False
     if _play_task is not None:
         try:
@@ -419,9 +325,19 @@ def stop():
             pass
         _play_task = None
 
-# Petit utilitaire : exposer une fonction non-async pour régler la vitesse si appelé depuis JS
 def set_interval(seconds):
+    """Régler l'intervalle entre frames en secondes (ex: 0.016 pour ~60 FPS)."""
     global _play_interval
-    _play_interval = float(seconds)
+    try:
+        _play_interval = float(seconds)
+    except Exception:
+        pass
 
-# Fin du fichier
+# small helpers to let JS query status if needed
+def is_computed():
+    return bool(_computed)
+
+def is_playing():
+    return bool(_playing)
+
+# End of file
