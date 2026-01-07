@@ -1,167 +1,144 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Stage — Simulation Python (Pyodide)</title>
+  <meta charset="utf-8">
+  <title>Stage — Simulation</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
   <style>
-    :root{--bg:#f7f8fc;--card:#fff;--muted:#6b7280;--accent:#2563eb}
-    body{font-family:Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background:var(--bg); margin:0; padding:28px; color:#0f172a}
-    .container{max-width:980px;margin:0 auto}
-    header{display:flex;align-items:center;gap:16px}
-    h1{font-size:20px;margin:0}
-    p.lead{margin:6px 0 18px;color:var(--muted)}
-    .card{background:var(--card);border-radius:12px;padding:14px;box-shadow:0 6px 20px rgba(12,15,24,0.04)}
-    #controls{display:flex;align-items:center;gap:10px}
-    button{background:var(--accent);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
-    button.secondary{background:#e6eefc;color:var(--accent);border:1px solid rgba(37,99,235,0.12)}
-    button:disabled{opacity:0.6;cursor:not-allowed}
-    #status{color:var(--muted)}
-    canvas{display:block;width:100%;height:380px;background:linear-gradient(180deg,#ffffff, #fbfdff);border-radius:8px;margin-top:12px;border:1px solid #e6eef6}
-    footer{margin-top:12px;color:var(--muted);font-size:13px}
-    pre.small{background:#0b1220;color:#cfe8ff;padding:8px;border-radius:6px;overflow:auto;font-size:13px}
+    :root{
+      --maxw:760px; --bg:#ffffff; --text:#111827; --muted:#6b7280; --accent:#1f2937;
+      --brand:#8b0000;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.7}
+    a{color:var(--accent);text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    header{background:var(--brand);border-bottom:1px solid #7a0000}
+    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    h1{margin:0;font-family:Merriweather,serif;font-size:20px;font-weight:700;color:#fff}
+
+    nav{display:flex;align-items:center;gap:14px;flex-wrap:nowrap}
+    nav a{color:#f3f4f6;font-size:14px}
+    nav a.active{text-decoration:underline;font-weight:600}
+
+    main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
+    h2{margin:0 0 14px;font-family:Merriweather,serif;font-size:20px}
+
+    .card{border:1px solid #e6e6e9;border-radius:8px;padding:14px}
+    .controls{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+    button{background:var(--brand);color:#fff;border:none;padding:7px 12px;border-radius:6px;cursor:pointer;font-family:inherit}
+    button.secondary{background:#f3f4f6;color:#111827;border:1px solid #d1d5db}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    #status{font-size:13px;color:var(--muted)}
+
+    canvas{display:block;width:100%;height:360px;border:1px solid #e5e7eb;border-radius:6px}
+
+    footer{border-top:1px solid #e5e7eb;text-align:center;font-size:14px;color:var(--muted);padding:18px 20px}
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>Section « Stage » — Simulation Python (Pyodide)</h1>
-    </header>
-    <p class="lead">Page autonome qui charge Pyodide et exécute un fichier <code>simulation.py</code> placé dans le même dossier. Cliquer <em>Lancer</em> pour démarrer la simulation côté client (dans le navigateur).</p>
 
-    <div class="card">
-      <div id="controls">
-        <button id="start">Lancer la simulation</button>
-        <button id="stop" class="secondary" disabled>Arrêter</button>
-        <div id="status">Pyodide non chargé</div>
-      </div>
+<header>
+  <div class="wrap">
+    <h1>Blog de l'intranquilité</h1>
+    <nav aria-label="Navigation principale">
+      <a href="index.html">Accueil</a>
+      <a href="articles.html">Articles</a>
+      <a href="stage.html" class="active">Stage</a>
+    </nav>
+  </div>
+</header>
 
-      <canvas id="canvas" width="900" height="380"></canvas>
+<main>
+  <h2>Simulation Python (Pyodide)</h2>
 
-      <footer>
-        <div>Dépose <code>simulation.py</code> dans le même dossier que cette page (ex.: <code>/docs/</code> ou racine du site Pages). Tester localement avec <code>python3 -m http.server 8000</code>.</div>
-      </footer>
+  <div class="card">
+    <div class="controls">
+      <button id="start">Lancer</button>
+      <button id="stop" class="secondary" disabled>Arrêter</button>
+      <span id="status">Pyodide non chargé</span>
     </div>
 
-    <section style="margin-top:14px">
-      <h3>Notes rapides</h3>
-      <ul>
-        <li>Cette page <strong>fetch()</strong> le fichier <code>simulation.py</code>, exécute son contenu puis appelle <code>start()</code>. Le module Python doit exposer <code>start()</code> et <code>stop()</code>.</li>
-        <li>Si tu veux que je crée aussi le fichier <code>simulation.py</code>, dis-le — je peux le générer prêt à committer.</li>
-      </ul>
-    </section>
-
+    <canvas id="canvas" width="720" height="360"></canvas>
   </div>
+</main>
 
-  <script>
-    // UI elements
-    const startBtn = document.getElementById('start');
-    const stopBtn  = document.getElementById('stop');
-    const statusEl = document.getElementById('status');
-    const canvas   = document.getElementById('canvas');
-    const ctx      = canvas.getContext('2d');
+<footer>
+  © <span id="year"></span> — Blog personnel
+</footer>
 
-    // Pyodide runtime handle
-    let pyodide = null;
-    let pyLoaded = false;
-    let simLoaded = false;
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
 
-    // Called from Python: state is a list of dicts {x,y,r}
-    window.update = function(state){
-      // state comes as JS array of plain objects
-      const w = canvas.width = canvas.clientWidth;
-      const h = canvas.height = 380;
-      ctx.clearRect(0,0,w,h);
-      for (const p of state){
-        const cx = p.x * w;
-        const cy = p.y * h;
-        const rr = Math.max(2, (p.r||0.02) * Math.min(w,h));
-        ctx.beginPath();
-        ctx.arc(cx, cy, rr, 0, Math.PI*2);
-        ctx.fillStyle = 'rgba(37,99,235,0.12)';
-        ctx.fill();
-        ctx.strokeStyle = 'rgb(37,99,235)';
-        ctx.stroke();
-      }
-    };
+  const startBtn = document.getElementById('start');
+  const stopBtn  = document.getElementById('stop');
+  const statusEl = document.getElementById('status');
+  const canvas   = document.getElementById('canvas');
+  const ctx      = canvas.getContext('2d');
 
-    // Charge Pyodide (idempotent)
-    async function loadPyodideOnce(){
-      if (pyodide) return pyodide;
-      statusEl.textContent = 'Chargement de Pyodide...';
-      // loader script
-      if (!window.loadPyodide){
-        await new Promise((resolve, reject)=>{
-          const s = document.createElement('script');
-          s.src = 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js';
-          s.onload = resolve; s.onerror = reject; document.head.appendChild(s);
-        });
-      }
-      // eslint-disable-next-line no-undef
-      pyodide = await loadPyodide({indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/'});
-      pyLoaded = true;
-      statusEl.textContent = 'Pyodide prêt';
-      return pyodide;
+  let pyodide = null;
+  let simLoaded = false;
+
+  window.update = function(state){
+    const w = canvas.width = canvas.clientWidth;
+    const h = canvas.height = 360;
+    ctx.clearRect(0,0,w,h);
+    for (const p of state){
+      const x = p.x * w;
+      const y = p.y * h;
+      const r = (p.r || 0.02) * Math.min(w,h);
+      ctx.beginPath();
+      ctx.arc(x,y,r,0,Math.PI*2);
+      ctx.fillStyle = 'rgba(139,0,0,0.15)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgb(139,0,0)';
+      ctx.stroke();
     }
+  };
 
-    // Charge simulation.py depuis le même dossier que la page
-    async function loadSimulationScript(path = 'simulation.py'){
-      if (!pyLoaded) throw new Error('Pyodide non chargé');
-      statusEl.textContent = 'Téléchargement du script Python...';
-      const resp = await fetch(path);
-      if (!resp.ok) throw new Error('fetch simulation.py failed: ' + resp.status);
-      const pyCode = await resp.text();
-
-      // Exécute le code Python pour définir start()/stop() dans l'environnement global
-      statusEl.textContent = 'Exécution du script Python...';
-      await pyodide.runPythonAsync(pyCode);
-      simLoaded = true;
-      statusEl.textContent = 'Simulation prête';
+  async function loadPyodideOnce(){
+    if (pyodide) return pyodide;
+    statusEl.textContent = 'Chargement de Pyodide…';
+    if (!window.loadPyodide){
+      await new Promise((resolve,reject)=>{
+        const s=document.createElement('script');
+        s.src='https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js';
+        s.onload=resolve; s.onerror=reject; document.head.appendChild(s);
+      });
     }
+    pyodide = await loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/'});
+    await pyodide.loadPackage(['numpy']);
+    statusEl.textContent = 'Pyodide prêt';
+    return pyodide;
+  }
 
-    // Démarre la simulation — charge pyodide + script si nécessaire
-    async function startSimulation(){
-      try{
-        startBtn.disabled = true;
-        await loadPyodideOnce();
-        if (!simLoaded) await loadSimulationScript('simulation.py');
-        statusEl.textContent = 'Démarrage...';
-        await pyodide.runPythonAsync('start()');
-        statusEl.textContent = 'Simulation en cours';
-        stopBtn.disabled = false;
-      }catch(err){
-        console.error(err);
-        statusEl.textContent = 'Erreur: ' + (err.message || err);
-        startBtn.disabled = false;
-      }
-    }
+  async function loadSimulation(){
+    if (simLoaded) return;
+    statusEl.textContent = 'Chargement du script Python…';
+    const r = await fetch('simulation.py');
+    const code = await r.text();
+    await pyodide.runPythonAsync(code);
+    simLoaded = true;
+  }
 
-    // Stop propre
-    async function stopSimulation(){
-      try{
-        stopBtn.disabled = true;
-        if (pyodide && simLoaded){
-          await pyodide.runPythonAsync('stop()');
-          statusEl.textContent = 'Arrêté';
-          startBtn.disabled = false;
-        } else {
-          statusEl.textContent = 'Rien à arrêter';
-        }
-      }catch(err){
-        console.error(err);
-        statusEl.textContent = 'Erreur arrêt: ' + (err.message || err);
-        stopBtn.disabled = false;
-      }
-    }
+  startBtn.onclick = async ()=>{
+    startBtn.disabled = true;
+    await loadPyodideOnce();
+    await loadSimulation();
+    statusEl.textContent = 'Simulation en cours';
+    await pyodide.runPythonAsync('start()');
+    stopBtn.disabled = false;
+  };
 
-    // Bind UI
-    startBtn.addEventListener('click', startSimulation);
-    stopBtn.addEventListener('click', stopSimulation);
+  stopBtn.onclick = async ()=>{
+    stopBtn.disabled = true;
+    await pyodide.runPythonAsync('stop()');
+    statusEl.textContent = 'Arrêtée';
+    startBtn.disabled = false;
+  };
+</script>
 
-    // Responsive canvas: redraw on resize by requesting last frame from Python if available
-    window.addEventListener('resize', ()=>{
-      // canvas size adjusts automatically in update(state) when Python pushes frames
-    });
-  </script>
 </body>
 </html>
