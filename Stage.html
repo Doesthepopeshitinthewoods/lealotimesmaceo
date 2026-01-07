@@ -33,7 +33,12 @@
     button:disabled{opacity:.6;cursor:not-allowed}
     #status{font-size:13px;color:var(--muted)}
 
-    canvas{display:block;width:100%;height:360px;border:1px solid #e5e7eb;border-radius:6px}
+    /* progress bar */
+    .progress-wrap{margin-top:10px;background:#f3f4f6;border-radius:8px;overflow:hidden;border:1px solid #e6e7ea}
+    .progress-bar{height:12px;width:0%;background:linear-gradient(90deg,#8b0000,#ff6b6b);transition:width .15s ease}
+    .progress-text{font-size:12px;color:var(--muted);margin-top:6px}
+
+    canvas{display:block;width:100%;height:360px;border:1px solid #e5e7eb;border-radius:6px;margin-top:12px}
 
     footer{border-top:1px solid #e5e7eb;text-align:center;font-size:14px;color:var(--muted);padding:18px 20px}
   </style>
@@ -61,6 +66,11 @@
       <span id="status">Pyodide non chargé</span>
     </div>
 
+    <div class="progress-wrap" aria-hidden="false">
+      <div id="progress-bar" class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+    <div class="progress-text" id="progress-text">Prêt</div>
+
     <canvas id="canvas" width="720" height="360"></canvas>
   </div>
 </main>
@@ -77,9 +87,21 @@
   const statusEl = document.getElementById('status');
   const canvas   = document.getElementById('canvas');
   const ctx      = canvas.getContext('2d');
+  const progressBar = document.getElementById('progress-bar');
+  const progressText = document.getElementById('progress-text');
 
   let pyodide = null;
   let simLoaded = false;
+
+  // function that Python will call via `from js import set_progress`
+  window.set_progress = function(p){
+    try{
+      const percent = Math.max(0, Math.min(100, Math.round(p)));
+      progressBar.style.width = percent + '%';
+      progressBar.setAttribute('aria-valuenow', percent);
+      progressText.textContent = percent + '%';
+    }catch(e){ console.error(e); }
+  };
 
   window.update = function(state){
     const w = canvas.width = canvas.clientWidth;
@@ -101,6 +123,8 @@
   async function loadPyodideOnce(){
     if (pyodide) return pyodide;
     statusEl.textContent = 'Chargement de Pyodide…';
+    progressText.textContent = 'Chargement Pyodide...';
+    progressBar.style.width = '8%';
     if (!window.loadPyodide){
       await new Promise((resolve,reject)=>{
         const s=document.createElement('script');
@@ -109,33 +133,61 @@
       });
     }
     pyodide = await loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/'});
+    // load numpy quickly (needed by simulation)
+    progressText.textContent = 'Chargement packages...';
+    progressBar.style.width = '30%';
     await pyodide.loadPackage(['numpy']);
+    progressBar.style.width = '50%';
     statusEl.textContent = 'Pyodide prêt';
+    progressText.textContent = '50% - Prêt';
     return pyodide;
   }
 
   async function loadSimulation(){
     if (simLoaded) return;
     statusEl.textContent = 'Chargement du script Python…';
+    progressText.textContent = 'Chargement script...';
+    progressBar.style.width = '55%';
     const r = await fetch('simulation.py');
+    if (!r.ok) throw new Error('Impossible de charger simulation.py: ' + r.status);
     const code = await r.text();
+    // Execute the code — the Python script will call set_progress(...) during compute
     await pyodide.runPythonAsync(code);
     simLoaded = true;
+    progressBar.style.width = '60%';
+    progressText.textContent = 'Script prêt';
   }
 
   startBtn.onclick = async ()=>{
-    startBtn.disabled = true;
-    await loadPyodideOnce();
-    await loadSimulation();
-    statusEl.textContent = 'Simulation en cours';
-    await pyodide.runPythonAsync('start()');
-    stopBtn.disabled = false;
+    try{
+      startBtn.disabled = true;
+      stopBtn.disabled = true;
+      await loadPyodideOnce();
+      await loadSimulation();
+      statusEl.textContent = 'Calcul des trajectoires...';
+      progressText.textContent = 'Calcul en cours';
+      // Call start() with optional interval (seconds per frame) if desired
+      await pyodide.runPythonAsync('start()');
+      statusEl.textContent = 'Lecture en cours';
+      stopBtn.disabled = false;
+    }catch(err){
+      console.error(err);
+      statusEl.textContent = 'Erreur: ' + (err.message || err);
+      startBtn.disabled = false;
+    }
   };
 
   stopBtn.onclick = async ()=>{
     stopBtn.disabled = true;
-    await pyodide.runPythonAsync('stop()');
-    statusEl.textContent = 'Arrêtée';
+    try{
+      await pyodide.runPythonAsync('stop()');
+      statusEl.textContent = 'Arrêtée';
+      progressText.textContent = 'Arrêtée';
+      progressBar.style.width = '0%';
+    }catch(err){
+      console.error(err);
+      statusEl.textContent = 'Erreur arrêt';
+    }
     startBtn.disabled = false;
   };
 </script>
