@@ -1,69 +1,106 @@
-from js import update, set_progress
-import asyncio
+# simulation.py
+# Script Pyodide — robuste : attend que window.update / window.set_progress soient prêts,
+# gère start/stop, et protège les appels JS contre les erreurs.
 
-# Flag partagé pour contrôler l'exécution
+import asyncio
+import math
+
+# accès au module js (Pyodide)
+import js as _js
+
+# flag pour contrôler l'exécution
 running = False
 
-async def run():
-    """Coroutine principale — ajoute des points et notifie l'UI JS.
-    - Met à jour le canvas via `update(points)`
-    - Met à jour la progression via `set_progress(percent)`
+async def _wait_for_js_funcs(timeout=5.0, interval=0.05):
+    """Attendre que window.update et window.set_progress soient définis.
+    Renvoie (update, set_progress) ou lève RuntimeError après timeout (secondes)."""
+    t = 0.0
+    while t < timeout:
+        if hasattr(_js, "update") and hasattr(_js, "set_progress"):
+            return _js.update, _js.set_progress
+        await asyncio.sleep(interval)
+        t += interval
+    raise RuntimeError("Fonctions JS 'update' et/ou 'set_progress' introuvables")
 
-    Remarques d'utilisation :
-    - Dans l'UI, on peut appeler `pyodide.runPythonAsync('run()')` pour lancer proprement
-      la coroutine depuis JS (et récupérer une Promise JS).
-    - `start()` crée une tâche si vous préférez démarrer côté Python.
-    - `stop()` arrête proprement la boucle.
+async def run(steps: int = 100, delay: float = 0.03):
+    """Coroutine principale.
+    - steps : nombre de pas (100 = 0..1 par pas de 0.01)
+    - delay : pause non-bloquante entre chaque pas (s)
     """
     global running
     if running:
-        # déjà en cours
+        # déjà en cours : ne lance pas une seconde instance
+        try:
+            _js.console.warn("Simulation déjà en cours — run() ignoré")
+        except Exception:
+            pass
         return
-    running = True
 
+    # Attendre les fonctions JS (utile si Python est démarré avant que JS expose les handlers)
+    try:
+        update, set_progress = await _wait_for_js_funcs()
+    except Exception as e:
+        try:
+            _js.console.error("Impossible d'obtenir update/set_progress :", str(e))
+        except Exception:
+            pass
+        return
+
+    running = True
     points = []
 
     try:
-        for i in range(101):
+        for i in range(steps + 1):
             if not running:
+                try:
+                    _js.console.log("Arrêt demandé — sortie de la boucle")
+                except Exception:
+                    pass
                 break
 
-            x = i / 100
-            y = 0.2 + 0.6 * x   # simple ligne
+            x = i / steps
+            # Exemple de fonction : une droite légèrement modifiée (tu peux mettre n'importe quoi)
+            y = 0.2 + 0.6 * x
 
-            # on append un dict Python — Pyodide le convertira pour JS
-            points.append({"x": x, "y": y})
+            points.append({"x": float(x), "y": float(y)})
 
-            # notifications vers JS
+            # Appels JS protégés
             try:
+                # Pyodide convertit automatiquement la liste/dict en objets JS
                 update(points)
-                set_progress(i)
+                # on envoie la progression en pourcentage 0..100
+                set_progress(int(round(100 * i / steps)))
             except Exception as e:
-                # s'il y a un problème JS, on log en Python (console JS est disponible)
+                # Log côté JS si possible
                 try:
-                    from js import console
-                    console.error('Erreur en appelant update/set_progress:', e)
+                    _js.console.error("Erreur lors de l'appel update/set_progress :", str(e))
                 except Exception:
                     pass
 
-            # pause non-bloquante
-            await asyncio.sleep(0.03)
+            # pause non bloquante
+            await asyncio.sleep(delay)
+
     finally:
         running = False
-
+        # s'assurer que la progression affiche 100% à la fin
+        try:
+            set_progress(100)
+        except Exception:
+            pass
 
 def start():
-    """Démarre la simulation en arrière-plan (création d'une task asyncio)."""
-    # Si une boucle est présente, créer une tâche ; sinon, run() peut être appelé
-    # via pyodide.runPythonAsync('run()') depuis JS.
+    """Démarre la simulation en créant une tâche asyncio (si possible).
+    Si l'environnement n'a pas de boucle active, lancez plutôt pyodide.runPythonAsync('run()') depuis JS."""
     try:
         asyncio.create_task(run())
-    except Exception:
-        # en cas d'environnement sans boucle active, on peut fallback sur runPythonAsync
-        pass
-
+    except Exception as e:
+        # s'il n'y a pas de boucle active ici, on log et on quitte (JS devrait appeler run() via runPythonAsync)
+        try:
+            _js.console.warn("Impossible de créer une task asyncio ici — appelez pyodide.runPythonAsync('run()') depuis JS. Détail :", str(e))
+        except Exception:
+            pass
 
 def stop():
-    """Demande l'arrêt de la boucle."""
+    """Demande l'arrêt de la boucle (flag)."""
     global running
     running = False
