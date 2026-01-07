@@ -81,117 +81,50 @@
 </footer>
 
 <script>
-  document.getElementById('year').textContent = new Date().getFullYear();
+  const canvas = document.getElementById("simCanvas");
+  const ctx = canvas.getContext("2d");
 
-  const startBtn = document.getElementById('start');
-  const stopBtn  = document.getElementById('stop');
-  const statusEl = document.getElementById('status');
-  const canvas   = document.getElementById('canvas');
-  const ctx      = canvas.getContext('2d');
-  const progressBar = document.getElementById('progress-bar');
-  const progressText = document.getElementById('progress-text');
+  // DEBUG : fond gris clair pour voir le canvas
+  ctx.fillStyle = "#f9fafb";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  let pyodide = null;
-  let simLoaded = false;
+  // fonction appelée depuis Python
+  window.update = function(points) {
+    console.log("update called:", points.length);
 
-  // function that Python will call via `from js import set_progress`
-  window.set_progress = function(p){
-    try{
-      const percent = Math.max(0, Math.min(100, Math.round(p)));
-      progressBar.style.width = percent + '%';
-      progressBar.setAttribute('aria-valuenow', percent);
-      progressText.textContent = percent + '%';
-    }catch(e){ console.error(e); }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // axes
+    ctx.strokeStyle = "#e5e7eb";
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height);
+    ctx.lineTo(canvas.width, 0);
+    ctx.stroke();
+
+    // droite
+    ctx.strokeStyle = "#8b0000";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+
+    points.forEach((p, i) => {
+      const x = p.x * canvas.width;
+      const y = canvas.height - p.y * canvas.height;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+
+    ctx.stroke();
   };
 
-  window.update = function(state){
-    const w = canvas.width = canvas.clientWidth;
-    const h = canvas.height = 360;
-    ctx.clearRect(0,0,w,h);
-    for (const p of state){
-      const x = p.x * w;
-      const y = p.y * h;
-      const r = (p.r || 0.02) * Math.min(w,h);
-      ctx.beginPath();
-      ctx.arc(x,y,r,0,Math.PI*2);
-      ctx.fillStyle = 'rgba(139,0,0,0.15)';
-      ctx.fill();
-      ctx.strokeStyle = 'rgb(139,0,0)';
-      ctx.stroke();
-    }
-  };
-
-  async function loadPyodideOnce(){
-    if (pyodide) return pyodide;
-    statusEl.textContent = 'Chargement de Pyodide…';
-    progressText.textContent = 'Chargement Pyodide...';
-    progressBar.style.width = '8%';
-    if (!window.loadPyodide){
-      await new Promise((resolve,reject)=>{
-        const s=document.createElement('script');
-        s.src='https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js';
-        s.onload=resolve; s.onerror=reject; document.head.appendChild(s);
-      });
-    }
-    pyodide = await loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/'});
-    // load numpy quickly (needed by simulation)
-    progressText.textContent = 'Chargement packages...';
-    progressBar.style.width = '30%';
-    await pyodide.loadPackage(['numpy']);
-    progressBar.style.width = '50%';
-    statusEl.textContent = 'Pyodide prêt';
-    progressText.textContent = '50% - Prêt';
-    return pyodide;
-  }
-
-  async function loadSimulation(){
-    if (simLoaded) return;
-    statusEl.textContent = 'Chargement du script Python…';
-    progressText.textContent = 'Chargement script...';
-    progressBar.style.width = '55%';
-    const r = await fetch('simulation.py');
-    if (!r.ok) throw new Error('Impossible de charger simulation.py: ' + r.status);
-    const code = await r.text();
-    // Execute the code — the Python script will call set_progress(...) during compute
-    await pyodide.runPythonAsync(code);
-    simLoaded = true;
-    progressBar.style.width = '60%';
-    progressText.textContent = 'Script prêt';
-  }
-
-  startBtn.onclick = async ()=>{
-    try{
-      startBtn.disabled = true;
-      stopBtn.disabled = true;
-      await loadPyodideOnce();
-      await loadSimulation();
-      statusEl.textContent = 'Calcul des trajectoires...';
-      progressText.textContent = 'Calcul en cours';
-      // Call start() with optional interval (seconds per frame) if desired
-      await pyodide.runPythonAsync('start()');
-      statusEl.textContent = 'Lecture en cours';
-      stopBtn.disabled = false;
-    }catch(err){
-      console.error(err);
-      statusEl.textContent = 'Erreur: ' + (err.message || err);
-      startBtn.disabled = false;
-    }
-  };
-
-  stopBtn.onclick = async ()=>{
-    stopBtn.disabled = true;
-    try{
-      await pyodide.runPythonAsync('stop()');
-      statusEl.textContent = 'Arrêtée';
-      progressText.textContent = 'Arrêtée';
-      progressBar.style.width = '0%';
-    }catch(err){
-      console.error(err);
-      statusEl.textContent = 'Erreur arrêt';
-    }
-    startBtn.disabled = false;
+  // barre de progression
+  window.set_progress = function(pct) {
+    const bar = document.getElementById("progress-inner");
+    const label = document.getElementById("progress-label");
+    if (bar) bar.style.width = pct + "%";
+    if (label) label.textContent = pct + "%";
   };
 </script>
+
 
 </body>
 </html>
