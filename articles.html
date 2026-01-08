@@ -91,7 +91,11 @@
     #finalOverlay.show .backdrop{ opacity:1; backdrop-filter: blur(6px); transform: scale(1); }
 
     /* message: reduced size (half) and constrained to plot; appears on top of backdrop */
-    #finalMsg{\n      position:relative; z-index:2; font-family: Merriweather, serif; font-weight:900; text-transform:uppercase; letter-spacing:0.04em;\n      color: #000; /* black */\n      text-align:center;\n      opacity:0; transform:translateY(12px) scale(0.98); transition: opacity 360ms ease, transform 420ms cubic-bezier(.2,.9,.2,1);\n      display:inline-block; white-space:nowrap; line-height:1; pointer-events:none;\n      /* halved size from previous: clamp smaller values */\n      font-size: clamp(36px, 9vh, 110px);\n      max-width:92%; overflow-wrap:break-word;\n    }\n\n    /* ensure overlay shows without backdrop and text fits two lines: second line will be forced by JS */\n    #finalMsg .line{ display:block; width:100%; white-space:nowrap; }\n    #finalMsg .line--last{ margin-top:6px; }\n\n    /* per-character initial styles (will be revealed by JS) */ (will be revealed by JS) */
+    #finalMsg{\n      /* fixed physical size as requested */\n      width:13cm;\n      height:5cm;\n      box-sizing:border-box;\n      position:relative; z-index:2; font-family: Merriweather, serif; font-weight:900; text-transform:uppercase; letter-spacing:0.04em;\n      color: #000; /* black */\n      text-align:center;\n      opacity:0; transform:translateY(12px) scale(0.98); transition: opacity 360ms ease, transform 420ms cubic-bezier(.2,.9,.2,1);\n      display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1; pointer-events:none;\n      /* font-size chosen to fit two lines inside 5cm height — adjust if needed */\n      font-size:2.2cm;\n      max-width:100%; white-space:normal; overflow:hidden; word-break:break-word;\n    }\n\n    /* ensure overlay shows without backdrop and text fits two lines: second line will be forced by JS */
+    #finalMsg .line{ display:block; width:100%; white-space:nowrap; }
+    #finalMsg .line--last{ margin-top:6px; }
+
+    /* per-character initial styles (will be revealed by JS) */ (will be revealed by JS) */
     .final-char{ display:inline-block; opacity:0; transform: translateY(8px) scale(0.95); transition: opacity 340ms ease, transform 420ms cubic-bezier(.2,.9,.2,1); }
 
   </style>
@@ -140,7 +144,7 @@
       <button id="run" class="btn">Lancer la simulation</button>
 
       <label>n_images:
-        <input id="n_image" type="number" value="10" min="5" style="width:80px">
+        <input id="n_image" type="number" value="100" min="5" style="width:80px">
       </label>
 
       <label>grid (nx):
@@ -152,7 +156,7 @@
       </label>
 
       <label>T_final:
-        <input id="Tfinal" type="number" value="15" step="1" style="width:80px">
+        <input id="Tfinal" type="number" value="100" step="1" style="width:80px">
       </label>
 
       <label style="display:flex;align-items:center;gap:6px" title="Si décoché, pas de calcul du champ (beaucoup plus rapide)">
@@ -581,7 +585,7 @@ json.dumps(res)
       const ch = firstPart[i];
       const span = document.createElement('span');
       span.className = 'final-char';
-      span.textContent = ch === ' ' ? '\u00A0' : ch;
+      span.textContent = ch === ' ' ? ' ' : ch;
       line1.appendChild(span);
       const jitter = Math.round((Math.random() - 0.5) * Math.min(30, per * 0.25));
       setTimeout(((s)=>()=>{ s.style.opacity = '1'; s.style.transform = 'translateY(0) scale(1)'; })(span), Math.max(0, Math.round(i * per) + jitter));
@@ -593,7 +597,7 @@ json.dumps(res)
       const ch = lastPart[j];
       const span = document.createElement('span');
       span.className = 'final-char';
-      span.textContent = ch === ' ' ? '\u00A0' : ch;
+      span.textContent = ch === ' ' ? ' ' : ch;
       line2.appendChild(span);
       const jitter = Math.round((Math.random() - 0.5) * Math.min(30, per * 0.25));
       setTimeout(((s)=>()=>{ s.style.opacity = '1'; s.style.transform = 'translateY(0) scale(1)'; })(span), Math.max(0, offset + Math.round(j * per) + jitter));
