@@ -85,14 +85,41 @@
   let simData = null, stored=null, playInterval=null;
 
   async function ensurePyodide(){
-    if(pyReady) return;
-    statusEl.textContent = 'Chargement Pyodide & numpy...';
-    pyodide = await loadPyodide();
-    // numpy is commonly available but ensure package loaded
-    try { await pyodide.loadPackage(['numpy']); } catch(e){ console.warn('loadPackage numpy failed',e); }
-    pyReady = true;
-    statusEl.textContent = 'Pyodide prêt.';
+  if(pyReady) return;
+  statusEl.textContent = 'Chargement Pyodide...';
+  pyodide = await loadPyodide({indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.0/full/"});
+  statusEl.textContent = 'Pyodide chargé — installation de numpy...';
+
+  // Première tentative : charger via loadPackage (plus rapide si disponible)
+  try {
+    await pyodide.loadPackage(['numpy']);
+    statusEl.textContent = 'numpy installé via loadPackage.';
+  } catch (e) {
+    console.warn('pyodide.loadPackage(["numpy"]) a échoué, tentative via micropip', e);
+    // fallback : installer micropip puis numpy via micropip
+    try {
+      await pyodide.loadPackage(['micropip']);
+    } catch(err) {
+      console.warn('loadPackage micropip a échoué (peut être déjà dispo):', err);
+    }
+    // micropip peut nécessiter un import await dans le contexte Pyodide
+    try {
+      await pyodide.runPythonAsync(`
+import micropip
+await micropip.install("numpy")
+`);
+      statusEl.textContent = 'numpy installé via micropip.';
+    } catch(err2){
+      console.error('Installation numpy via micropip a échoué:', err2);
+      statusEl.textContent = 'Erreur installation numpy: ' + (err2.message || err2);
+      throw err2;
+    }
   }
+
+  pyReady = true;
+  statusEl.textContent = 'Pyodide et numpy prêts.';
+}
+
 
   async function fetchAndInjectSimulation(){
     statusEl.textContent = 'Récupération simulation.py ...';
