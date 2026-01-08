@@ -2,8 +2,7 @@
 # Version adaptée pour Pyodide : calcule trajectoires + champs et renvoie
 # uniquement des listes Python sérialisables pour affichage côté JS.
 #
-# Basée sur ton code — j'ai retiré matplotlib / seaborn / sklearn / tkinter,
-# j'ai vectorisé certaines étapes et converti les résultats en listes.
+# Basée sur ton code — correction einsum et calcul de norme du champ.
 
 import math
 import time
@@ -61,11 +60,8 @@ def Green_K(pts, sigma=1.0):
     alpha = B - C * (1.0 - B)
     beta = (2.0 * C * (1.0 - B) - B) / (r2 + eps)
     I = np.eye(2)
-    # build G for each point
     M = r.shape[0]
-    # outer products r_i * r_j
     outer = r[:, :, None] * r[:, None, :]  # (M,2,2)
-    # broadcast alpha and beta
     G = A * (alpha[:, None, None] * I + beta[:, None, None] * outer)
     return G  # shape (M,2,2)
 
@@ -73,7 +69,6 @@ def u_au_point_vectorized(xs, qs_array, ps_array, sigma=1.0):
     # xs: (M,2) points where to evaluate
     # qs_array: (N,2) particle positions
     # ps_array: (N,2) particle momenta
-    # returns u at each xs shape (M,2)
     xs = np.asarray(xs)
     qs = np.asarray(qs_array)
     ps = np.asarray(ps_array)
@@ -84,19 +79,19 @@ def u_au_point_vectorized(xs, qs_array, ps_array, sigma=1.0):
     for a in range(N):
         r = xs - qs[a]  # (M,2)
         G = Green_K(r, sigma=sigma)  # (M,2,2)
-        # contract G with p_a
+        # contract G with p_a (shape (2,))
         U += np.einsum('nij,j->ni', G, ps[a])
     return U  # (M,2)
 
 def u_at_particle(q_a, qs_array, ps_array, sigma=sigma):
     # compute u at position q_a due to all sources (including self)
     qs = np.asarray(qs_array)
-    ps = np.asarray(ps_array)
-    r = qs - q_a  # (N,2)
-    G = Green_K(r, sigma=sigma)  # (N,2,2)
-    # for each source j: G_j dot p_j -> (N,2) then sum
-    u_j = np.einsum('nij,j->ni', G, ps)  # (N,2)
-    u = u_j.sum(axis=0)
+    ps = np.asarray(ps_array)   # shape (N,2)
+    r = qs - q_a                # (N,2)
+    G = Green_K(r, sigma=sigma) # (N,2,2)
+    # Pour chaque source j : G[j] dot p[j] -> (N,2), puis somme sur j
+    u_j = np.einsum('nij,nj->ni', G, ps)  # (N,2)
+    u = u_j.sum(axis=0)                    # (2,)
     return u
 
 def jacobian_u_at_point_fd(x, qs_list, ps_list, sigma=sigma, h=1e-6):
@@ -281,15 +276,11 @@ def simulate(steps=None, dt=None, n_image_local=None, grid_nx_field=None, grid_n
             stochastic_increment = 0.5 * np.tensordot(dW, (g0 + g1), axes=(0,0))
             state = state_det + stochastic_increment
 
-    # optionally compute field magnitudes on grid for each frame (may be heavy)
+    # optionally compute field magnitudes on grid for each frame
     Ufields = np.zeros((n_image_local, grid_nx_field * grid_ny_field))
     for i in range(n_image_local):
-        U, V = u_au_point_vectorized(grid_pts, qs_hist[i], ps_hist[i], sigma=sigma).T  # returns (2, M)? ensure shape
-        # u_au_point_vectorized returns (M,2) ; we want magnitude
-        UV = np.sqrt(U**2 + V**2) if isinstance(U, np.ndarray) else np.sqrt(U*U + V*V)
-        # In case returned shape: ensure 1D
-        if UV.ndim > 1:
-            UV = UV.ravel()
+        uv = u_au_point_vectorized(grid_pts, qs_hist[i], ps_hist[i], sigma=sigma)  # (M,2)
+        UV = np.linalg.norm(uv, axis=1)  # magnitude per grid point
         Ufields[i] = UV.ravel()
 
     # build serializable output (convert numpy arrays to lists)
@@ -307,8 +298,8 @@ def simulate(steps=None, dt=None, n_image_local=None, grid_nx_field=None, grid_n
     }
     return out
 
-# If executed locally for testing:
+# For quick local test if run as script
 if __name__ == "__main__":
-    res = simulate()
+    res = simulate(n_image_local=10, grid_nx_field=16, grid_ny_field=16)
     print("simulate produced keys:", list(res.keys()))
     print("t len:", len(res['t']), "N:", res['N'], "frames:", res['n_image'])
