@@ -1,12 +1,13 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <title>Stage — Simulation (visuel stream/jetlets 0)</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="utf-8" />
+  <title>Stage — Animation fidèle (jetlets 0)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.24.0/full/pyodide.js"></script>
+
   <style>
     :root{--maxw:980px;--brand:#8b0000;--line:#e5e7eb;--muted:#6b7280}
     *{box-sizing:border-box}
@@ -24,7 +25,6 @@
     .slider-row{display:flex;align-items:center;gap:12px;margin-top:10px}
     .time-label{color:var(--muted);min-width:80px}
     .small{font-size:13px;color:var(--muted)}
-    /* barre de progression large */
     .progress-wrap{height:18px;background:#fff;border:3px solid #ddd;border-radius:4px;overflow:hidden}
     .progress-bar{height:100%;width:0%;background:#1f77b4}
     .controls-right{margin-left:auto;display:flex;align-items:center;gap:8px}
@@ -35,25 +35,25 @@
 
 <main>
   <section class="card">
-    <h2 style="font-family:Merriweather,serif;margin:0 0 8px">Simulation — jetlets 0 (25 particules)</h2>
+    <h2 style="font-family:Merriweather,serif;margin:0 0 8px">Simulation fidèle — jetlets 0 (25 particules)</h2>
 
     <div class="controls">
       <button id="run" class="btn">Lancer la simulation</button>
 
       <label>n_images:
-        <input id="n_image" type="number" value="30" min="5" style="width:80px">
+        <input id="n_image" type="number" value="100" min="5" style="width:80px">
       </label>
 
       <label>grid (nx):
-        <input id="grid_nx" type="number" value="32" min="8" style="width:70px">
+        <input id="grid_nx" type="number" value="100" min="8" style="width:70px">
       </label>
 
       <label>grid (ny):
-        <input id="grid_ny" type="number" value="32" min="8" style="width:70px">
+        <input id="grid_ny" type="number" value="100" min="8" style="width:70px">
       </label>
 
       <label>T_final:
-        <input id="Tfinal" type="number" value="10" step="1" style="width:80px">
+        <input id="Tfinal" type="number" value="100" step="1" style="width:80px">
       </label>
 
       <label style="display:flex;align-items:center;gap:6px" title="Si décoché, pas de calcul du champ (beaucoup plus rapide)">
@@ -83,7 +83,7 @@
       <button id="play" class="btn" style="width:80px">▶ Play</button>
     </div>
 
-    <div style="margin-top:8px" class="small">Affichage : contours |u| + quiver (réduit) + trajectoires rouges + flèches de vitesse locales + étiquettes de vitesse.</div>
+    <div style="margin-top:8px" class="small">Affichage fidèle : stream-like (contours), quiver échantillonné, particules rouges, flèches locales, étiquettes vitesses, barre de progression.</div>
   </section>
 </main>
 
@@ -107,7 +107,16 @@
   const speedRange = document.getElementById('speedRange');
 
   let pyodide = null, pyReady = false;
-  let simData = null, stored=null, playInterval=null;
+  let simData = null, playInterval=null;
+
+  // helper: unpack flat [x0,y0,x1,y1,...] -> [[x0,y0],[x1,y1],...]
+  function unpackPositions(flat, N) {
+    const qs = new Array(N);
+    for (let i = 0; i < N; i++) {
+      qs[i] = [ flat[2*i], flat[2*i + 1] ];
+    }
+    return qs;
+  }
 
   async function ensurePyodide(){
     if(pyReady) return;
@@ -152,11 +161,11 @@ await micropip.install("numpy")
     }
   }
 
-  // Appel simulate (compute_field 'True'/'False' string because we call via runPythonAsync)
   async function callSim(n_image, grid_nx, grid_ny, Tfinal, compute_field){
     statusEl.textContent = 'Exécution simulate(...) (peut prendre du temps)...';
     progressBar.style.width = '2%';
     const dt = Tfinal / Math.max(1, (n_image - 1));
+    // compute_field passed as Python True/False literal
     const pyCall = `
 import json
 res = simulate(steps=None, dt=${dt}, n_image_local=${n_image}, grid_nx_field=${grid_nx}, grid_ny_field=${grid_ny}, grid_extent_local=5.0, compute_field=${compute_field})
@@ -167,167 +176,148 @@ json.dumps(res)
     return JSON.parse(jsonStr);
   }
 
-  // builds the field plot (contours + quiver) for frame 0 and the particles plot (trails + markers)
+  function buildFieldContour(Ux, Uy, grid_x, grid_y, grid_nx, grid_ny){
+    // compute magnitude grid (2D array)
+    const z = [];
+    for(let j=0;j<grid_ny;j++){
+      const row = [];
+      for(let i=0;i<grid_nx;i++){
+        const idx = j*grid_nx + i;
+        row.push(Math.hypot(Ux[idx], Uy[idx]));
+      }
+      z.push(row);
+    }
+    return { z, x:grid_x, y:grid_y };
+  }
+
   function initPlots(data){
     simData = data;
     const t = data.t;
-    const n_image = data.n_image;
     const N = data.N;
 
-    // FIELD: if present (Ux_fields and Uy_fields non-empty)
+    // Field
     const hasField = Array.isArray(data.Ux_fields) && data.Ux_fields.length>0 && data.Ux_fields[0].length>0;
     if(hasField){
       const grid_nx = data.grid_nx, grid_ny = data.grid_ny;
-      // magnitude for first frame
-      const Ux0 = data.Ux_fields[0];
-      const Uy0 = data.Uy_fields[0];
-      // compute magnitude and reshape
-      const z0 = [];
-      for(let j=0;j<grid_ny;j++){
-        const row = [];
-        for(let i=0;i<grid_nx;i++){
-          const idx = j*grid_nx + i;
-          const mag = Math.hypot(Ux0[idx], Uy0[idx]);
-          row.push(mag);
-        }
-        z0.push(row);
-      }
-      const contour = {
-        z: z0,
-        x: data.grid_x,
-        y: data.grid_y,
-        type: 'contour',
-        colorscale: 'Viridis',
-        contours: { coloring: 'lines' },
-        showscale: true,
-        colorbar: { title: '|u|', thickness:20 }
+      const Ux0 = data.Ux_fields[0], Uy0 = data.Uy_fields[0];
+      const contour = buildFieldContour(Ux0, Uy0, data.grid_x, data.grid_y, grid_nx, grid_ny);
+      const contourTrace = {
+        z: contour.z, x: contour.x, y: contour.y, type:'contour',
+        colorscale:'Viridis', contours:{coloring:'lines'}, showscale:true, colorbar:{title:'|u|',thickness:20}
       };
 
-      // build quiver (sample every few grid points to avoid clutter)
-      const stride = Math.max(1, Math.floor(data.grid_nx / 18));
-      const qx = [], qy = [], quvx = [], quvy = [];
-      for(let j=0;j<data.grid_ny;j+=stride){
-        for(let i=0;i<data.grid_nx;i+=stride){
-          const idx = j*data.grid_nx + i;
+      // quiver sample
+      const stride = Math.max(1, Math.floor(grid_nx / 18));
+      const qx=[], qy=[], quvx=[], quvy=[];
+      for(let j=0;j<grid_ny;j+=stride){
+        for(let i=0;i<grid_nx;i+=stride){
+          const idx = j*grid_nx + i;
           qx.push(data.grid_x[i]);
           qy.push(data.grid_y[j]);
-          quvx.push(Ux0[idx]);
-          quvy.push(Uy0[idx]);
+          quvx.push(Ux0[idx]); quvy.push(Uy0[idx]);
         }
       }
-      // arrows as line segments (single trace made of many segments separated by null)
-      const ax = [], ay = [];
-      const head_x = [], head_y = [];
-      const scale = 0.25 * Math.max(data.grid_x[1]-data.grid_x[0], data.grid_y[1]-data.grid_y[0]);
+      // arrows as lines
+      const ax=[], ay=[], headx=[], heady=[];
+      const scale = 0.25 * Math.max(Math.abs(data.grid_x[1]-data.grid_x[0]), Math.abs(data.grid_y[1]-data.grid_y[0]));
       for(let k=0;k<qx.length;k++){
-        const x0 = qx[k], y0 = qy[k];
-        const vx = quvx[k], vy = quvy[k];
-        const x1 = x0 + scale * vx;
-        const y1 = y0 + scale * vy;
+        const x0=qx[k], y0=qy[k];
+        const x1=x0 + scale*quvx[k], y1=y0 + scale*quvy[k];
         ax.push(x0); ax.push(x1); ax.push(null);
         ay.push(y0); ay.push(y1); ay.push(null);
-        // small triangle/marker for head
-        head_x.push(x1); head_y.push(y1);
+        headx.push(x1); heady.push(y1);
       }
-      const arrows = { x: ax, y: ay, mode: 'lines', line:{color:'rgba(40,40,90,0.9)', width:1.6}, hoverinfo:'none', showlegend:false };
-      const heads = { x: head_x, y: head_y, mode: 'markers', marker:{size:6,symbol:'triangle-up',angle:0}, hoverinfo:'none', showlegend:false };
+      const arrows = { x:ax, y:ay, mode:'lines', line:{color:'rgba(30,30,90,0.9)', width:1.6}, hoverinfo:'none', showlegend:false };
+      const heads = { x:headx, y:heady, mode:'markers', marker:{size:6,symbol:'triangle-up'}, hoverinfo:'none', showlegend:false };
 
-      Plotly.newPlot(plotFieldDiv, [contour, arrows, heads], { title: 'Champ |u| (contours) + quiver (échantillonné)', margin:{t:30}, xaxis:{title:'x'}, yaxis:{title:'y',scaleanchor:'x',scaleratio:1} }, {responsive:true});
+      Plotly.newPlot(plotFieldDiv, [contourTrace, arrows, heads], { title:'Champ |u| (contours) + quiver', margin:{t:30}, xaxis:{title:'x'}, yaxis:{title:'y',scaleanchor:'x',scaleratio:1} }, {responsive:true});
     } else {
-      // hide field if none
       plotFieldDiv.style.display = 'none';
     }
 
-    // PARTICLES: create traces: N trail lines, then current positions (markers), then arrows for velocities, then text labels for speeds
+    // Particles: create traces: N trails, current markers, arrows lines, arrowheads, text
     const traces = [];
-    // initial trails empty
     for(let i=0;i<N;i++){
-      traces.push({
-        x: [], y: [], mode:'lines', line:{color:'red', width:2}, opacity:0.9, hoverinfo:'none', showlegend:false
-      });
+      traces.push({ x:[], y:[], mode:'lines', line:{color:'red', width:2}, opacity:0.95, hoverinfo:'none', showlegend:false });
     }
     // current markers
     const frame0_qs = data.qs_hist[0];
-    const xs = [], ys = [];
-    for(let i=0;i<frame0_qs.length;i+=2){ xs.push(frame0_qs[i]); ys.push(frame0_qs[i+1]); }
-    traces.push({ x: xs, y: ys, mode:'markers', marker:{size:8,color:'red'}, name:'particles', hoverinfo:'text', text: [] });
+    const xs0=[], ys0=[];
+    for(let i=0;i<frame0_qs.length;i+=2){ xs0.push(frame0_qs[i]); ys0.push(frame0_qs[i+1]); }
+    traces.push({ x: xs0, y: ys0, mode:'markers', marker:{size:8,color:'red'}, name:'particles', hoverinfo:'text' });
 
-    // velocity arrows as lines (one trace)
+    // velocity arrows (lines) and heads
     const frame0_u = data.u_selfs[0];
-    const ax = [], ay = [], headx = [], heady = [];
+    const ax=[], ay=[], hx=[], hy=[];
     for(let i=0;i<frame0_qs.length;i+=2){
-      const x0 = frame0_qs[i], y0 = frame0_qs[i+1];
-      const vx = frame0_u[i], vy = frame0_u[i+1];
-      const x1 = x0 + 0.6*vx, y1 = y0 + 0.6*vy;
+      const x0=frame0_qs[i], y0=frame0_qs[i+1];
+      const vx=frame0_u[i], vy=frame0_u[i+1];
+      const x1=x0 + 0.6*vx, y1=y0 + 0.6*vy;
       ax.push(x0); ax.push(x1); ax.push(null);
       ay.push(y0); ay.push(y1); ay.push(null);
-      headx.push(x1); heady.push(y1);
+      hx.push(x1); hy.push(y1);
     }
-    traces.push({ x: ax, y: ay, mode:'lines', line:{color:'black', width:2}, hoverinfo:'none', showlegend:false });
-    traces.push({ x: headx, y: heady, mode:'markers', marker:{size:6,symbol:'triangle-up'}, hoverinfo:'none', showlegend:false });
+    traces.push({ x:ax, y:ay, mode:'lines', line:{color:'black', width:2}, hoverinfo:'none', showlegend:false });
+    traces.push({ x:hx, y:hy, mode:'markers', marker:{size:6,symbol:'triangle-up'}, hoverinfo:'none', showlegend:false });
 
-    // speed labels (text) as separate scatter trace
-    const speedTexts = [];
+    // speed labels
+    const speedTexts=[];
     for(let i=0;i<frame0_qs.length;i+=2){
-      const vx = frame0_u[i], vy = frame0_u[i+1];
-      const speed = Math.hypot(vx,vy);
-      speedTexts.push(speed.toFixed(3));
+      const vx=frame0_u[i], vy=frame0_u[i+1];
+      speedTexts.push(Math.hypot(vx,vy).toFixed(3));
     }
-    traces.push({ x: xs, y: ys, mode:'text', text: speedTexts, textposition:'top center', showlegend:false, hoverinfo:'none', textfont:{color:'black',size:10} });
+    traces.push({ x: xs0, y: ys0, mode:'text', text:speedTexts, textposition:'top center', textfont:{color:'black',size:10}, showlegend:false });
 
     Plotly.newPlot(plotParticlesDiv, traces, { title:'Trajectoires & vitesses locales', margin:{t:30}, xaxis:{title:'x'}, yaxis:{title:'y',scaleanchor:'x',scaleratio:1} }, {responsive:true});
 
     // slider setup
     timeSlider.min = 0;
-    timeSlider.max = Math.max(0, t.length - 1);
+    timeSlider.max = Math.max(0, data.t.length - 1);
     timeSlider.value = 0;
-    timeDisplay.textContent = t[0].toFixed(3);
-
-    stored = { t, N };
+    timeDisplay.textContent = data.t[0].toFixed(2);
   }
 
-  // update frame: update trails (many traces), marker, velocity arrows, speed texts, and field (contours+quiver heads)
+  // update frame (rebuild trails for each particle, update marker, arrows, texts, update field)
   function updateFrame(idx){
     if(!simData) return;
     const data = simData;
-    const t = data.t;
     const N = data.N;
+    const t = data.t;
 
-    // FIELD update
+    // Field update if present
     const hasField = Array.isArray(data.Ux_fields) && data.Ux_fields.length>0 && data.Ux_fields[0].length>0;
     if(hasField){
       const grid_nx = data.grid_nx, grid_ny = data.grid_ny;
       const Ux = data.Ux_fields[idx], Uy = data.Uy_fields[idx];
-      // magnitude z
       const z = [];
       for(let j=0;j<grid_ny;j++){
-        const row = [];
+        const row=[];
         for(let i=0;i<grid_nx;i++){
           const id = j*grid_nx + i;
           row.push(Math.hypot(Ux[id], Uy[id]));
         }
         z.push(row);
       }
-      Plotly.restyle(plotFieldDiv, {'z':[z]}, [0]); // update contour
-      // quiver: sample
+      Plotly.restyle(plotFieldDiv, {'z':[z]}, [0]); // contour
+
+      // quiver sample update
       const stride = Math.max(1, Math.floor(grid_nx / 18));
-      const ax = [], ay = [], headx=[], heady=[];
-      const scale = 0.25 * Math.max(data.grid_x[1]-data.grid_x[0], data.grid_y[1]-data.grid_y[0]);
+      const ax=[], ay=[], hx=[], hy=[];
+      const scale = 0.25 * Math.max(Math.abs(data.grid_x[1]-data.grid_x[0]), Math.abs(data.grid_y[1]-data.grid_y[0]));
       for(let j=0;j<grid_ny;j+=stride){
         for(let i=0;i<grid_nx;i+=stride){
           const id = j*grid_nx + i;
-          const x0 = data.grid_x[i], y0 = data.grid_y[j];
+          const x0=data.grid_x[i], y0=data.grid_y[j];
           const x1 = x0 + scale * Ux[id], y1 = y0 + scale * Uy[id];
           ax.push(x0); ax.push(x1); ax.push(null);
           ay.push(y0); ay.push(y1); ay.push(null);
-          headx.push(x1); heady.push(y1);
+          hx.push(x1); hy.push(y1);
         }
       }
-      Plotly.restyle(plotFieldDiv, {'x':[ax],'y':[ay]}, [1]); // arrows lines
-      Plotly.restyle(plotFieldDiv, {'x':[headx],'y':[heady]}, [2]); // heads
+      Plotly.restyle(plotFieldDiv, {'x':[ax],'y':[ay]}, [1]); // arrows
+      Plotly.restyle(plotFieldDiv, {'x':[hx],'y':[hy]}, [2]); // heads
     }
 
-    // PARTICLES
     // build trails arrays for each particle up to idx
     const trailsX = [], trailsY = [];
     for(let p=0;p<N;p++){
@@ -340,41 +330,42 @@ json.dumps(res)
       trailsX.push(xs);
       trailsY.push(ys);
     }
-    // trace indices 0..N-1 are trails
-    const trailIndices = Array.from({length:N}, (_,i)=>i);
-    Plotly.restyle(plotParticlesDiv, {'x': [trailsX], 'y': [trailsY]}, trailIndices);
+    // update traces 0..N-1 (trails)
+    for(let i=0;i<N;i++){
+      Plotly.restyle(plotParticlesDiv, {'x':[[...trailsX[i]]], 'y':[[...trailsY[i]]]}, [i]);
+    }
 
-    // update current markers (trace index N)
+    // update current markers (trace N)
     const frame_qs = data.qs_hist[idx];
-    const xs_now = [], ys_now = [];
+    const xs_now=[], ys_now=[];
     for(let i=0;i<frame_qs.length;i+=2){ xs_now.push(frame_qs[i]); ys_now.push(frame_qs[i+1]); }
     Plotly.restyle(plotParticlesDiv, {'x':[xs_now], 'y':[ys_now]}, [N]);
 
-    // update velocity arrows (trace N+1 = lines, N+2 = heads)
+    // update velocity arrows (trace N+1 lines, N+2 heads)
     const frame_u = data.u_selfs[idx];
-    const ax = [], ay = [], hx = [], hy = [];
+    const ax=[], ay=[], hx=[], hy=[];
     for(let i=0;i<frame_qs.length;i+=2){
-      const x0 = frame_qs[i], y0 = frame_qs[i+1];
-      const vx = frame_u[i], vy = frame_u[i+1];
-      const x1 = x0 + 0.6*vx, y1 = y0 + 0.6*vy;
+      const x0=frame_qs[i], y0=frame_qs[i+1];
+      const vx=frame_u[i], vy=frame_u[i+1];
+      const x1=x0 + 0.6*vx, y1=y0 + 0.6*vy;
       ax.push(x0); ax.push(x1); ax.push(null);
       ay.push(y0); ay.push(y1); ay.push(null);
       hx.push(x1); hy.push(y1);
     }
     Plotly.restyle(plotParticlesDiv, {'x':[ax],'y':[ay]}, [N+1]);
-    Plotly.restyle(plotParticlesDiv, {'x':[hx], 'y':[hy]}, [N+2]);
+    Plotly.restyle(plotParticlesDiv, {'x':[hx],'y':[hy]}, [N+2]);
 
     // update speed text (trace N+3)
-    const speedTexts = [];
+    const speedTexts=[];
     for(let i=0;i<frame_qs.length;i+=2){
-      const vx = frame_u[i], vy = frame_u[i+1];
+      const vx=frame_u[i], vy=frame_u[i+1];
       speedTexts.push(Math.hypot(vx,vy).toFixed(3));
     }
     Plotly.restyle(plotParticlesDiv, {'x':[xs_now], 'y':[ys_now], 'text':[speedTexts]}, [N+3]);
 
     // slider display
     timeSlider.value = idx;
-    timeDisplay.textContent = t[idx].toFixed(3);
+    timeDisplay.textContent = t[idx].toFixed(2);
   }
 
   // slider / play handlers
@@ -382,8 +373,7 @@ json.dumps(res)
   let playSpeedMs = 100;
   speedRange.addEventListener('input', ()=> {
     const v = parseInt(speedRange.value);
-    // map 10..500 to 1000..10 ms: faster when slider high
-    playSpeedMs = Math.max(10, Math.round(1100 - 2 * v));
+    playSpeedMs = Math.max(10, Math.round(1100 - 2 * v)); // higher slider -> faster
   });
 
   playBtn.addEventListener('click', ()=>{
@@ -408,10 +398,10 @@ json.dumps(res)
     runBtn.disabled = true;
     progressBar.style.width = '2%';
     try {
-      const n_image = parseInt(nImageInput.value) || 30;
-      const grid_nx = parseInt(gridNxInput.value) || 32;
-      const grid_ny = parseInt(gridNyInput.value) || 32;
-      const Tfinal = parseFloat(TfinalInput.value) || 10.0;
+      const n_image = parseInt(nImageInput.value) || 100;
+      const grid_nx = parseInt(gridNxInput.value) || 100;
+      const grid_ny = parseInt(gridNyInput.value) || 100;
+      const Tfinal = parseFloat(TfinalInput.value) || 100.0;
       const compute_field = computeFieldCheckbox.checked ? 'True' : 'False';
 
       await ensurePyodide();
@@ -431,6 +421,7 @@ json.dumps(res)
       runBtn.disabled = false;
     }
   });
+
 </script>
 </body>
 </html>
