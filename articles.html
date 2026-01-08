@@ -12,7 +12,7 @@
     :root{
       --maxw:760px; --bg:#ffffff; --text:#111827; --muted:#6b7280; --accent:#1f2937;
       --brand:#8b0000;
-      --final-backdrop: rgba(0,0,0,0.55);
+      --final-backdrop: rgba(0,0,0,0.6);
     }
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.7}
@@ -88,23 +88,24 @@
     }
     #finalOverlay.show{ display:flex; }
 
-    /* backdrop fades in behind text */
-    #finalOverlay .backdrop{ position:absolute; inset:0; background:var(--final-backdrop); opacity:0; transition:opacity 420ms ease; }
-    #finalOverlay.show .backdrop{ opacity:1; }
+    /* improved backdrop: fade + blur + gentle scale for a smooth effect */
+    #finalOverlay .backdrop{ position:absolute; inset:0; background:var(--final-backdrop); opacity:0; transition: opacity 520ms cubic-bezier(.22,.9,.26,1), backdrop-filter 520ms cubic-bezier(.22,.9,.26,1), transform 520ms cubic-bezier(.22,.9,.26,1); backdrop-filter: blur(0px); transform: scale(1.01); }
+    #finalOverlay.show .backdrop{ opacity:1; backdrop-filter: blur(6px); transform: scale(1); }
 
+    /* message: reduced size (half) and constrained to plot; appears on top of backdrop */
     #finalMsg{
       position:relative; z-index:2; font-family: Merriweather, serif; font-weight:900; text-transform:uppercase; letter-spacing:0.04em;
       color: #000; /* black */
       text-align:center;
-      opacity:0; transform:translateY(6px); transition: opacity 300ms ease, transform 420ms cubic-bezier(.2,.9,.2,1);
+      opacity:0; transform:translateY(12px) scale(0.98); transition: opacity 360ms ease, transform 420ms cubic-bezier(.2,.9,.2,1);
       display:inline-block; white-space:nowrap; line-height:1; pointer-events:none;
-      /* responsive huge size but constrained to the plot area */
-      font-size: clamp(48px, 18vh, 220px);
+      /* halved size from previous: clamp smaller values */
+      font-size: clamp(36px, 9vh, 110px);
       max-width:92%; overflow-wrap:break-word;
     }
 
     /* per-character initial styles (will be revealed by JS) */
-    .final-char{ display:inline-block; opacity:0; transform: translateY(8px) scale(0.95); transition: opacity 280ms ease, transform 420ms cubic-bezier(.2,.9,.2,1); }
+    .final-char{ display:inline-block; opacity:0; transform: translateY(8px) scale(0.95); transition: opacity 340ms ease, transform 420ms cubic-bezier(.2,.9,.2,1); }
 
   </style>
 </head>
@@ -584,7 +585,7 @@ json.dumps(res)
       span.className = 'final-char';
       span.textContent = ch === ' ' ? '\u00A0' : ch;
       finalMsg.appendChild(span);
-      const jitter = Math.round((Math.random() - 0.5) * Math.min(30, per * 0.4));
+      const jitter = Math.round((Math.random() - 0.5) * Math.min(30, per * 0.25));
       setTimeout(((s)=>()=>{ s.style.opacity = '1'; s.style.transform = 'translateY(0) scale(1)'; })(span), Math.max(0, Math.round(i * per) + jitter));
     }
 
@@ -593,7 +594,7 @@ json.dumps(res)
       finalMsg.style.opacity = '1';
       finalMsg.style.transform = 'none';
       // leave it on screen — it will remain until simulation restarted
-    }, lettersMs + 120);
+    }, lettersMs + 160);
   }
 
   function hideFinalMessage(){
@@ -632,7 +633,7 @@ json.dumps(res)
       statusEl.textContent = 'Terminé';
       progressBar.style.width = '100%';
 
-      // === trigger final message inside plot with backdrop fade ===
+      // === trigger final message inside plot with improved backdrop fade ===
       const animDurSec = Math.min(14, Math.max(4, Math.round(Tfinal / 10)));
       revealFinalMessageLetters(animDurSec);
 
