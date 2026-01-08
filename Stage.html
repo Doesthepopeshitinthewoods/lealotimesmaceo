@@ -28,17 +28,18 @@
 
     main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
 
-    /* Simulation panel */
     .stage-card{border:1px solid var(--line);border-radius:8px;padding:16px;background:#fff}
     .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
     .controls label{font-size:14px;color:var(--muted);display:flex;gap:6px;align-items:center}
-    input[type="number"], input[type="text"]{padding:8px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit}
+    input[type="number"], input[type="range"]{padding:8px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit}
     .btn {
       background:var(--brand); color:#fff; border:none; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:600;
     }
-    .btn.secondary { background:#374151; }
     .status{color:var(--muted);font-size:13px;margin-bottom:10px}
-    #plot{width:100%;height:420px;border-radius:6px;border:1px solid var(--line);background:#fff;overflow:hidden}
+    #plotTraj, #plotFields{width:100%;height:360px;border-radius:6px;border:1px solid var(--line);background:#fff;overflow:hidden;margin-top:12px}
+
+    .slider-row{display:flex;align-items:center;gap:12px;margin-top:10px}
+    .time-label{font-size:13px;color:var(--muted);min-width:70px}
 
     footer{border-top:1px solid var(--line);text-align:center;font-size:14px;color:var(--muted);padding:18px 20px;margin-top:28px}
     @media (max-width:760px){
@@ -52,7 +53,6 @@
 <header>
   <div class="wrap">
     <h1>Blog de l'intranquilité</h1>
-
     <div style="display:flex;align-items:center;gap:16px">
       <nav aria-label="Navigation principale">
         <a href="index.html">Accueil</a>
@@ -71,9 +71,247 @@
       <button id="run" class="btn">Lancer la simulation</button>
 
       <label>steps:
+        <input id="steps" type="number" value="400" min="1" style="width:110px">
+      </label>
 
+      <label>dt:
+        <input id="dt" type="number" step="0.01" value="0.05" style="width:110px">
+      </label>
+    </div>
+
+    <div class="status" id="status">Prêt — cliquez sur "Lancer la simulation".</div>
+
+    <!-- Trajectoire -->
+    <div id="plotTraj" aria-label="Trajectoire (x,y)"></div>
+
+    <!-- Champs -->
+    <div id="plotFields" aria-label="Magnitudes P, E, B"></div>
+
+    <!-- Slider -->
+    <div class="slider-row">
+      <div class="time-label">Temps : <span id="timeDisplay">—</span> s</div>
+      <input id="timeSlider" type="range" min="0" max="0" value="0" step="1" style="flex:1">
+      <button id="play" class="btn" style="width:90px">▶ Play</button>
+    </div>
+  </section>
+</main>
+
+<footer>
+  © <span id="year"></span> — Blog personnel
+</footer>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // DOM
+  const statusEl = document.getElementById('status');
+  const runBtn = document.getElementById('run');
+  const stepsInput = document.getElementById('steps');
+  const dtInput = document.getElementById('dt');
+
+  const plotTrajDiv = document.getElementById('plotTraj');
+  const plotFieldsDiv = document.getElementById('plotFields');
+  const timeSlider = document.getElementById('timeSlider');
+  const timeDisplay = document.getElementById('timeDisplay');
+  const playBtn = document.getElementById('play');
+
+  let pyodide = null;
+  let pyReady = false;
+  let simData = null;
+  let playInterval = null;
+
+  async function ensurePyodide(){
+    if (pyReady) return;
+    statusEl.textContent = 'Chargement de Pyodide (quelques secondes)...';
+    try {
+      pyodide = await loadPyodide();
+      pyReady = true;
+      statusEl.textContent = 'Pyodide chargé.';
+    } catch (e) {
+      console.error(e);
+      statusEl.textContent = 'Erreur chargement Pyodide: ' + (e.message || e);
+      throw e;
+    }
+  }
+
+  async function fetchAndInjectSimulation(){
+    statusEl.textContent = 'Récupération de simulation.py...';
+    try {
+      const resp = await fetch('simulation.py', {cache: "no-store"});
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const txt = await resp.text();
+      statusEl.textContent = 'Injection du code de simulation...';
+      await pyodide.runPythonAsync(txt);
+      statusEl.textContent = 'Code injecté.';
+      return true;
+    } catch (e) {
+      console.error(e);
+      statusEl.textContent = 'Impossible de charger/injecter simulation.py: ' + (e.message || e);
+      return false;
+    }
+  }
+
+  async function runSim(steps, dt){
+    statusEl.textContent = 'Exécution de simulate(...) ...';
+    // Sérialiser le résultat côté Python (gère numpy si présent)
+    const pyCmd = `
+import json
+def _to_serializable(o):
+    try:
+        import numpy as _np
+    except Exception:
+        _np = None
+    if _np is not None and isinstance(o, _np.ndarray):
+        return o.tolist()
+    if isinstance(o, dict):
+        return {k: _to_serializable(v) for k,v in o.items()}
+    if isinstance(o, (list, tuple)):
+        return [_to_serializable(v) for v in o]
+    return o
+
+res = simulate(steps=${steps}, dt=${dt})
+res_serial = _to_serializable(res)
+json.dumps(res_serial)
+`;
+    try {
+      const jsonStr = await pyodide.runPythonAsync(pyCmd);
+      const data = JSON.parse(jsonStr);
+      statusEl.textContent = 'Simulation terminée.';
+      return data;
+    } catch (e) {
+      console.error('Erreur simulate:', e);
+      statusEl.textContent = 'Erreur lors de la simulation : ' + (e.message || e);
+      throw e;
+    }
+  }
+
+  // calcule magnitude arrays en JS
+  function magnitudeFromComponents(ax, ay, az){
+    const n = Math.min(ax.length, ay.length, az.length);
+    const out = new Array(n);
+    for (let i=0;i<n;i++){
+      const vx = ax[i]||0, vy = ay[i]||0, vz = az[i]||0;
+      out[i] = Math.sqrt(vx*vx + vy*vy + vz*vz);
+    }
+    return out;
+  }
+
+  // plot initial
+  function initPlots(data){
+    // prepare arrays
+    const t = data.t;
+    const rx = data.rx, ry = data.ry;
+    const Pmag = magnitudeFromComponents(data.Px, data.Py, data.Pz);
+    const Emag = magnitudeFromComponents(data.Ex, data.Ey, data.Ez);
+    const Bmag = magnitudeFromComponents(data.Bx, data.By, data.Bz);
+
+    // trajectory plot: line + moving marker
+    const trajLine = { x: rx, y: ry, mode: 'lines', name: 'traj', line:{width:2} };
+    const trajMarker = { x: [rx[0]], y: [ry[0]], mode: 'markers', marker:{size:10,color:'crimson'}, name:'position' };
+
+    const layoutTraj = {
+      title: 'Trajectoire (x, y)',
+      margin: { t: 40 },
+      xaxis: { title: 'x' },
+      yaxis: { title: 'y', scaleanchor:'x', scaleratio:1 } // keep aspect
+    };
+
+    Plotly.newPlot(plotTrajDiv, [trajLine, trajMarker], layoutTraj, {responsive:true});
+
+    // fields plot: magnitudes and vertical time-line
+    const pTrace = { x: t, y: Pmag, mode:'lines', name:'|P| (mag)' };
+    const eTrace = { x: t, y: Emag, mode:'lines', name:'|E| (mag)' };
+    const bTrace = { x: t, y: Bmag, mode:'lines', name:'|B| (mag)' };
+
+    const layoutFields = {
+      title: 'Magnitudes : P, E, B',
+      margin:{t:40},
+      xaxis: { title:'t (s)' },
+      yaxis: { title:'magnitude' },
+      shapes: [  // vertical line for current time; updated later
+        { type:'line', x0: t[0], x1: t[0], y0:0, y1: Math.max(...Pmag, ...Emag, ...Bmag)*1.1, line:{color:'black',width:1,dash:'dash'} }
+      ]
+    };
+
+    Plotly.newPlot(plotFieldsDiv, [pTrace, eTrace, bTrace], layoutFields, {responsive:true});
+
+    // configure slider
+    timeSlider.min = 0;
+    timeSlider.max = Math.max(0, t.length - 1);
+    timeSlider.value = 0;
+    timeDisplay.textContent = t[0].toFixed(3);
+
+    // store simData for updates
+    simData = { t, rx, ry, Pmag, Emag, Bmag };
+  }
+
+  // update plots when slider changes
+  function updateAtIndex(i){
+    if (!simData) return;
+    const { t, rx, ry, Pmag, Emag, Bmag } = simData;
+    const tx = t[i];
+
+    // update trajectory marker (trace index 1)
+    Plotly.restyle(plotTrajDiv, {'x': [[rx[i]]], 'y': [[ry[i]]]}, [1]); // update trace 1
+
+    // update vertical line in fields plot by rewriting layout.shapes
+    const maxY = Math.max(...Pmag, ...Emag, ...Bmag) * 1.1;
+    const shape = { type:'line', x0: tx, x1: tx, y0:0, y1:maxY, line:{color:'black',width:1,dash:'dash'} };
+    Plotly.relayout(plotFieldsDiv, {'shapes':[shape]});
+
+    timeDisplay.textContent = tx.toFixed(3);
+  }
+
+  timeSlider.addEventListener('input', (e) => {
+    const i = parseInt(e.target.value);
+    updateAtIndex(i);
+  });
+
+  // play / pause
+  playBtn.addEventListener('click', () => {
+    if (!simData) return;
+    if (playInterval) {
+      clearInterval(playInterval);
+      playInterval = null;
+      playBtn.textContent = '▶ Play';
+      return;
+    }
+    const maxIndex = simData.t.length - 1;
+    playBtn.textContent = '⏸ Pause';
+    playInterval = setInterval(() => {
+      let idx = parseInt(timeSlider.value);
+      idx = (idx < maxIndex) ? idx + 1 : 0;
+      timeSlider.value = idx;
+      updateAtIndex(idx);
+    }, 80); // 80 ms ~ 12.5 fps
+  });
+
+  // main flow when clicking Run
+  runBtn.addEventListener('click', async () => {
+    runBtn.disabled = true;
+    try {
+      await ensurePyodide();
+      const ok = await fetchAndInjectSimulation();
+      if (!ok) { runBtn.disabled = false; return; }
+
+      const steps = parseInt(stepsInput.value) || 400;
+      const dt = parseFloat(dtInput.value) || 0.05;
+
+      const data = await runSim(steps, dt);
+      initPlots(data);
+      updateAtIndex(0);
+    } catch (e) {
+      console.error(e);
+      statusEl.textContent = 'Erreur : ' + (e.message || e);
+    } finally {
+      runBtn.disabled = false;
+    }
+  });
+
+  // Option: précharger Pyodide au chargement de la page (décommente si tu veux)
+  // window.addEventListener('load', () => { ensurePyodide().catch(()=>{}); });
+
+</script>
 
 </body>
 </html>
-
-
