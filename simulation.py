@@ -1,106 +1,70 @@
 # simulation.py
-# Script Pyodide — robuste : attend que window.update / window.set_progress soient prêts,
-# gère start/stop, et protège les appels JS contre les erreurs.
+# Exemple autonome de simulation compatible avec Stage.html
+# Définit simulate(steps=..., dt=...) -> dict sérialisable JSON
+# Ne dépend que de la stdlib (math) pour fonctionner directement dans Pyodide.
 
-import asyncio
 import math
 
-# accès au module js (Pyodide)
-import js as _js
-
-# flag pour contrôler l'exécution
-running = False
-
-async def _wait_for_js_funcs(timeout=5.0, interval=0.05):
-    """Attendre que window.update et window.set_progress soient définis.
-    Renvoie (update, set_progress) ou lève RuntimeError après timeout (secondes)."""
-    t = 0.0
-    while t < timeout:
-        if hasattr(_js, "update") and hasattr(_js, "set_progress"):
-            return _js.update, _js.set_progress
-        await asyncio.sleep(interval)
-        t += interval
-    raise RuntimeError("Fonctions JS 'update' et/ou 'set_progress' introuvables")
-
-async def run(steps: int = 100, delay: float = 0.03):
-    """Coroutine principale.
-    - steps : nombre de pas (100 = 0..1 par pas de 0.01)
-    - delay : pause non-bloquante entre chaque pas (s)
+def simulate(steps=400, dt=0.05):
     """
-    global running
-    if running:
-        # déjà en cours : ne lance pas une seconde instance
-        try:
-            _js.console.warn("Simulation déjà en cours — run() ignoré")
-        except Exception:
-            pass
-        return
+    Génère une trajectoire r(t) et des vecteurs P, E, B au cours du temps.
+    - steps : nombre de pas temporels
+    - dt    : pas de temps
+    Retourne un dict contenant des listes Python:
+      't', 'rx','ry','rz',
+      'Px','Py','Pz',
+      'Ex','Ey','Ez',
+      'Bx','By','Bz'
+    """
+    t = [i * dt for i in range(steps)]
 
-    # Attendre les fonctions JS (utile si Python est démarré avant que JS expose les handlers)
-    try:
-        update, set_progress = await _wait_for_js_funcs()
-    except Exception as e:
-        try:
-            _js.console.error("Impossible d'obtenir update/set_progress :", str(e))
-        except Exception:
-            pass
-        return
+    # paramètres de la trajectoire et champs (exemples)
+    R0 = 1.2
+    omega = 2.0
+    decay = 0.0008
 
-    running = True
-    points = []
+    rx = []
+    ry = []
+    rz = []
 
-    try:
-        for i in range(steps + 1):
-            if not running:
-                try:
-                    _js.console.log("Arrêt demandé — sortie de la boucle")
-                except Exception:
-                    pass
-                break
+    Px = []; Py = []; Pz = []
+    Ex = []; Ey = []; Ez = []
+    Bx = []; By = []; Bz = []
 
-            x = i / steps
-            # Exemple de fonction : une droite légèrement modifiée (tu peux mettre n'importe quoi)
-            y = 0.2 + 0.6 * x
+    for i, ti in enumerate(t):
+        amp = R0 * math.exp(-decay * i)
+        x = amp * math.cos(omega * ti)
+        y = amp * math.sin(omega * ti)
+        z = 0.25 * math.sin(0.5 * omega * ti)
 
-            points.append({"x": float(x), "y": float(y)})
+        rx.append(x); ry.append(y); rz.append(z)
 
-            # Appels JS protégés
-            try:
-                # Pyodide convertit automatiquement la liste/dict en objets JS
-                update(points)
-                # on envoie la progression en pourcentage 0..100
-                set_progress(int(round(100 * i / steps)))
-            except Exception as e:
-                # Log côté JS si possible
-                try:
-                    _js.console.error("Erreur lors de l'appel update/set_progress :", str(e))
-                except Exception:
-                    pass
+        # Polarisation P : exemple simple perpendiculaire à r
+        Px.append(-0.5 * y)
+        Py.append( 0.5 * x)
+        Pz.append( 0.05 * math.sin(1.2 * ti))
 
-            # pause non bloquante
-            await asyncio.sleep(delay)
+        # Champ électrique E : mélange onde temporelle + dépendance spatiale faible
+        Ex.append(0.6 * math.sin(1.5 * ti) + 0.15 * x)
+        Ey.append(0.45 * math.cos(1.2 * ti) + 0.10 * y)
+        Ez.append(0.25 * math.sin(0.8 * ti) + 0.05 * z)
 
-    finally:
-        running = False
-        # s'assurer que la progression affiche 100% à la fin
-        try:
-            set_progress(100)
-        except Exception:
-            pass
+        # Champ magnétique B : champ tournant simple
+        Bx.append(0.2 * math.cos(0.9 * ti) - 0.05 * y)
+        By.append(0.2 * math.sin(0.9 * ti) + 0.05 * x)
+        Bz.append(0.05 * math.cos(1.3 * ti))
 
-def start():
-    """Démarre la simulation en créant une tâche asyncio (si possible).
-    Si l'environnement n'a pas de boucle active, lancez plutôt pyodide.runPythonAsync('run()') depuis JS."""
-    try:
-        asyncio.create_task(run())
-    except Exception as e:
-        # s'il n'y a pas de boucle active ici, on log et on quitte (JS devrait appeler run() via runPythonAsync)
-        try:
-            _js.console.warn("Impossible de créer une task asyncio ici — appelez pyodide.runPythonAsync('run()') depuis JS. Détail :", str(e))
-        except Exception:
-            pass
+    return {
+        't': t,
+        'rx': rx, 'ry': ry, 'rz': rz,
+        'Px': Px, 'Py': Py, 'Pz': Pz,
+        'Ex': Ex, 'Ey': Ey, 'Ez': Ez,
+        'Bx': Bx, 'By': By, 'Bz': Bz
+    }
 
-def stop():
-    """Demande l'arrêt de la boucle (flag)."""
-    global running
-    running = False
+# petit test si exécuté directement (utile en local)
+if __name__ == "__main__":
+    out = simulate(steps=10, dt=0.1)
+    print("Clés produites :", list(out.keys()))
+    print("Longueur t:", len(out['t']), "exemple t:", out['t'][:3])
+    print("Exemple rx:", out['rx'][:3])
