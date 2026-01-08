@@ -51,10 +51,32 @@
     .progress-bar{height:100%;width:0;background:#1f77b4}
     .controls-right{margin-left:auto;display:flex;align-items:center;gap:8px}
 
+    /* Loader overlay */
+    #loaderOverlay{
+      display:none;
+      position:fixed; left:0; top:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.45);
+      z-index:9999;
+      align-items:center; justify-content:center;
+    }
+    #loaderBox{
+      width:520px; max-width:90%; background:#fff; border-radius:8px; padding:18px; box-shadow:0 10px 30px rgba(0,0,0,0.3);
+      display:flex; flex-direction:column; gap:12px; align-items:stretch;
+    }
+    #loaderTitle{font-weight:600; font-family:Merriweather,serif}
+    #loaderMsg{color:#444; font-size:14px}
+    #loaderProgressWrap{height:12px;background:#f3f4f6;border-radius:6px;overflow:hidden;border:1px solid #e5e7eb}
+    #loaderProgress{height:100%; width:0%; background: linear-gradient(90deg,#6a2c70,#f27059,#f9d423); transition:width 220ms linear}
+
+    /* spinner */
+    .spinner { width:28px;height:28px;border-radius:50%;border:4px solid #eee;border-top-color:var(--brand); animation:spin 1s linear infinite; margin-left:auto;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
     @media (max-width:640px){
       .wrap{padding:14px}
       main{margin:18px auto}
       #plot{height:520px}
+      #loaderBox{padding:12px}
     }
   </style>
 </head>
@@ -129,7 +151,6 @@
       </div>
     </div>
 
-    <!-- PLOT -->
     <div id="plot"></div>
 
     <div class="progress-wrap"><div id="progressBar" class="progress-bar"></div></div>
@@ -143,7 +164,7 @@
       <button id="play" class="btn">▶ Play</button>
     </div>
 
-    <div style="margin-top:8px" class="small">Affichage : palette <strong>plasma</strong>, lignes de courant (contour) + quiver échantillonné, particules rouges + flèches de vitesse instantanées.</div>
+    <div style="margin-top:8px" class="small">Affichage : palette <strong>plasma</strong>, dégradé lisse sur la colorbar, particules rouges + flèches de vitesse instantanées.</div>
   </section>
 </main>
 
@@ -151,16 +172,32 @@
   © <span id="year"></span> — Blog personnel
 </footer>
 
+<!-- Loader overlay shown during Pyodide load & injection -->
+<div id="loaderOverlay" aria-hidden="true">
+  <div id="loaderBox" role="status" aria-live="polite">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div id="loaderTitle">Chargement du moteur Python (Pyodide)</div>
+      <div class="spinner" aria-hidden="true"></div>
+    </div>
+    <div id="loaderMsg">Préparation...</div>
+    <div id="loaderProgressWrap"><div id="loaderProgress" style="width:4%"></div></div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;color:#666">
+      <div id="loaderHint">Ne pas fermer cette fenêtre</div>
+      <div id="loaderPct">0%</div>
+    </div>
+  </div>
+</div>
+
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
 
-  // --- styles réglables (ajuste ici si tu veux modifier aspect) ---
+  // small UI style constants
   const STYLE = {
-    contourLineWidth: 1.8,     // épaisseur des lignes de contour / courants
-    backgroundQuiverWidth: 1.4,// épaisseur des lignes du quiver de fond
+    contourLineWidth: 1.8,
+    backgroundQuiverWidth: 1.6,
     backgroundQuiverHeadSize: 5,
-    particleArrowWidth: 2.6,   // épaisseur flèches particules
-    particleArrowHeadSize: 8,
+    particleArrowWidth: 2.8,
+    particleArrowHeadSize: 9,
     particleMarkerSize: 8
   };
 
@@ -179,8 +216,59 @@
   const progressBar = document.getElementById('progressBar');
   const speedRange = document.getElementById('speedRange');
 
+  const loaderOverlay = document.getElementById('loaderOverlay');
+  const loaderMsg = document.getElementById('loaderMsg');
+  const loaderProgress = document.getElementById('loaderProgress');
+  const loaderPct = document.getElementById('loaderPct');
+
   let pyodide = null, pyReady=false;
   let simData = null, playInterval = null, playSpeedMs = 100;
+  let loaderInterval = null;
+
+  function showLoader(titleText, initialMsg){
+    loaderOverlay.style.display = 'flex';
+    loaderOverlay.setAttribute('aria-hidden','false');
+    document.getElementById('loaderTitle').textContent = titleText || 'Chargement';
+    loaderMsg.textContent = initialMsg || '';
+    loaderProgress.style.width = '4%';
+    loaderPct.textContent = '0%';
+    // animate pseudo progress: linear slow until we call done
+    let pct = 4;
+    clearInterval(loaderInterval);
+    loaderInterval = setInterval(()=>{
+      // increment slowly; slow near 95%
+      if(pct < 92){
+        pct += Math.random() * 6; // variable steps
+      } else if(pct < 98){
+        pct += Math.random() * 1.6;
+      } else {
+        pct += 0.0;
+      }
+      pct = Math.min(pct, 98);
+      loaderProgress.style.width = pct.toFixed(1) + '%';
+      loaderPct.textContent = Math.round(pct) + '%';
+    }, 220);
+  }
+  function updateLoaderMessage(msg){
+    loaderMsg.textContent = msg || '';
+  }
+  function setLoaderProgress(pct, msg){
+    clearInterval(loaderInterval);
+    const p = Math.max(0, Math.min(100, pct));
+    loaderProgress.style.width = p + '%';
+    loaderPct.textContent = Math.round(p) + '%';
+    if(msg) loaderMsg.textContent = msg;
+  }
+  function hideLoader(){
+    clearInterval(loaderInterval);
+    loaderInterval = null;
+    loaderProgress.style.width = '100%';
+    loaderPct.textContent = '100%';
+    setTimeout(()=>{
+      loaderOverlay.style.display = 'none';
+      loaderOverlay.setAttribute('aria-hidden','true');
+    }, 200);
+  }
 
   function flatToXY(flat){
     const xs=[], ys=[];
@@ -190,37 +278,74 @@
 
   async function ensurePyodide(){
     if(pyReady) return;
-    statusEl.textContent = 'Chargement Pyodide...';
-    pyodide = await loadPyodide({indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.0/full/"});
-    statusEl.textContent = 'Pyodide chargé — chargement numpy...';
-    try { await pyodide.loadPackage(['numpy']); statusEl.textContent='numpy prêt.'; }
-    catch(e){
-      await pyodide.loadPackage(['micropip']);
-      await pyodide.runPythonAsync(`import micropip\nawait micropip.install("numpy")`);
-      statusEl.textContent='numpy installé via micropip.';
+    showLoader('Chargement du moteur Python (Pyodide)', 'Téléchargement en cours...');
+    try{
+      // begin loading pyodide
+      const loadStart = performance.now();
+      pyodide = await loadPyodide({indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.0/full/"});
+      setLoaderProgress(45, 'Initialisation de l\'environnement Python...');
+      // try load numpy
+      try {
+        await pyodide.loadPackage(['numpy']);
+        setLoaderProgress(75, 'numpy prêt.');
+      } catch(e){
+        // fallback to micropip install if loadPackage fails
+        updateLoaderMessage('Installation de numpy via micropip (fallback)...');
+        try {
+          await pyodide.loadPackage(['micropip']);
+          await pyodide.runPythonAsync(`
+import micropip
+await micropip.install("numpy")
+`);
+          setLoaderProgress(85, 'numpy installé via micropip.');
+        } catch(err){
+          console.error('Impossible d\'installer numpy via micropip:', err);
+          setLoaderProgress(10, 'Erreur installation numpy');
+          throw err;
+        }
+      }
+      setLoaderProgress(90, 'Prêt.');
+      pyReady = true;
+    } catch (err){
+      console.error('ensurePyodide error', err);
+      hideLoader();
+      throw err;
     }
-    pyReady = true;
   }
 
   async function fetchAndInjectSimulation(){
-    statusEl.textContent = 'Récupération simulation.py ...';
-    const r = await fetch('simulation.py', {cache:'no-store'});
-    if(!r.ok){ statusEl.textContent = 'Erreur fetch simulation.py: ' + r.status; throw new Error('fetch'); }
-    const txt = await r.text();
-    statusEl.textContent = 'Injection du code Python...';
-    await pyodide.runPythonAsync(txt);
-    statusEl.textContent = 'Code Python injecté.';
+    showLoader('Injection du code Python', 'Récupération du fichier simulation.py ...');
+    try {
+      const r = await fetch('simulation.py', {cache:'no-store'});
+      if(!r.ok){ setLoaderProgress(5, 'Erreur téléchargement'); throw new Error('fetch error ' + r.status); }
+      setLoaderProgress(40, 'Lecture du fichier...');
+      const txt = await r.text();
+      setLoaderProgress(55, 'Injection du code...');
+      // run python text in pyodide
+      await pyodide.runPythonAsync(txt);
+      setLoaderProgress(95, 'Code injecté.');
+      // small pause to show completion
+      await new Promise(res => setTimeout(res, 200));
+      hideLoader();
+    } catch(err){
+      console.error('Erreur fetch/inject', err);
+      hideLoader();
+      throw err;
+    }
   }
 
   async function callSim(n_image, grid_nx, grid_ny, Tfinal, compute_field){
     statusEl.textContent = 'Exécution simulate(...) (peut être long)...';
     progressBar.style.width = '2%';
     const dt = Tfinal / Math.max(1, (n_image - 1));
+    // call simulate and return JSON
     const pyCall = `
 import json
 res = simulate(steps=None, dt=${dt}, n_image_local=${n_image}, grid_nx_field=${grid_nx}, grid_ny_field=${grid_ny}, grid_extent_local=5.0, compute_field=${compute_field})
 json.dumps(res)
 `;
+    // mark a mid progress
+    progressBar.style.width = '12%';
     const jsonStr = await pyodide.runPythonAsync(pyCall);
     progressBar.style.width = '100%';
     return JSON.parse(jsonStr);
@@ -232,7 +357,7 @@ json.dumps(res)
     const hasField = Array.isArray(data.Ux_fields) && data.Ux_fields.length>0 && data.Ux_fields[0].length>0;
 
     if(hasField){
-      // contour magnitude frame0
+      // create smooth (filled) contour => yields smooth colorbar gradient
       const grid_nx = data.grid_nx, grid_ny = data.grid_ny;
       const z = [];
       for(let j=0;j<grid_ny;j++){
@@ -246,18 +371,17 @@ json.dumps(res)
       traces.push({
         z:z, x:data.grid_x, y:data.grid_y, type:'contour',
         colorscale:'Plasma',
-        contours:{coloring:'lines'},
-        line:{width: STYLE.contourLineWidth},
+        contours:{coloring:'heatmap'},      // <<< continuous filled colors
         showscale:true,
-        colorbar:{title:'|u|',thickness:20}
+        colorbar:{title:'|u|',thickness:20,outlinewidth:0,ticklen:6}
       });
 
-      // background sampled quiver (contour background arrows)
+      // background sampled quiver (lines + heads)
       const stride = Math.max(1, Math.floor(grid_nx / 20));
       const qx=[], qy=[], quvx=[], quvy=[];
       for(let j=0;j<grid_ny;j+=stride){
         for(let i=0;i<grid_nx;i+=stride){
-          const idx = j*grid_nx + i;
+          const idx=j*grid_nx + i;
           qx.push(data.grid_x[i]); qy.push(data.grid_y[j]);
           quvx.push(data.Ux_fields[0][idx]); quvy.push(data.Uy_fields[0][idx]);
         }
@@ -272,15 +396,15 @@ json.dumps(res)
         headx.push(x1); heady.push(y1);
       }
       traces.push({ x:ax, y:ay, mode:'lines', line:{color:'rgb(45,32,110)', width:STYLE.backgroundQuiverWidth}, hoverinfo:'none', showlegend:false });
-      traces.push({ x:headx, y:heady, mode:'markers', marker:{size: STYLE.backgroundQuiverHeadSize, symbol:'triangle-up', color:'rgb(45,32,110)'}, hoverinfo:'none', showlegend:false });
+      traces.push({ x:headx, y:heady, mode:'markers', marker:{size:STYLE.backgroundQuiverHeadSize, symbol:'triangle-up', color:'rgb(45,32,110)'}, hoverinfo:'none', showlegend:false });
     }
 
     // particles markers (instantané)
     const frame0 = data.qs_hist[0];
-    const {xs:px0, ys:py0} = (function(flat){ const xs=[], ys=[]; for(let i=0;i<flat.length;i+=2){ xs.push(flat[i]); ys.push(flat[i+1]); } return {xs,ys}; })(frame0);
+    const {xs:px0, ys:py0} = flatToXY(frame0);
     traces.push({ x: px0, y: py0, mode:'markers', marker:{size:STYLE.particleMarkerSize, color:'red'}, name:'particles', hoverinfo:'text' });
 
-    // particle arrows (instantaneous)
+    // particle arrows (instantané)
     const u0 = data.u_selfs[0];
     const axp=[], ayp=[], hxp=[], hyp=[];
     for(let i=0;i<frame0.length;i+=2){
@@ -328,7 +452,7 @@ json.dumps(res)
       }
       Plotly.restyle(plotDiv, {'z':[z]}, [0]);
 
-      // update background quiver lines/heads (traces 1 & 2 when hasField)
+      // update background quiver lines/heads (trace 1 & 2)
       const stride = Math.max(1, Math.floor(grid_nx / 20));
       const ax=[], ay=[], hx=[], hy=[];
       const scale = 0.25 * Math.max(Math.abs(data.grid_x[1]-data.grid_x[0]), Math.abs(data.grid_y[1]-data.grid_y[0]));
@@ -346,18 +470,15 @@ json.dumps(res)
       Plotly.restyle(plotDiv, {'x':[hx],'y':[hy]}, [2]);
     }
 
-    // compute indices for particle marker & arrows
     const has = hasField ? 3 : 0;
     const markerIdx = has;
     const arrowLinesIdx = has + 1;
     const arrowHeadsIdx = has + 2;
 
-    // update particle markers
     const xs = [], ys = [];
     for(let i=0;i<frame.length;i+=2){ xs.push(frame[i]); ys.push(frame[i+1]); }
     Plotly.restyle(plotDiv, {'x':[xs], 'y':[ys]}, [markerIdx]);
 
-    // update particle arrows
     const axp=[], ayp=[], hxp=[], hyp=[];
     for(let i=0;i<frame.length;i+=2){
       const x0=frame[i], y0=frame[i+1];
@@ -407,8 +528,13 @@ json.dumps(res)
       const Tfinal = parseFloat(TfinalInput.value) || 100.0;
       const compute_field = computeFieldCheckbox.checked ? 'True' : 'False';
 
+      // 1) ensure pyodide + numpy (loader overlay shows progress)
       await ensurePyodide();
+
+      // 2) fetch + inject simulation.py (loader overlay shows progress)
       await fetchAndInjectSimulation();
+
+      // 3) execute simulate and fetch result (we update bottom progress bar)
       statusEl.textContent = 'Calcul en cours (Python) — ceci peut prendre du temps...';
       const data = await callSim(n_image, grid_nx, grid_ny, Tfinal, compute_field);
       statusEl.textContent = 'Simulation calculée — rendu...';
@@ -427,3 +553,4 @@ json.dumps(res)
 </script>
 </body>
 </html>
+
