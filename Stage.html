@@ -116,7 +116,7 @@
 
 <main>
   <div class="toolbar">
-    <h2 style="margin:0;font-family:Merriweather,serif">Simulation — jetlets 0 (champ & particules)</h2>
+    <h2 style="margin:0;font-family:Merriweather,serif">Simulation — jetlets 0 </h2>
     <div class="search" aria-hidden="false">
       <input id="q" type="search" placeholder="Recherche rapide (non utilisée ici)">
     </div>
@@ -125,27 +125,6 @@
   <section class="card">
     <div class="controls">
       <button id="run" class="btn">Lancer la simulation</button>
-
-      <label>n_images:
-        <input id="n_image" type="number" value="100" min="5" style="width:80px">
-      </label>
-
-      <label>grid (nx):
-        <input id="grid_nx" type="number" value="100" min="8" style="width:70px">
-      </label>
-
-      <label>grid (ny):
-        <input id="grid_ny" type="number" value="100" min="8" style="width:70px">
-      </label>
-
-      <label>T_final:
-        <input id="Tfinal" type="number" value="100" step="1" style="width:80px">
-      </label>
-
-      <label style="display:flex;align-items:center;gap:6px" title="Si décoché, pas de calcul du champ (beaucoup plus rapide)">
-        <input id="compute_field" type="checkbox" checked style="width:16px;height:16px"> Calculer le champ
-      </label>
-
       <div class="controls-right">
         <div style="text-align:right"><span id="status" class="small">Prêt — place Stage.html et simulation.py dans le même dossier, servez via HTTP.</span></div>
       </div>
@@ -163,8 +142,6 @@
       </label>
       <button id="play" class="btn">▶ Play</button>
     </div>
-
-    <div style="margin-top:8px" class="small">Affichage : palette <strong>plasma</strong>, dégradé lisse sur la colorbar, particules rouges + flèches de vitesse instantanées.</div>
   </section>
 </main>
 
@@ -419,7 +396,7 @@ json.dumps(res)
     traces.push({ x:hxp, y:hyp, mode:'markers', marker:{size: STYLE.particleArrowHeadSize, symbol:'triangle-up', color:'red'}, hoverinfo:'none', showlegend:false });
 
     const layout = {
-      title: 'Champ |u| + particules (instantané)',
+      title: 'Particules soumises au champ jetlet-0',
       margin:{t:40,l:60,r:80,b:60},
       xaxis:{title:'x'}, yaxis:{title:'y',scaleanchor:'x',scaleratio:1}
     };
@@ -509,7 +486,7 @@ json.dumps(res)
       playBtn.textContent = '▶ Play';
       return;
     }
-    playBtn.textContent = '⏸ Pause';
+    playBtn.textContent = 'Pause';
     const maxIdx = simData.t.length - 1;
     playInterval = setInterval(()=>{
       let idx = parseInt(timeSlider.value);
