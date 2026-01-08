@@ -1,101 +1,86 @@
 # simulation.py
-# Version adaptée pour Pyodide : calcule trajectoires + champs et renvoie
-# uniquement des listes Python sérialisables pour affichage côté JS.
+# Version adaptée pour Pyodide, proche de ton script original mais simplifiée
+# -> 25 particules (5x5), niveau jetlet 0 (positions + momenta), vitesses aléatoires.
 #
-# Basée sur ton code — correction einsum et calcul de norme du champ.
+# Le paramètre compute_field (False par défaut) évite le calcul coûteux du champ
+# sur la grille si tu ne le veux pas.
 
 import math
 import time
 import numpy as np
 
-# ----------- paramètres (tu peux ajuster) -------------
+# ---------- paramètres principaux ----------
 sigma = 1.0
 p0 = np.array([1.0, 0.0])
-T_final = 30.0
-n_image = 60            # nombre d'images (frames)
+T_final = 10.0
+n_image = 30
 dt_default = T_final / max(1, (n_image - 1))
 
-# grille pour tracer le champ (par défaut raisonnable : 40x40)
-grid_nx_default = 40
-grid_ny_default = 40
-grid_extent = 5.0  # domaine [-grid_extent, grid_extent] dans x,y
+# grille pour tracer le champ (optionnel)
+grid_nx_default = 16
+grid_ny_default = 16
+grid_extent = 5.0
 
-# paramètres particules initiales (grid)
+# --- initial particle grid (5x5 = 25 particules) ---
 grid_nx = 5
 grid_ny = 5
 grid_x_min, grid_x_max = -2.0, 2.0
 grid_y_min, grid_y_max = -2.0, 2.0
 
-# orientation des vitesses initiales
+# orientation aléatoire (par défaut)
 orientation_mode = 'random'
-fixed_angle = np.pi / 6.0
 p_magnitude = None
 p_perturb = 0.00
 seed = 42
 rng_global = np.random.RandomState(seed)
 
-# bruit (modes)
-K_noise = 6
+# Bruit optionnel (génère un terme stochastique si souhaité)
+K_noise = 0   # mis à 0 pour rester proche du déterministe "original"
 noise_amp = 0.25
 L_domain = 10.0
-kvecs = []
-for kk in range(K_noise):
-    angle = 2 * np.pi * kk / max(1, K_noise)
-    kvecs.append(np.array([np.cos(angle), np.sin(angle)]) * (2 * np.pi / L_domain))
-kvecs = np.array(kvecs)
-amps = noise_amp * (1.0 + 0.5 * rng_global.randn(K_noise))
 
 eps = 1e-10
 
-# ---------------- core math functions (vectorized where appropriate) ----------------
+# ----------------- utilitaires -----------------
 def Green_K(pts, sigma=1.0):
-    # pts: (M,2) array of displacement vectors r = x - q
     r = np.asarray(pts, dtype=float)
     if r.ndim == 1:
         r = r[None, :]
-    r2 = np.sum(r * r, axis=1)  # (M,)
+    r2 = np.sum(r * r, axis=1)
     A = 1.0 / (4.0 * np.pi * sigma ** 2)
     B = np.exp(-r2 / (4.0 * sigma ** 2))
     C = 2.0 * sigma ** 2 / (r2 + eps)
     alpha = B - C * (1.0 - B)
     beta = (2.0 * C * (1.0 - B) - B) / (r2 + eps)
     I = np.eye(2)
-    M = r.shape[0]
-    outer = r[:, :, None] * r[:, None, :]  # (M,2,2)
+    outer = r[:, :, None] * r[:, None, :]
     G = A * (alpha[:, None, None] * I + beta[:, None, None] * outer)
-    return G  # shape (M,2,2)
+    return G
 
 def u_au_point_vectorized(xs, qs_array, ps_array, sigma=1.0):
-    # xs: (M,2) points where to evaluate
-    # qs_array: (N,2) particle positions
-    # ps_array: (N,2) particle momenta
     xs = np.asarray(xs)
     qs = np.asarray(qs_array)
     ps = np.asarray(ps_array)
     M = xs.shape[0]
     N = qs.shape[0]
     U = np.zeros((M,2))
-    # vectorized loop over sources (N moderate)
     for a in range(N):
-        r = xs - qs[a]  # (M,2)
-        G = Green_K(r, sigma=sigma)  # (M,2,2)
-        # contract G with p_a (shape (2,))
+        r = xs - qs[a]
+        G = Green_K(r, sigma=sigma)
         U += np.einsum('nij,j->ni', G, ps[a])
-    return U  # (M,2)
+    return U
 
 def u_at_particle(q_a, qs_array, ps_array, sigma=sigma):
-    # compute u at position q_a due to all sources (including self)
     qs = np.asarray(qs_array)
-    ps = np.asarray(ps_array)   # shape (N,2)
+    ps = np.asarray(ps_array)   # (N,2)
     r = qs - q_a                # (N,2)
     G = Green_K(r, sigma=sigma) # (N,2,2)
-    # Pour chaque source j : G[j] dot p[j] -> (N,2), puis somme sur j
+    # FIX: einsum must index both the source index n and vector index j
     u_j = np.einsum('nij,nj->ni', G, ps)  # (N,2)
-    u = u_j.sum(axis=0)                    # (2,)
+    u = u_j.sum(axis=0)
     return u
 
 def jacobian_u_at_point_fd(x, qs_list, ps_list, sigma=sigma, h=1e-6):
-    # finite difference Jacobian (2x2)
     J = np.zeros((2,2))
     for j in range(2):
         e = np.zeros(2); e[j] = 1.0
@@ -104,37 +89,26 @@ def jacobian_u_at_point_fd(x, qs_list, ps_list, sigma=sigma, h=1e-6):
         J[:, j] = (u_plus - u_minus) / (2.0 * h)
     return J
 
+# For clarity we keep gk_on_state but with K_noise possibly 0
+def sigma_k_at(kidx, qs_array):
+    # fallback trivial if K_noise==0 won't be used
+    return np.zeros((qs_array.shape[0], 2))
+
+def grad_sigma_k_at(kidx, qs_array):
+    return np.zeros((qs_array.shape[0], 2, 2))
+
 def gk_on_state(kidx, state, N):
-    # returns 4N vector action of sigma_k on flattened state
     qs = np.array([state[2*i:2*i+2] for i in range(N)])
     ps = np.array([state[2*N + 2*i:2*N + 2*i+2] for i in range(N)])
-    sig = sigma_k_at(kidx, qs)            # (N,2)
-    grad_sig = grad_sigma_k_at(kidx, qs)  # (N,2,2)
+    sig = sigma_k_at(kidx, qs)
+    grad_sig = grad_sigma_k_at(kidx, qs)
     dq = sig
     dp = np.zeros_like(ps)
     for i in range(N):
         dp[i] = - grad_sig[i].T.dot(ps[i])
     return np.concatenate([dq.ravel(), dp.ravel()])
 
-def sigma_k_at(kidx, qs_array):
-    k = kvecs[kidx]
-    phase = qs_array.dot(k)
-    a = amps[kidx]
-    return a * np.stack([-np.sin(phase), np.cos(phase)], axis=-1)
-
-def grad_sigma_k_at(kidx, qs_array):
-    k = kvecs[kidx]
-    phase = qs_array.dot(k)
-    a = amps[kidx]
-    M = qs_array.shape[0]
-    G = np.zeros((M,2,2))
-    G[:,0,0] = -np.cos(phase) * k[0] * a
-    G[:,0,1] = -np.cos(phase) * k[1] * a
-    G[:,1,0] = -np.sin(phase) * k[0] * a
-    G[:,1,1] = -np.sin(phase) * k[1] * a
-    return G
-
-# deriv, rk4 as in your code (vectorized loops)
+# deriv & rk4
 def deriv(state, N, sigma=sigma):
     qs = [state[2*i:2*i+2] for i in range(N)]
     ps = [state[2*N + 2*i:2*N + 2*i+2] for i in range(N)]
@@ -162,7 +136,7 @@ def rk4_step(state, dt, N, sigma=sigma):
     new_state = state + (dt/6.0) * (k1 + 2*k2 + 2*k3 + k4)
     return new_state
 
-# ---------------- initial condition construction ----------------
+# initial conditions: 5x5 grid, random orientations
 def build_initial_state(grid_nx_local=grid_nx, grid_ny_local=grid_ny, mode=orientation_mode, rng_seed=seed):
     rng = np.random.RandomState(rng_seed)
     grid_x = np.linspace(grid_x_min, grid_x_max, grid_nx_local)
@@ -175,35 +149,19 @@ def build_initial_state(grid_nx_local=grid_nx, grid_ny_local=grid_ny, mode=orien
             qs_init.append(np.array([xi, yi]))
             if mode == 'random':
                 angle = rng.uniform(0.0, 2*np.pi)
-            elif mode == 'radial':
-                angle = np.arctan2(yi, xi)
-            elif mode == 'inward':
-                angle = np.arctan2(yi, xi) + np.pi
-            elif mode == 'tangential':
-                angle = np.arctan2(yi, xi) + 0.5*np.pi
-            elif mode == 'vortex':
-                angle = np.arctan2(yi, xi) - 0.5*np.pi
-            elif mode == 'fixed_angle':
-                angle = fixed_angle
             else:
-                angle = rng.uniform(0.0, 2*np.pi)
+                angle = 0.0
             p_vec = mag * np.array([np.cos(angle), np.sin(angle)])
             p_vec += p_perturb * rng.randn(2)
             ps_init.append(p_vec)
     return np.array(qs_init), np.array(ps_init)
 
-# ---------------- function exposed to Stage.html ----------------
+# ---------------- simulate exposée ----------------
 def simulate(steps=None, dt=None, n_image_local=None, grid_nx_field=None, grid_ny_field=None,
-             grid_extent_local=None, rng_seed=None):
+             grid_extent_local=None, rng_seed=None, compute_field=False):
     """
-    simulate(...) computes the particle trajectories and (optionally) the field on a grid.
-    Returns a dict containing serializable lists:
-      - 't' : list of times (n_image_local)
-      - 'qs_hist' : list of frames; each frame is flattened positions [x1,y1,x2,y2,...] (length 2N)
-      - 'u_selfs' : list of frames; each frame flattened self velocities for each particle [vx1,vy1,...]
-      - 'Ufields' : list of frames; each frame flattened magnitude on grid (grid_nx_field*grid_ny_field) (optional)
-      - 'grid_x', 'grid_y' : lists for grid coordinates
-      - 'N', 'n_image' : ints
+    compute trajectories of 25 particles (jetlet 0) and optionally the field.
+    compute_field: bool (True/False) - si False on ne calcule pas Ufields (beaucoup plus rapide).
     """
     # defaults
     if n_image_local is None:
@@ -221,27 +179,31 @@ def simulate(steps=None, dt=None, n_image_local=None, grid_nx_field=None, grid_n
     if rng_seed is None:
         rng_seed = seed
 
-    # build initial particles
+    # build initial particles (5x5)
     qs_init, ps_init = build_initial_state(grid_nx_local=grid_nx, grid_ny_local=grid_ny, mode=orientation_mode, rng_seed=rng_seed)
     N = qs_init.shape[0]
 
-    # prepare state vector
+    # state vector
     state = np.zeros(4 * N)
     for i in range(N):
         state[2*i:2*i+2] = qs_init[i]
     for i in range(N):
         state[2*N + 2*i:2*N + 2*i+2] = ps_init[i]
 
-    # allocate history
     qs_hist = np.zeros((n_image_local, N, 2))
     ps_hist = np.zeros((n_image_local, N, 2))
     u_selfs = np.zeros((n_image_local, N, 2))
 
-    # grid for field
-    xs = np.linspace(-grid_extent_local, grid_extent_local, grid_nx_field)
-    ys = np.linspace(-grid_extent_local, grid_extent_local, grid_ny_field)
-    X, Y = np.meshgrid(xs, ys)
-    grid_pts = np.stack([X.ravel(), Y.ravel()], axis=-1)  # (grid_nx_field*grid_ny_field, 2)
+    # prepare grid points only if compute_field True
+    if compute_field:
+        xs = np.linspace(-grid_extent_local, grid_extent_local, grid_nx_field)
+        ys = np.linspace(-grid_extent_local, grid_extent_local, grid_ny_field)
+        X, Y = np.meshgrid(xs, ys)
+        grid_pts = np.stack([X.ravel(), Y.ravel()], axis=-1)
+    else:
+        xs = np.array([])
+        ys = np.array([])
+        grid_pts = np.zeros((0,2))
 
     rng = np.random.RandomState(rng_seed)
     sqrt_dt = np.sqrt(dt)
@@ -251,55 +213,62 @@ def simulate(steps=None, dt=None, n_image_local=None, grid_nx_field=None, grid_n
         for a in range(N):
             qs_hist[i, a] = state[2*a:2*a+2]
             ps_hist[i, a] = state[2*N + 2*a:2*N + 2*a+2]
-        # compute u_selfs for each particle
         qs_now = np.array([state[2*a:2*a+2] for a in range(N)])
         ps_now = np.array([state[2*N + 2*a:2*N + 2*a+2] for a in range(N)])
-        # compute per-particle velocities
+        # compute per-particle velocities (self velocity due to all sources)
         for a in range(N):
             u_selfs[i, a] = u_at_particle(qs_now[a], qs_now, ps_now, sigma=sigma)
 
         if i < n_image_local - 1:
-            # deterministic RK4
             state_det = rk4_step(state, dt, N, sigma=sigma)
 
-            # stochastic part (Stratonovich Heun) using precomputed gk_on_state
-            g0 = np.zeros((K_noise, 4*N))
-            for kidx in range(K_noise):
-                g0[kidx] = gk_on_state(kidx, state, N)
+            # stochastic part - turned off here since K_noise=0
+            if K_noise > 0:
+                g0 = np.zeros((K_noise, 4*N))
+                for kidx in range(K_noise):
+                    g0[kidx] = gk_on_state(kidx, state, N)
+                dW = rng.normal(0.0, sqrt_dt, size=K_noise)
+                state_tilde = state_det.copy()
+                state_tilde += np.tensordot(dW, g0, axes=(0,0))
+                g1 = np.zeros_like(g0)
+                for kidx in range(K_noise):
+                    g1[kidx] = gk_on_state(kidx, state_tilde, N)
+                stochastic_increment = 0.5 * np.tensordot(dW, (g0 + g1), axes=(0,0))
+                state = state_det + stochastic_increment
+            else:
+                state = state_det
 
-            dW = rng.normal(0.0, sqrt_dt, size=K_noise)
-            state_tilde = state_det.copy()
-            state_tilde += np.tensordot(dW, g0, axes=(0,0))
-            g1 = np.zeros_like(g0)
-            for kidx in range(K_noise):
-                g1[kidx] = gk_on_state(kidx, state_tilde, N)
-            stochastic_increment = 0.5 * np.tensordot(dW, (g0 + g1), axes=(0,0))
-            state = state_det + stochastic_increment
+    # compute field magnitudes on grid only if requested
+    if compute_field and grid_pts.shape[0] > 0:
+        Ufields = np.zeros((n_image_local, grid_nx_field * grid_ny_field))
+        for i in range(n_image_local):
+            uv = u_au_point_vectorized(grid_pts, qs_hist[i], ps_hist[i], sigma=sigma)  # (M,2)
+            UV = np.linalg.norm(uv, axis=1)
+            Ufields[i] = UV.ravel()
+        grid_x = xs
+        grid_y = ys
+    else:
+        # return empty Ufields to indicate "no field computed"
+        Ufields = [[] for _ in range(n_image_local)]
+        grid_x = np.array([])
+        grid_y = np.array([])
 
-    # optionally compute field magnitudes on grid for each frame
-    Ufields = np.zeros((n_image_local, grid_nx_field * grid_ny_field))
-    for i in range(n_image_local):
-        uv = u_au_point_vectorized(grid_pts, qs_hist[i], ps_hist[i], sigma=sigma)  # (M,2)
-        UV = np.linalg.norm(uv, axis=1)  # magnitude per grid point
-        Ufields[i] = UV.ravel()
-
-    # build serializable output (convert numpy arrays to lists)
     out = {
         't': (np.arange(n_image_local) * dt).tolist(),
-        'qs_hist': [frame.ravel().tolist() for frame in qs_hist],  # each frame flattened [x1,y1,x2,y2,...]
+        'qs_hist': [frame.ravel().tolist() for frame in qs_hist],
         'u_selfs': [frame.ravel().tolist() for frame in u_selfs],
-        'Ufields': [frame.tolist() for frame in Ufields],  # each is length grid_nx_field*grid_ny_field
-        'grid_x': xs.tolist(),
-        'grid_y': ys.tolist(),
+        'Ufields': [frame if isinstance(frame, list) else frame.tolist() for frame in Ufields],
+        'grid_x': grid_x.tolist(),
+        'grid_y': grid_y.tolist(),
         'N': int(N),
         'n_image': int(n_image_local),
-        'grid_nx': int(grid_nx_field),
-        'grid_ny': int(grid_ny_field)
+        'grid_nx': int(grid_nx_field) if compute_field else 0,
+        'grid_ny': int(grid_ny_field) if compute_field else 0
     }
     return out
 
-# For quick local test if run as script
+# test run if executed directly (local debug)
 if __name__ == "__main__":
-    res = simulate(n_image_local=10, grid_nx_field=16, grid_ny_field=16)
+    res = simulate(n_image_local=10, grid_nx_field=8, grid_ny_field=8, compute_field=False)
     print("simulate produced keys:", list(res.keys()))
     print("t len:", len(res['t']), "N:", res['N'], "frames:", res['n_image'])
