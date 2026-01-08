@@ -88,23 +88,10 @@
     }
     #finalOverlay.show{ display:flex; }
 
-    /* improved backdrop: fade + blur + gentle scale for a smooth effect */
-    #finalOverlay .backdrop{ position:absolute; inset:0; background:var(--final-backdrop); opacity:0; transition: opacity 520ms cubic-bezier(.22,.9,.26,1), backdrop-filter 520ms cubic-bezier(.22,.9,.26,1), transform 520ms cubic-bezier(.22,.9,.26,1); backdrop-filter: blur(0px); transform: scale(1.01); }
     #finalOverlay.show .backdrop{ opacity:1; backdrop-filter: blur(6px); transform: scale(1); }
 
     /* message: reduced size (half) and constrained to plot; appears on top of backdrop */
-    #finalMsg{
-      position:relative; z-index:2; font-family: Merriweather, serif; font-weight:900; text-transform:uppercase; letter-spacing:0.04em;
-      color: #000; /* black */
-      text-align:center;
-      opacity:0; transform:translateY(12px) scale(0.98); transition: opacity 360ms ease, transform 420ms cubic-bezier(.2,.9,.2,1);
-      display:inline-block; white-space:nowrap; line-height:1; pointer-events:none;
-      /* halved size from previous: clamp smaller values */
-      font-size: clamp(36px, 9vh, 110px);
-      max-width:92%; overflow-wrap:break-word;
-    }
-
-    /* per-character initial styles (will be revealed by JS) */
+    #finalMsg{\n      position:relative; z-index:2; font-family: Merriweather, serif; font-weight:900; text-transform:uppercase; letter-spacing:0.04em;\n      color: #000; /* black */\n      text-align:center;\n      opacity:0; transform:translateY(12px) scale(0.98); transition: opacity 360ms ease, transform 420ms cubic-bezier(.2,.9,.2,1);\n      display:inline-block; white-space:nowrap; line-height:1; pointer-events:none;\n      /* halved size from previous: clamp smaller values */\n      font-size: clamp(36px, 9vh, 110px);\n      max-width:92%; overflow-wrap:break-word;\n    }\n\n    /* ensure overlay shows without backdrop and text fits two lines: second line will be forced by JS */\n    #finalMsg .line{ display:block; width:100%; white-space:nowrap; }\n    #finalMsg .line--last{ margin-top:6px; }\n\n    /* per-character initial styles (will be revealed by JS) */ (will be revealed by JS) */
     .final-char{ display:inline-block; opacity:0; transform: translateY(8px) scale(0.95); transition: opacity 340ms ease, transform 420ms cubic-bezier(.2,.9,.2,1); }
 
   </style>
@@ -153,7 +140,7 @@
       <button id="run" class="btn">Lancer la simulation</button>
 
       <label>n_images:
-        <input id="n_image" type="number" value="10" min="5" style="width:80px">
+        <input id="n_image" type="number" value="100" min="5" style="width:80px">
       </label>
 
       <label>grid (nx):
@@ -165,7 +152,7 @@
       </label>
 
       <label>T_final:
-        <input id="Tfinal" type="number" value="15" step="1" style="width:80px">
+        <input id="Tfinal" type="number" value="100" step="1" style="width:80px">
       </label>
 
       <label style="display:flex;align-items:center;gap:6px" title="Si décoché, pas de calcul du champ (beaucoup plus rapide)">
@@ -180,9 +167,8 @@
     <div id="plot">
       <!-- Plotly renders inside this div -->
 
-      <!-- Final message overlay pinned to the plot area -->
+      <!-- Final message overlay pinned to the plot area (no backdrop, text only) -->
       <div id="finalOverlay" aria-hidden="true">
-        <div class="backdrop" aria-hidden="true"></div>
         <div id="finalMsg" aria-hidden="true"></div>
       </div>
     </div>
@@ -256,8 +242,7 @@
 
   const finalOverlay = document.getElementById('finalOverlay');
   const finalMsg = document.getElementById('finalMsg');
-  const finalBackdrop = finalOverlay.querySelector('.backdrop');
-
+  
   let pyodide = null, pyReady=false;
   let simData = null, playInterval = null, playSpeedMs = 100;
   let loaderInterval = null;
@@ -574,19 +559,44 @@ json.dumps(res)
     finalOverlay.classList.add('show');
     finalOverlay.setAttribute('aria-hidden','false');
 
-    const total = Math.max(1, text.length);
+    // split so the last word (DAMN !) is forced onto the next line
+    const lastSpace = text.trim().lastIndexOf(' ');
+    const firstPart = lastSpace > 0 ? text.slice(0, lastSpace) : text;
+    const lastPart = lastSpace > 0 ? text.slice(lastSpace + 1) : '';
+
+    // create two container lines
+    const line1 = document.createElement('div'); line1.className = 'line line--first';
+    const line2 = document.createElement('div'); line2.className = 'line line--last';
+    finalMsg.appendChild(line1);
+    finalMsg.appendChild(line2);
+
+    // combined length for timing
+    const total = Math.max(1, (firstPart + lastPart).length);
     const totalMs = (Number(durationSec) || 6) * 1000;
     const lettersMs = Math.max(200, Math.round(totalMs * 0.75));
     const per = lettersMs / total;
 
-    for(let i=0;i<text.length;i++){
-      const ch = text[i];
+    // reveal first part
+    for(let i=0;i<firstPart.length;i++){
+      const ch = firstPart[i];
       const span = document.createElement('span');
       span.className = 'final-char';
       span.textContent = ch === ' ' ? '\u00A0' : ch;
-      finalMsg.appendChild(span);
+      line1.appendChild(span);
       const jitter = Math.round((Math.random() - 0.5) * Math.min(30, per * 0.25));
       setTimeout(((s)=>()=>{ s.style.opacity = '1'; s.style.transform = 'translateY(0) scale(1)'; })(span), Math.max(0, Math.round(i * per) + jitter));
+    }
+
+    // small pause, then reveal last part on its own line
+    const offset = Math.round(firstPart.length * per) + 80;
+    for(let j=0;j<lastPart.length;j++){
+      const ch = lastPart[j];
+      const span = document.createElement('span');
+      span.className = 'final-char';
+      span.textContent = ch === ' ' ? '\u00A0' : ch;
+      line2.appendChild(span);
+      const jitter = Math.round((Math.random() - 0.5) * Math.min(30, per * 0.25));
+      setTimeout(((s)=>()=>{ s.style.opacity = '1'; s.style.transform = 'translateY(0) scale(1)'; })(span), Math.max(0, offset + Math.round(j * per) + jitter));
     }
 
     // ensure container message is visible/opaque after reveal
