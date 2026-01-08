@@ -91,12 +91,32 @@
     #finalOverlay.show .backdrop{ opacity:1; backdrop-filter: blur(6px); transform: scale(1); }
 
     /* message: reduced size (half) and constrained to plot; appears on top of backdrop */
-    #finalMsg{\n      /* fixed physical size as requested */\n      width:13cm;\n      height:5cm;\n      box-sizing:border-box;\n      position:relative; z-index:2; font-family: Merriweather, serif; font-weight:900; text-transform:uppercase; letter-spacing:0.04em;\n      color: #000; /* black */\n      text-align:center;\n      opacity:0; transform:translateY(12px) scale(0.98); transition: opacity 360ms ease, transform 420ms cubic-bezier(.2,.9,.2,1);\n      display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1; pointer-events:none;\n      /* font-size chosen to fit two lines inside 5cm height — adjust if needed */\n      font-size:2.2cm;\n      max-width:100%; white-space:normal; overflow:hidden; word-break:break-word;\n    }\n\n    /* ensure overlay shows without backdrop and text fits two lines: second line will be forced by JS */
+    #finalMsg{
+      /* fixed physical size as requested */
+      width:13cm;
+      height:5cm;
+      box-sizing:border-box;
+      position:relative; z-index:2; font-family: Merriweather, serif; font-weight:900; text-transform:uppercase; letter-spacing:0.04em;
+      color: #000; /* black */
+      text-align:center;
+      opacity:0; transform:translateY(12px) scale(0.98); transition: opacity 360ms ease, transform 420ms cubic-bezier(.2,.9,.2,1);
+      display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1; pointer-events:none;
+      /* font-size chosen to fit two lines inside 5cm height — adjust if needed */
+      font-size:2.2cm;
+      max-width:100%; white-space:normal; overflow:hidden; word-break:break-word;
+    }
+
+    /* ensure overlay shows without backdrop and text fits two lines: second line will be forced by JS */
     #finalMsg .line{ display:block; width:100%; white-space:nowrap; }
     #finalMsg .line--last{ margin-top:6px; }
 
-    /* per-character initial styles (will be revealed by JS) */ (will be revealed by JS) */
+    /* per-character initial styles (will be revealed by JS) */
     .final-char{ display:inline-block; opacity:0; transform: translateY(8px) scale(0.95); transition: opacity 340ms ease, transform 420ms cubic-bezier(.2,.9,.2,1); }
+
+    /* vertical word style */
+    .vertical-word{ display:block; font-weight:900; letter-spacing:0.06em; opacity:0; transform:translateY(8px) scale(0.98); }
+
+  .final-char{ display:inline-block; opacity:0; transform: translateY(8px) scale(0.95); transition: opacity 340ms ease, transform 420ms cubic-bezier(.2,.9,.2,1); }
 
   </style>
 </head>
@@ -144,7 +164,7 @@
       <button id="run" class="btn">Lancer la simulation</button>
 
       <label>n_images:
-        <input id="n_image" type="number" value="10" min="5" style="width:80px">
+        <input id="n_image" type="number" value="100" min="5" style="width:80px">
       </label>
 
       <label>grid (nx):
@@ -156,7 +176,7 @@
       </label>
 
       <label>T_final:
-        <input id="Tfinal" type="number" value="14" step="1" style="width:80px">
+        <input id="Tfinal" type="number" value="100" step="1" style="width:80px">
       </label>
 
       <label style="display:flex;align-items:center;gap:6px" title="Si décoché, pas de calcul du champ (beaucoup plus rapide)">
@@ -540,78 +560,60 @@ json.dumps(res)
     playInterval = setInterval(()=>{
       let idx = parseInt(timeSlider.value);
       idx = (idx < maxIdx) ? idx + 1 : 0;
-      // if autoplay wrapped, trigger final message
-      if(parseInt(timeSlider.value) === maxIdx && idx === 0){
-        try{ revealFinalMessageLetters(Math.min(14, Math.max(4, Math.round((parseFloat(TfinalInput.value)||100)/10)))); }catch(e){}
-      }
       updateFrame(idx);
     }, playSpeedMs);
   });
 
-  // --- Final message helpers (letter-by-letter reveal, stays on screen inside plot) ---
-  function clearFinalMessageContent(){
-    finalMsg.innerHTML = '';
-  }
-
-  function revealFinalMessageLetters(durationSec){
-    const text = "I DON'T GIVE A DAMN !".toUpperCase();
+  // --- Final message helpersealed sequentially
+    const words = ["I", "DON'T", "GIVE", "DAMN", "!"];
     clearFinalMessageContent();
 
-    // reset and show overlay
     finalOverlay.classList.remove('show');
     void finalOverlay.offsetWidth; // reflow
     finalOverlay.classList.add('show');
     finalOverlay.setAttribute('aria-hidden','false');
 
-    // split so the last word (DAMN !) is forced onto the next line
-    const lastSpace = text.trim().lastIndexOf(' ');
-    const firstPart = lastSpace > 0 ? text.slice(0, lastSpace) : text;
-    const lastPart = lastSpace > 0 ? text.slice(lastSpace + 1) : '';
+    // prepare container as column
+    finalMsg.style.display = 'flex';
+    finalMsg.style.flexDirection = 'column';
+    finalMsg.style.alignItems = 'center';
+    finalMsg.style.justifyContent = 'center';
 
-    // create two container lines
-    const line1 = document.createElement('div'); line1.className = 'line line--first';
-    const line2 = document.createElement('div'); line2.className = 'line line--last';
-    finalMsg.appendChild(line1);
-    finalMsg.appendChild(line2);
+    // create word elements
+    const elems = [];
+    words.forEach((w)=>{
+      const el = document.createElement('div');
+      el.className = 'vertical-word';
+      el.textContent = w;
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(8px) scale(0.98)';
+      finalMsg.appendChild(el);
+      elems.push(el);
+    });
 
-    // combined length for timing
-    const total = Math.max(1, (firstPart + lastPart).length);
-    const totalMs = (Number(durationSec) || 6) * 1000;
-    const lettersMs = Math.max(200, Math.round(totalMs * 0.75));
-    const per = lettersMs / total;
+    // reveal sequentially with a small stagger
+    const baseDelay = typeof delayMs === 'number' ? delayMs : 1200; // ms before first word
+    const per = 360; // ms between words
+    elems.forEach((el,i)=>{
+      setTimeout(()=>{
+        el.style.transition = 'opacity 360ms ease, transform 420ms cubic-bezier(.2,.9,.2,1)';
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0) scale(1)';
+      }, baseDelay + i * per);
+    });
 
-    // reveal first part
-    for(let i=0;i<firstPart.length;i++){
-      const ch = firstPart[i];
-      const span = document.createElement('span');
-      span.className = 'final-char';
-      span.textContent = ch === ' ' ? ' ' : ch;
-      line1.appendChild(span);
-      const jitter = Math.round((Math.random() - 0.5) * Math.min(30, per * 0.25));
-      setTimeout(((s)=>()=>{ s.style.opacity = '1'; s.style.transform = 'translateY(0) scale(1)'; })(span), Math.max(0, Math.round(i * per) + jitter));
-    }
-
-    // small pause, then reveal last part on its own line
-    const offset = Math.round(firstPart.length * per) + 80;
-    for(let j=0;j<lastPart.length;j++){
-      const ch = lastPart[j];
-      const span = document.createElement('span');
-      span.className = 'final-char';
-      span.textContent = ch === ' ' ? ' ' : ch;
-      line2.appendChild(span);
-      const jitter = Math.round((Math.random() - 0.5) * Math.min(30, per * 0.25));
-      setTimeout(((s)=>()=>{ s.style.opacity = '1'; s.style.transform = 'translateY(0) scale(1)'; })(span), Math.max(0, offset + Math.round(j * per) + jitter));
-    }
-
-    // ensure container message is visible/opaque after reveal
+    // ensure whole container becomes visible after reveals
     setTimeout(()=>{
       finalMsg.style.opacity = '1';
       finalMsg.style.transform = 'none';
-      // leave it on screen — it will remain until simulation restarted
-    }, lettersMs + 160);
+    }, baseDelay + words.length * per + 120);
+
+    // keep it on screen until next run
   }
 
   function hideFinalMessage(){
+    // cancel any scheduled reveal
+    if(finalRevealTimer){ clearTimeout(finalRevealTimer); finalRevealTimer = null; }
     finalOverlay.classList.remove('show');
     finalOverlay.setAttribute('aria-hidden', 'true');
     clearFinalMessageContent();
@@ -628,8 +630,13 @@ json.dumps(res)
     try {
       const n_image = parseInt(nImageInput.value) || 100;
       const grid_nx = parseInt(gridNxInput.value) || 100;
-      const grid_ny = parseInt(gridNyInput.value) || 100;
-      const Tfinal = parseFloat(TfinalInput.value) || 100.0;
+      const grid_ny = parseInt(gridNyInput.hideFinalMessage();
+
+    // schedule the vertical message to appear shortly after launching the simulation
+    if(finalRevealTimer){ clearTimeout(finalRevealTimer); }
+    finalRevealTimer = setTimeout(()=>{ revealVerticalWords(1200); }, 1200);
+
+    runBtn.disabled = true;finalInput.value) || 100.0;
       const compute_field = computeFieldCheckbox.checked ? 'True' : 'False';
 
       // 1) ensure pyodide + numpy (loader overlay shows progress)
@@ -660,5 +667,4 @@ json.dumps(res)
     }
   });
 </script>
-</body>
-</html>
+</bodyrevealVerticalWords
