@@ -13,8 +13,8 @@ n_image = 100
 dt_default = T_final / max(1, (n_image - 1))
 
 # grille champ par défaut (identique à script)
-grid_nx_default = 100
-grid_ny_default = 100
+grid_nx_default = 20
+grid_ny_default = 20
 grid_extent = 5.0
 
 # particules initiales 5x5
