@@ -116,7 +116,7 @@
 
 <main>
   <div class="toolbar">
-    <h2 style="margin:0;font-family:Merriweather,serif">Simulation — jetlets 0 (champ & particules)</h2>
+    <h2 style="margin:0;font-family:Merriweather,serif">Simulation — jetlets 0 </h2>
     <div class="search" aria-hidden="false">
       <input id="q" type="search" placeholder="Recherche rapide (non utilisée ici)">
     </div>
@@ -147,7 +147,7 @@
       </label>
 
       <div class="controls-right">
-        <div style="text-align:right"><span id="status" class="small">Prêt — place Stage.html et simulation.py dans le même dossier, servez via HTTP.</span></div>
+        <div style="text-align:right"><span id="status" class="small"></span></div>
       </div>
     </div>
 
@@ -164,7 +164,6 @@
       <button id="play" class="btn">▶ Play</button>
     </div>
 
-    <div style="margin-top:8px" class="small">Affichage : palette <strong>plasma</strong>, dégradé lisse sur la colorbar, particules rouges + flèches de vitesse instantanées.</div>
   </section>
 </main>
 
@@ -419,7 +418,7 @@ json.dumps(res)
     traces.push({ x:hxp, y:hyp, mode:'markers', marker:{size: STYLE.particleArrowHeadSize, symbol:'triangle-up', color:'red'}, hoverinfo:'none', showlegend:false });
 
     const layout = {
-      title: 'Champ |u| + particules (instantané)',
+      title: ' Particules soumisent au champ 0 jetlet.',
       margin:{t:40,l:60,r:80,b:60},
       xaxis:{title:'x'}, yaxis:{title:'y',scaleanchor:'x',scaleratio:1}
     };
@@ -509,7 +508,7 @@ json.dumps(res)
       playBtn.textContent = '▶ Play';
       return;
     }
-    playBtn.textContent = '⏸ Pause';
+    playBtn.textContent = 'Pause';
     const maxIdx = simData.t.length - 1;
     playInterval = setInterval(()=>{
       let idx = parseInt(timeSlider.value);
@@ -540,7 +539,7 @@ json.dumps(res)
       statusEl.textContent = 'Simulation calculée — rendu...';
       initPlot(data);
       updateFrame(0);
-      statusEl.textContent = 'Terminé — utilisez le slider ou Play.';
+      statusEl.textContent = 'Terminé';
       progressBar.style.width = '100%';
     } catch(e){
       console.error(e);
