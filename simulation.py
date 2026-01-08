@@ -81,7 +81,6 @@ def jacobian_u_at_point_fd(x, qs_list, ps_list, sigma=sigma, h=1e-6):
         J[:, j] = (u_plus - u_minus) / (2.0 * h)
     return J
 
-# sigma_k and grad versions (depend on kvecs & amps)
 def sigma_k_at(kidx, qs_array, kvecs, amps):
     k = kvecs[kidx]
     phase = qs_array.dot(k)
@@ -168,13 +167,6 @@ def build_initial_state(grid_nx_local=grid_nx, grid_ny_local=grid_ny, mode=orien
 # ---------------- simulate (entrée/retour compatibles JS) ----------------
 def simulate(steps=None, dt=None, n_image_local=None, grid_nx_field=None, grid_ny_field=None,
              grid_extent_local=None, rng_seed=None, compute_field=False):
-    """
-    Retourne dict sérialisable (tous les tableaux transformés en listes) :
-      't', 'qs_hist' (list of flat lists), 'u_selfs' (flat lists), 'Ux_fields', 'Uy_fields',
-      'grid_x', 'grid_y', 'N', 'n_image', 'grid_nx', 'grid_ny'
-    compute_field: si False Ux_fields & Uy_fields seront des listes vides par frame.
-    rng_seed: entier pour reproductibilité (affecte initialisation p & tirages stochastiques)
-    """
     if n_image_local is None:
         n_image_local = n_image
     if steps is None:
@@ -190,7 +182,6 @@ def simulate(steps=None, dt=None, n_image_local=None, grid_nx_field=None, grid_n
     if rng_seed is None:
         rng_seed = 42
 
-    # build kvecs & amps reproducibly per run (so same rng_seed gives same amps)
     rng_local = np.random.RandomState(rng_seed)
     if K_noise > 0:
         kvecs = []
@@ -203,11 +194,9 @@ def simulate(steps=None, dt=None, n_image_local=None, grid_nx_field=None, grid_n
         kvecs = np.zeros((0,2))
         amps = np.array([])
 
-    # build initial state
     qs_init, ps_init = build_initial_state(grid_nx_local=grid_nx, grid_ny_local=grid_ny, mode=orientation_mode, rng_seed=rng_seed)
     N = qs_init.shape[0]
 
-    # prepare flattened state vector
     state = np.zeros(4 * N)
     for i in range(N):
         state[2*i:2*i+2] = qs_init[i]
@@ -218,7 +207,6 @@ def simulate(steps=None, dt=None, n_image_local=None, grid_nx_field=None, grid_n
     ps_hist = np.zeros((n_image_local, N, 2))
     u_selfs = np.zeros((n_image_local, N, 2))
 
-    # grid for field
     if compute_field:
         xs = np.linspace(-grid_extent_local, grid_extent_local, grid_nx_field)
         ys = np.linspace(-grid_extent_local, grid_extent_local, grid_ny_field)
@@ -236,22 +224,16 @@ def simulate(steps=None, dt=None, n_image_local=None, grid_nx_field=None, grid_n
     sqrt_dt = np.sqrt(dt)
 
     for i in range(n_image_local):
-        # record state
         for a in range(N):
             qs_hist[i, a] = state[2*a:2*a+2]
             ps_hist[i, a] = state[2*N + 2*a:2*N + 2*a+2]
-
         qs_now = np.array([state[2*a:2*a+2] for a in range(N)])
         ps_now = np.array([state[2*N + 2*a:2*N + 2*a+2] for a in range(N)])
-
-        # compute u_selfs for each particle (velocity from all sources)
         for a in range(N):
             u_selfs[i, a] = u_at_particle(qs_now[a], qs_now, ps_now, sigma=sigma)
 
         if i < n_image_local - 1:
-            # deterministic RK4 step
             state_det = rk4_step(state, dt, N, sigma=sigma)
-
             if K_noise > 0:
                 g0 = np.zeros((K_noise, 4*N))
                 for kidx in range(K_noise):
@@ -267,14 +249,12 @@ def simulate(steps=None, dt=None, n_image_local=None, grid_nx_field=None, grid_n
             else:
                 state = state_det
 
-    # compute field on grid if requested (uses qs_hist & ps_hist)
     if compute_field and grid_pts.shape[0] > 0:
         for i in range(n_image_local):
             uv = u_au_point_vectorized(grid_pts, qs_hist[i], ps_hist[i], sigma=sigma)  # (M,2)
             Ux_fields[i] = uv[:,0].ravel()
             Uy_fields[i] = uv[:,1].ravel()
 
-    # prepare output, convert to lists (qs_hist & u_selfs flattened per frame)
     out = {
         't': (np.arange(n_image_local) * dt).tolist(),
         'qs_hist': [frame.ravel().tolist() for frame in qs_hist],
@@ -290,7 +270,7 @@ def simulate(steps=None, dt=None, n_image_local=None, grid_nx_field=None, grid_n
     }
     return out
 
-# quick test when run directly (optional)
+# quick test
 if __name__ == "__main__":
     res = simulate(n_image_local=20, grid_nx_field=24, grid_ny_field=24, compute_field=False)
     print("simulate keys:", list(res.keys()))
