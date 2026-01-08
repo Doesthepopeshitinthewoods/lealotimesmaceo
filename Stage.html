@@ -23,6 +23,7 @@
     #plotField,#plotParticles{width:100%;height:420px;margin-top:10px}
     .slider-row{display:flex;align-items:center;gap:12px;margin-top:10px}
     .time-label{color:var(--muted);min-width:80px}
+    .small{font-size:13px;color:var(--muted)}
   </style>
 </head>
 <body>
@@ -30,25 +31,29 @@
 
 <main>
   <section class="card">
-    <h2 style="font-family:Merriweather,serif;margin:0 0 10px">Simulation & animation</h2>
+    <h2 style="font-family:Merriweather,serif;margin:0 0 10px">Simulation & animation — 25 particules (jetlet niveau 0)</h2>
 
     <div class="controls">
       <button id="run" class="btn">Lancer la simulation</button>
 
       <label>n_images:
-        <input id="n_image" type="number" value="60" min="5" style="width:90px">
+        <input id="n_image" type="number" value="30" min="5" style="width:90px">
       </label>
 
       <label>grid (nx):
-        <input id="grid_nx" type="number" value="40" min="8" style="width:80px">
+        <input id="grid_nx" type="number" value="16" min="8" style="width:80px">
       </label>
 
       <label>grid (ny):
-        <input id="grid_ny" type="number" value="40" min="8" style="width:80px">
+        <input id="grid_ny" type="number" value="16" min="8" style="width:80px">
       </label>
 
       <label>T_final:
-        <input id="Tfinal" type="number" value="30" step="1" style="width:90px">
+        <input id="Tfinal" type="number" value="10" step="1" style="width:90px">
+      </label>
+
+      <label style="display:flex;align-items:center;gap:6px" title="Si décoché, on ne calcule pas le champ sur la grille (beaucoup plus rapide)">
+        <input id="compute_field" type="checkbox" style="width:16px;height:16px"> Calculer le champ (lent)
       </label>
 
       <div style="flex:1;text-align:right"><span id="status" class="status">Prêt — place Stage.html et simulation.py dans le même dossier, servez via HTTP.</span></div>
@@ -62,6 +67,8 @@
       <input id="timeSlider" type="range" min="0" max="0" value="0" step="1" style="flex:1">
       <button id="play" class="btn" style="width:90px">▶ Play</button>
     </div>
+
+    <div style="margin-top:8px" class="small">Remarque : par défaut la simulation évolue 25 particules (5×5) avec vitesses initiales aléatoires — c'est le niveau « jetlet 0 ».</div>
   </section>
 </main>
 
@@ -73,6 +80,7 @@
   const gridNxInput = document.getElementById('grid_nx');
   const gridNyInput = document.getElementById('grid_ny');
   const TfinalInput = document.getElementById('Tfinal');
+  const computeFieldCheckbox = document.getElementById('compute_field');
 
   const plotFieldDiv = document.getElementById('plotField');
   const plotParticlesDiv = document.getElementById('plotParticles');
@@ -87,23 +95,15 @@
   async function ensurePyodide(){
     if(pyReady) return;
     statusEl.textContent = 'Chargement Pyodide...';
-    // charger pyodide en s'assurant d'utiliser le bon indexURL
     pyodide = await loadPyodide({indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.0/full/"});
     statusEl.textContent = 'Pyodide chargé — préparation de numpy...';
-
-    // Tentative standard (loadPackage) puis fallback micropip si besoin
     try {
       await pyodide.loadPackage(['numpy']);
       statusEl.textContent = 'numpy chargé via loadPackage.';
     } catch (e) {
       console.warn('loadPackage numpy failed, fallback to micropip', e);
+      try { await pyodide.loadPackage(['micropip']); } catch(err){}
       try {
-        await pyodide.loadPackage(['micropip']);
-      } catch(err) {
-        console.warn('loadPackage micropip failed (peut être déjà présent):', err);
-      }
-      try {
-        // installer numpy via micropip
         await pyodide.runPythonAsync(`
 import micropip
 await micropip.install("numpy")
@@ -115,7 +115,6 @@ await micropip.install("numpy")
         throw err2;
       }
     }
-
     pyReady = true;
     statusEl.textContent = 'Pyodide & numpy prêts.';
   }
@@ -126,7 +125,6 @@ await micropip.install("numpy")
     if(!r.ok){ statusEl.textContent = 'Erreur fetch simulation.py: HTTP ' + r.status; throw new Error('fetch error'); }
     const txt = await r.text();
     statusEl.textContent = 'Injection du code Python...';
-    // on exécute le fichier (il définit simulate)
     try {
       await pyodide.runPythonAsync(txt);
       statusEl.textContent = 'Code Python injecté.';
@@ -137,12 +135,12 @@ await micropip.install("numpy")
     }
   }
 
-  async function callSim(n_image, grid_nx, grid_ny, Tfinal){
+  async function callSim(n_image, grid_nx, grid_ny, Tfinal, compute_field){
     statusEl.textContent = 'Exécution simulate(...) (peut prendre du temps)...';
     const dt = Tfinal / Math.max(1, (n_image - 1));
     const pyCall = `
 import json
-res = simulate(steps=None, dt=${dt}, n_image_local=${n_image}, grid_nx_field=${grid_nx}, grid_ny_field=${grid_ny}, grid_extent_local=5.0)
+res = simulate(steps=None, dt=${dt}, n_image_local=${n_image}, grid_nx_field=${grid_nx}, grid_ny_field=${grid_ny}, grid_extent_local=5.0, compute_field=${compute_field})
 json.dumps(res)
 `;
     const jsonStr = await pyodide.runPythonAsync(pyCall);
@@ -150,43 +148,32 @@ json.dumps(res)
   }
 
   function initPlots(data){
-    // data: { t, qs_hist, u_selfs, Ufields, grid_x, grid_y, N, n_image }
     simData = data;
-    const t = data.t;
-    const n_image = data.n_image;
-    const N = data.N;
-    const grid_x = data.grid_x;
-    const grid_y = data.grid_y;
-    // first frame
-    const frame0_U = data.Ufields[0]; // length grid_nx*grid_ny
-    const grid_nx = data.grid_nx;
-    const grid_ny = data.grid_ny;
-    // reshape z
-    const z0 = [];
-    for(let j=0;j<grid_ny;j++){
-      z0.push(frame0_U.slice(j*grid_nx, (j+1)*grid_nx));
+    // if no Ufields (empty lists), hide plotField
+    const hasField = Array.isArray(data.Ufields) && data.Ufields.length>0 && data.Ufields[0].length > 0;
+    if(!hasField){
+      plotFieldDiv.style.display = 'none';
+    } else {
+      plotFieldDiv.style.display = 'block';
+      const grid_nx = data.grid_nx, grid_ny = data.grid_ny;
+      const frame0_U = data.Ufields[0];
+      const z0 = [];
+      for(let j=0;j<grid_ny;j++){
+        z0.push(frame0_U.slice(j*grid_nx, (j+1)*grid_nx));
+      }
+      const heat = { z:z0, x: data.grid_x, y: data.grid_y, type:'heatmap', colorscale:'Viridis', colorbar:{title:'|u|'} };
+      Plotly.newPlot(plotFieldDiv, [heat], { title: 'Champ |u| (background)', margin:{t:30}, xaxis:{title:'x'}, yaxis:{title:'y',scaleanchor:'x',scaleratio:1} }, {responsive:true});
     }
 
-    // field heatmap (use grid_x, grid_y order)
-    const heat = {
-      z: z0,
-      x: grid_x,
-      y: grid_y,
-      type: 'heatmap',
-      colorscale: 'Viridis',
-      colorbar: { title: '|u|' }
-    };
-
-    Plotly.newPlot(plotFieldDiv, [heat], { title: 'Champ |u| (background)', margin:{t:30}, xaxis:{title:'x'}, yaxis:{title:'y',scaleanchor:'x',scaleratio:1} }, {responsive:true});
-
     // particles scatter (initial)
-    const frame0_qs = data.qs_hist[0]; // flattened [x1,y1,x2,y2,...]
+    const frame0_qs = data.qs_hist[0]; // flattened [x1,y1,...]
     const xs = [], ys = [];
     for(let i=0;i<frame0_qs.length;i+=2){ xs.push(frame0_qs[i]); ys.push(frame0_qs[i+1]); }
     const particles = { x: xs, y: ys, mode:'markers', marker:{size:8,color:'red'}, name:'particles' };
 
-    // velocity arrows as line segments concatenated (x0,x1,null, x0_2,x1_2,null, ...)
-    function buildArrowSegments(qs_flat, us_flat, scale=0.5){
+    // arrows
+    const frame0_u = data.u_selfs[0];
+    function buildArrowSegments(qs_flat, us_flat, scale=0.6){
       const ax = [], ay = [];
       for(let i=0;i<qs_flat.length;i+=2){
         const x0 = qs_flat[i], y0 = qs_flat[i+1];
@@ -198,35 +185,36 @@ json.dumps(res)
       }
       return { x:ax, y:ay };
     }
-    const frame0_u = data.u_selfs[0];
     const arrowSeg = buildArrowSegments(frame0_qs, frame0_u, 0.6);
-    const arrows = { x: arrowSeg.x, y: arrowSeg.y, mode:'lines', line:{color:'black',width:2}, hoverinfo:'none', showlegend:false };
+    const arrows = { x:arrowSeg.x, y:arrowSeg.y, mode:'lines', line:{color:'black',width:2}, hoverinfo:'none', showlegend:false };
 
     Plotly.newPlot(plotParticlesDiv, [particles, arrows], { title:'Positions & vitesses locales', margin:{t:30}, xaxis:{title:'x'}, yaxis:{title:'y',scaleanchor:'x',scaleratio:1} }, {responsive:true});
 
     // slider setup
+    const t = data.t;
     timeSlider.min = 0;
     timeSlider.max = Math.max(0, t.length - 1);
     timeSlider.value = 0;
     timeDisplay.textContent = t[0].toFixed(3);
 
-    // store for updates
-    stored = { t, N, grid_nx, grid_ny };
+    stored = { t };
   }
 
   function updateFrame(idx){
     if(!simData) return;
     const data = simData;
     const t = data.t;
-    // update field heatmap
-    const grid_nx = data.grid_nx;
-    const grid_ny = data.grid_ny;
-    const frameU = data.Ufields[idx];
-    const z = [];
-    for(let j=0;j<grid_ny;j++){
-      z.push(frameU.slice(j*grid_nx, (j+1)*grid_nx));
+    // update field if present
+    const hasField = Array.isArray(data.Ufields) && data.Ufields.length>0 && data.Ufields[0].length > 0;
+    if(hasField){
+      const grid_nx = data.grid_nx, grid_ny = data.grid_ny;
+      const frameU = data.Ufields[idx];
+      const z = [];
+      for(let j=0;j<grid_ny;j++){
+        z.push(frameU.slice(j*grid_nx, (j+1)*grid_nx));
+      }
+      Plotly.restyle(plotFieldDiv, {'z':[z]});
     }
-    Plotly.restyle(plotFieldDiv, {'z':[z]});
 
     // update particles
     const qs = data.qs_hist[idx];
@@ -281,14 +269,15 @@ json.dumps(res)
   runBtn.addEventListener('click', async () => {
     runBtn.disabled = true;
     try {
-      const n_image = parseInt(nImageInput.value) || 60;
-      const grid_nx = parseInt(gridNxInput.value) || 40;
-      const grid_ny = parseInt(gridNyInput.value) || 40;
-      const Tfinal = parseFloat(TfinalInput.value) || 30.0;
+      const n_image = parseInt(nImageInput.value) || 30;
+      const grid_nx = parseInt(gridNxInput.value) || 16;
+      const grid_ny = parseInt(gridNyInput.value) || 16;
+      const Tfinal = parseFloat(TfinalInput.value) || 10.0;
+      const compute_field = computeFieldCheckbox.checked ? 'True' : 'False';
 
       await ensurePyodide();
       await fetchAndInjectSimulation();
-      const data = await callSim(n_image, grid_nx, grid_ny, Tfinal);
+      const data = await callSim(n_image, grid_nx, grid_ny, Tfinal, compute_field);
       statusEl.textContent = 'Simulation calculée en Python — rendu...';
       initPlots(data);
       updateFrame(0);
