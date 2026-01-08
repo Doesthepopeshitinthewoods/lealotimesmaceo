@@ -2,92 +2,61 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Stage — Simulation</title>
+  <title>Stage — Simulation (animation)</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.24.0/full/pyodide.js"></script>
-
   <style>
-    :root{
-      --maxw:760px; --bg:#ffffff; --text:#111827; --muted:#6b7280; --accent:#1f2937;
-      --brand:#8b0000; --line:#e5e7eb;
-    }
+    :root{--maxw:900px;--brand:#8b0000;--line:#e5e7eb;--muted:#6b7280}
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.7}
-    a{color:var(--accent);text-decoration:none}
-    a:hover{text-decoration:underline}
-
-    header{background:var(--brand);border-bottom:1px solid #7a0000}
-    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
-    h1{margin:0;font-family:Merriweather,serif;font-size:20px;font-weight:700;color:#fff}
-
-    nav{display:flex;align-items:center;gap:14px;flex-wrap:nowrap}
-    nav a{color:#f3f4f6;font-size:14px}
-    nav a.active{text-decoration:underline;font-weight:600}
-
-    main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
-
-    .stage-card{border:1px solid var(--line);border-radius:8px;padding:16px;background:#fff}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;background:#fff;color:#111827}
+    header{background:var(--brand);padding:14px 0;color:#fff}
+    .wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between}
+    h1{font-family:Merriweather,serif;margin:0;font-size:18px}
+    main{max-width:var(--maxw);margin:28px auto;padding:0 20px}
+    .card{border:1px solid var(--line);border-radius:8px;padding:16px;background:#fff}
     .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
-    .controls label{font-size:14px;color:var(--muted);display:flex;gap:6px;align-items:center}
-    input[type="number"], input[type="range"]{padding:8px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit}
-    .btn {
-      background:var(--brand); color:#fff; border:none; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:600;
-    }
-    .status{color:var(--muted);font-size:13px;margin-bottom:10px}
-    #plotTraj, #plotFields{width:100%;height:360px;border-radius:6px;border:1px solid var(--line);background:#fff;overflow:hidden;margin-top:12px}
-
+    input[type="number"]{padding:6px;border:1px solid #ddd;border-radius:6px}
+    .btn{background:var(--brand);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+    .status{color:var(--muted);font-size:13px;margin-bottom:8px}
+    #plotField,#plotParticles{width:100%;height:420px;margin-top:10px}
     .slider-row{display:flex;align-items:center;gap:12px;margin-top:10px}
-    .time-label{font-size:13px;color:var(--muted);min-width:70px}
-
-    footer{border-top:1px solid var(--line);text-align:center;font-size:14px;color:var(--muted);padding:18px 20px;margin-top:28px}
-    @media (max-width:760px){
-      .wrap{padding:14px}
-      .controls{flex-direction:column;align-items:stretch}
-    }
+    .time-label{color:var(--muted);min-width:80px}
   </style>
 </head>
 <body>
-
-<header>
-  <div class="wrap">
-    <h1>Blog de l'intranquilité</h1>
-    <div style="display:flex;align-items:center;gap:16px">
-      <nav aria-label="Navigation principale">
-        <a href="index.html">Accueil</a>
-        <a href="articles.html">Articles</a>
-        <a href="projets-libres-pensees.html">Projets</a>
-      </nav>
-    </div>
-  </div>
-</header>
+<header><div class="wrap"><h1>Blog de l'intranquilité — Stage</h1></div></header>
 
 <main>
-  <section class="stage-card" aria-labelledby="stage-title">
-    <h2 id="stage-title" style="margin:0 0 8px;font-family:Merriweather,serif">Stage — Exécuter la simulation</h2>
+  <section class="card">
+    <h2 style="font-family:Merriweather,serif;margin:0 0 10px">Simulation & animation</h2>
 
-    <div class="controls" role="region" aria-label="Contrôles de la simulation">
+    <div class="controls">
       <button id="run" class="btn">Lancer la simulation</button>
 
-      <label>steps:
-        <input id="steps" type="number" value="400" min="1" style="width:110px">
+      <label>n_images:
+        <input id="n_image" type="number" value="60" min="5" style="width:90px">
       </label>
 
-      <label>dt:
-        <input id="dt" type="number" step="0.01" value="0.05" style="width:110px">
+      <label>grid (nx):
+        <input id="grid_nx" type="number" value="40" min="8" style="width:80px">
       </label>
+
+      <label>grid (ny):
+        <input id="grid_ny" type="number" value="40" min="8" style="width:80px">
+      </label>
+
+      <label>T_final:
+        <input id="Tfinal" type="number" value="30" step="1" style="width:90px">
+      </label>
+
+      <div style="flex:1;text-align:right"><span id="status" class="status">Prêt — place Stage.html et simulation.py dans le même dossier, servez via HTTP.</span></div>
     </div>
 
-    <div class="status" id="status">Prêt — cliquez sur "Lancer la simulation".</div>
+    <div id="plotField"></div>
+    <div id="plotParticles" style="margin-top:10px"></div>
 
-    <!-- Trajectoire -->
-    <div id="plotTraj" aria-label="Trajectoire (x,y)"></div>
-
-    <!-- Champs -->
-    <div id="plotFields" aria-label="Magnitudes P, E, B"></div>
-
-    <!-- Slider -->
     <div class="slider-row">
       <div class="time-label">Temps : <span id="timeDisplay">—</span> s</div>
       <input id="timeSlider" type="range" min="0" max="0" value="0" step="1" style="flex:1">
@@ -96,211 +65,203 @@
   </section>
 </main>
 
-<footer>
-  © <span id="year"></span> — Blog personnel
-</footer>
-
 <script>
-  document.getElementById('year').textContent = new Date().getFullYear();
-
   // DOM
-  const statusEl = document.getElementById('status');
   const runBtn = document.getElementById('run');
-  const stepsInput = document.getElementById('steps');
-  const dtInput = document.getElementById('dt');
+  const statusEl = document.getElementById('status');
+  const nImageInput = document.getElementById('n_image');
+  const gridNxInput = document.getElementById('grid_nx');
+  const gridNyInput = document.getElementById('grid_ny');
+  const TfinalInput = document.getElementById('Tfinal');
 
-  const plotTrajDiv = document.getElementById('plotTraj');
-  const plotFieldsDiv = document.getElementById('plotFields');
+  const plotFieldDiv = document.getElementById('plotField');
+  const plotParticlesDiv = document.getElementById('plotParticles');
+
   const timeSlider = document.getElementById('timeSlider');
   const timeDisplay = document.getElementById('timeDisplay');
   const playBtn = document.getElementById('play');
 
-  let pyodide = null;
-  let pyReady = false;
-  let simData = null;
-  let playInterval = null;
+  let pyodide = null, pyReady = false;
+  let simData = null, stored=null, playInterval=null;
 
   async function ensurePyodide(){
-    if (pyReady) return;
-    statusEl.textContent = 'Chargement de Pyodide (quelques secondes)...';
-    try {
-      pyodide = await loadPyodide();
-      pyReady = true;
-      statusEl.textContent = 'Pyodide chargé.';
-    } catch (e) {
-      console.error(e);
-      statusEl.textContent = 'Erreur chargement Pyodide: ' + (e.message || e);
-      throw e;
-    }
+    if(pyReady) return;
+    statusEl.textContent = 'Chargement Pyodide & numpy...';
+    pyodide = await loadPyodide();
+    // numpy is commonly available but ensure package loaded
+    try { await pyodide.loadPackage(['numpy']); } catch(e){ console.warn('loadPackage numpy failed',e); }
+    pyReady = true;
+    statusEl.textContent = 'Pyodide prêt.';
   }
 
   async function fetchAndInjectSimulation(){
-    statusEl.textContent = 'Récupération de simulation.py...';
-    try {
-      const resp = await fetch('simulation.py', {cache: "no-store"});
-      if (!resp.ok) throw new Error('HTTP ' + resp.status);
-      const txt = await resp.text();
-      statusEl.textContent = 'Injection du code de simulation...';
-      await pyodide.runPythonAsync(txt);
-      statusEl.textContent = 'Code injecté.';
-      return true;
-    } catch (e) {
-      console.error(e);
-      statusEl.textContent = 'Impossible de charger/injecter simulation.py: ' + (e.message || e);
-      return false;
-    }
+    statusEl.textContent = 'Récupération simulation.py ...';
+    const r = await fetch('simulation.py', {cache:'no-store'});
+    if(!r.ok){ statusEl.textContent = 'Erreur fetch simulation.py: HTTP ' + r.status; throw new Error('fetch error'); }
+    const txt = await r.text();
+    statusEl.textContent = 'Injection du code...';
+    await pyodide.runPythonAsync(txt);
+    statusEl.textContent = 'Code injecté.';
   }
 
-  async function runSim(steps, dt){
-    statusEl.textContent = 'Exécution de simulate(...) ...';
-    // Sérialiser le résultat côté Python (gère numpy si présent)
-    const pyCmd = `
+  async function callSim(n_image, grid_nx, grid_ny, Tfinal){
+    statusEl.textContent = 'Exécution simulate(...) (peut prendre du temps)...';
+    // prepare call: call simulate(n_image=n_image, dt=Tfinal/(n_image-1), grid_nx_field=grid_nx, grid_ny_field=grid_ny)
+    const dt = Tfinal / Math.max(1, (n_image - 1));
+    const pyCall = `
 import json
-def _to_serializable(o):
-    try:
-        import numpy as _np
-    except Exception:
-        _np = None
-    if _np is not None and isinstance(o, _np.ndarray):
-        return o.tolist()
-    if isinstance(o, dict):
-        return {k: _to_serializable(v) for k,v in o.items()}
-    if isinstance(o, (list, tuple)):
-        return [_to_serializable(v) for v in o]
-    return o
-
-res = simulate(steps=${steps}, dt=${dt})
-res_serial = _to_serializable(res)
-json.dumps(res_serial)
+res = simulate(n_image_local=${n_image}, dt=${dt}, grid_nx_field=${grid_nx}, grid_ny_field=${grid_ny}, grid_extent_local=5.0)
+json.dumps(res)
 `;
-    try {
-      const jsonStr = await pyodide.runPythonAsync(pyCmd);
-      const data = JSON.parse(jsonStr);
-      statusEl.textContent = 'Simulation terminée.';
-      return data;
-    } catch (e) {
-      console.error('Erreur simulate:', e);
-      statusEl.textContent = 'Erreur lors de la simulation : ' + (e.message || e);
-      throw e;
-    }
+    const jsonStr = await pyodide.runPythonAsync(pyCall);
+    return JSON.parse(jsonStr);
   }
 
-  // calcule magnitude arrays en JS
-  function magnitudeFromComponents(ax, ay, az){
-    const n = Math.min(ax.length, ay.length, az.length);
-    const out = new Array(n);
-    for (let i=0;i<n;i++){
-      const vx = ax[i]||0, vy = ay[i]||0, vz = az[i]||0;
-      out[i] = Math.sqrt(vx*vx + vy*vy + vz*vz);
-    }
-    return out;
-  }
-
-  // plot initial
   function initPlots(data){
-    // prepare arrays
+    // data: { t, qs_hist, u_selfs, Ufields, grid_x, grid_y, N, n_image }
+    simData = data;
     const t = data.t;
-    const rx = data.rx, ry = data.ry;
-    const Pmag = magnitudeFromComponents(data.Px, data.Py, data.Pz);
-    const Emag = magnitudeFromComponents(data.Ex, data.Ey, data.Ez);
-    const Bmag = magnitudeFromComponents(data.Bx, data.By, data.Bz);
+    const n_image = data.n_image;
+    const N = data.N;
+    const grid_x = data.grid_x;
+    const grid_y = data.grid_y;
+    // first frame
+    const frame0_U = data.Ufields[0]; // length grid_nx*grid_ny
+    const grid_nx = data.grid_nx;
+    const grid_ny = data.grid_ny;
+    // reshape z
+    const z0 = [];
+    for(let j=0;j<grid_ny;j++){
+      z0.push(frame0_U.slice(j*grid_nx, (j+1)*grid_nx));
+    }
 
-    // trajectory plot: line + moving marker
-    const trajLine = { x: rx, y: ry, mode: 'lines', name: 'traj', line:{width:2} };
-    const trajMarker = { x: [rx[0]], y: [ry[0]], mode: 'markers', marker:{size:10,color:'crimson'}, name:'position' };
-
-    const layoutTraj = {
-      title: 'Trajectoire (x, y)',
-      margin: { t: 40 },
-      xaxis: { title: 'x' },
-      yaxis: { title: 'y', scaleanchor:'x', scaleratio:1 } // keep aspect
+    // field heatmap (use grid_x, grid_y order)
+    const heat = {
+      z: z0,
+      x: grid_x,
+      y: grid_y,
+      type: 'heatmap',
+      colorscale: 'Viridis',
+      colorbar: { title: '|u|' }
     };
 
-    Plotly.newPlot(plotTrajDiv, [trajLine, trajMarker], layoutTraj, {responsive:true});
+    Plotly.newPlot(plotFieldDiv, [heat], { title: 'Champ |u| (background)', margin:{t:30}, xaxis:{title:'x'}, yaxis:{title:'y',scaleanchor:'x',scaleratio:1} }, {responsive:true});
 
-    // fields plot: magnitudes and vertical time-line
-    const pTrace = { x: t, y: Pmag, mode:'lines', name:'|P| (mag)' };
-    const eTrace = { x: t, y: Emag, mode:'lines', name:'|E| (mag)' };
-    const bTrace = { x: t, y: Bmag, mode:'lines', name:'|B| (mag)' };
+    // particles scatter (initial)
+    const frame0_qs = data.qs_hist[0]; // flattened [x1,y1,x2,y2,...]
+    const xs = [], ys = [];
+    for(let i=0;i<frame0_qs.length;i+=2){ xs.push(frame0_qs[i]); ys.push(frame0_qs[i+1]); }
+    const particles = { x: xs, y: ys, mode:'markers', marker:{size:8,color:'red'}, name:'particles' };
 
-    const layoutFields = {
-      title: 'Magnitudes : P, E, B',
-      margin:{t:40},
-      xaxis: { title:'t (s)' },
-      yaxis: { title:'magnitude' },
-      shapes: [  // vertical line for current time; updated later
-        { type:'line', x0: t[0], x1: t[0], y0:0, y1: Math.max(...Pmag, ...Emag, ...Bmag)*1.1, line:{color:'black',width:1,dash:'dash'} }
-      ]
-    };
+    // velocity arrows as line segments concatenated (x0,x1,null, x0_2,x1_2,null, ...)
+    function buildArrowSegments(qs_flat, us_flat, scale=0.5){
+      const ax = [], ay = [];
+      for(let i=0;i<qs_flat.length;i+=2){
+        const x0 = qs_flat[i], y0 = qs_flat[i+1];
+        const vx = us_flat[i], vy = us_flat[i+1];
+        const x1 = x0 + scale * vx;
+        const y1 = y0 + scale * vy;
+        ax.push(x0); ax.push(x1); ax.push(null);
+        ay.push(y0); ay.push(y1); ay.push(null);
+      }
+      return { x:ax, y:ay };
+    }
+    const frame0_u = data.u_selfs[0];
+    const arrowSeg = buildArrowSegments(frame0_qs, frame0_u, 0.6);
+    const arrows = { x: arrowSeg.x, y: arrowSeg.y, mode:'lines', line:{color:'black',width:2}, hoverinfo:'none', showlegend:false };
 
-    Plotly.newPlot(plotFieldsDiv, [pTrace, eTrace, bTrace], layoutFields, {responsive:true});
+    Plotly.newPlot(plotParticlesDiv, [particles, arrows], { title:'Positions & vitesses locales', margin:{t:30}, xaxis:{title:'x'}, yaxis:{title:'y',scaleanchor:'x',scaleratio:1} }, {responsive:true});
 
-    // configure slider
+    // slider setup
     timeSlider.min = 0;
     timeSlider.max = Math.max(0, t.length - 1);
     timeSlider.value = 0;
     timeDisplay.textContent = t[0].toFixed(3);
 
-    // store simData for updates
-    simData = { t, rx, ry, Pmag, Emag, Bmag };
+    // store for updates
+    stored = { t, N, grid_nx, grid_ny };
   }
 
-  // update plots when slider changes
-  function updateAtIndex(i){
-    if (!simData) return;
-    const { t, rx, ry, Pmag, Emag, Bmag } = simData;
-    const tx = t[i];
+  function updateFrame(idx){
+    if(!simData) return;
+    const data = simData;
+    const t = data.t;
+    // update field heatmap
+    const grid_nx = data.grid_nx;
+    const grid_ny = data.grid_ny;
+    const frameU = data.Ufields[idx];
+    const z = [];
+    for(let j=0;j<grid_ny;j++){
+      z.push(frameU.slice(j*grid_nx, (j+1)*grid_nx));
+    }
+    Plotly.restyle(plotFieldDiv, {'z':[z]});
 
-    // update trajectory marker (trace index 1)
-    Plotly.restyle(plotTrajDiv, {'x': [[rx[i]]], 'y': [[ry[i]]]}, [1]); // update trace 1
+    // update particles
+    const qs = data.qs_hist[idx];
+    const us = data.u_selfs[idx];
+    const xs = [], ys = [];
+    for(let i=0;i<qs.length;i+=2){ xs.push(qs[i]); ys.push(qs[i+1]); }
+    Plotly.restyle(plotParticlesDiv, {'x':[xs], 'y':[ys]}, [0]);
 
-    // update vertical line in fields plot by rewriting layout.shapes
-    const maxY = Math.max(...Pmag, ...Emag, ...Bmag) * 1.1;
-    const shape = { type:'line', x0: tx, x1: tx, y0:0, y1:maxY, line:{color:'black',width:1,dash:'dash'} };
-    Plotly.relayout(plotFieldsDiv, {'shapes':[shape]});
+    // update arrows
+    const arrowSeg = (function(){
+      const ax=[], ay=[];
+      for(let i=0;i<qs.length;i+=2){
+        const x0 = qs[i], y0 = qs[i+1];
+        const vx = us[i], vy = us[i+1];
+        const x1 = x0 + 0.6 * vx;
+        const y1 = y0 + 0.6 * vy;
+        ax.push(x0); ax.push(x1); ax.push(null);
+        ay.push(y0); ay.push(y1); ay.push(null);
+      }
+      return {x:ax, y:ay};
+    })();
+    Plotly.restyle(plotParticlesDiv, {'x':[arrowSeg.x], 'y':[arrowSeg.y]}, [1]);
 
-    timeDisplay.textContent = tx.toFixed(3);
+    // update slider display
+    timeSlider.value = idx;
+    timeDisplay.textContent = t[idx].toFixed(3);
   }
 
   timeSlider.addEventListener('input', (e) => {
-    const i = parseInt(e.target.value);
-    updateAtIndex(i);
+    const idx = parseInt(e.target.value);
+    updateFrame(idx);
   });
 
-  // play / pause
   playBtn.addEventListener('click', () => {
-    if (!simData) return;
-    if (playInterval) {
+    if(!simData) return;
+    if(playInterval){
       clearInterval(playInterval);
       playInterval = null;
       playBtn.textContent = '▶ Play';
       return;
     }
-    const maxIndex = simData.t.length - 1;
     playBtn.textContent = '⏸ Pause';
+    const maxIdx = simData.t.length - 1;
     playInterval = setInterval(() => {
       let idx = parseInt(timeSlider.value);
-      idx = (idx < maxIndex) ? idx + 1 : 0;
-      timeSlider.value = idx;
-      updateAtIndex(idx);
-    }, 80); // 80 ms ~ 12.5 fps
+      idx = (idx < maxIdx) ? idx + 1 : 0;
+      updateFrame(idx);
+    }, 100);
   });
 
-  // main flow when clicking Run
+  // Run sequence
   runBtn.addEventListener('click', async () => {
     runBtn.disabled = true;
     try {
+      const n_image = parseInt(nImageInput.value) || 60;
+      const grid_nx = parseInt(gridNxInput.value) || 40;
+      const grid_ny = parseInt(gridNyInput.value) || 40;
+      const Tfinal = parseFloat(TfinalInput.value) || 30.0;
+
       await ensurePyodide();
-      const ok = await fetchAndInjectSimulation();
-      if (!ok) { runBtn.disabled = false; return; }
-
-      const steps = parseInt(stepsInput.value) || 400;
-      const dt = parseFloat(dtInput.value) || 0.05;
-
-      const data = await runSim(steps, dt);
+      await fetchAndInjectSimulation();
+      const data = await callSim(n_image, grid_nx, grid_ny, Tfinal);
+      statusEl.textContent = 'Simulation calculée en Python — rendu...';
       initPlots(data);
-      updateAtIndex(0);
-    } catch (e) {
+      updateFrame(0);
+      statusEl.textContent = 'Terminé — utilisez le slider ou Play.';
+    } catch (e){
       console.error(e);
       statusEl.textContent = 'Erreur : ' + (e.message || e);
     } finally {
@@ -308,10 +269,6 @@ json.dumps(res_serial)
     }
   });
 
-  // Option: précharger Pyodide au chargement de la page (décommente si tu veux)
-  // window.addEventListener('load', () => { ensurePyodide().catch(()=>{}); });
-
 </script>
-
 </body>
 </html>
