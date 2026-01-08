@@ -14,9 +14,8 @@
       --brand:#8b0000;
       /* final message CSS vars */
       --final-duration: 6s; /* default animation duration */
-      --final-color-start: #ffd700;
-      --final-color-mid: #ffdf7a;
-      --final-color-end: #b8860b;
+      --final-color-dark: #a37100; /* darker gold */
+      --final-shadow: rgba(0,0,0,0.55);
     }
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.7}
@@ -91,35 +90,38 @@
       align-items:center; justify-content:center; background: rgba(0,0,0,0.02);
     }
     #finalMsg{
-      font-family: Merriweather, serif; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;
+      font-family: Merriweather, serif; font-weight:800; text-transform:uppercase; letter-spacing:0.06em;
       white-space:nowrap; user-select:none; -webkit-user-select:none;
-      /* start tiny */
-      font-size:0.5rem; line-height:1; color:transparent; -webkit-background-clip:text; background-clip:text;
-      background-image: linear-gradient(90deg, var(--final-color-start), var(--final-color-mid), var(--final-color-end));
-      text-shadow: 0 6px 18px rgba(0,0,0,0.45);
+      /* use a solid darker gold, fully opaque */
+      color: var(--final-color-dark);
+      text-shadow: 0 10px 30px var(--final-shadow), 0 2px 6px rgba(0,0,0,0.35);
       opacity:0;
       transform-origin:center center;
-      will-change:transform,font-size,opacity;
-      transition:opacity 300ms ease;
+      will-change:transform,opacity;
       padding:6px 10px;
+      /* large base font size to ensure filling the screen — we'll scale from tiny to 1 */
+      font-size:30vh;
+      line-height:1;
+      pointer-events:none;
     }
 
-    /* animation that grows the small text into a huge, screen-filling headline */
-    @keyframes growFill {
-      0%{ opacity:0; transform:scale(0.02); font-size:0.5rem; filter:blur(0.6px); }
-      10%{ opacity:1; transform:scale(0.04); }
-      35%{ transform:scale(0.12); }
-      60%{ transform:scale(0.9); font-size:20vh; filter:blur(0); }
-      80%{ transform:scale(1); font-size:32vh; }
-      100%{ transform:scale(1); font-size:42vh; }
+    /* complex animation: spin while small then stop and grow to fill */
+    @keyframes spinGrow {
+      0%{ opacity:0; transform: rotate(0deg) scale(0.02); filter:blur(0.8px); }
+      12%{ opacity:1; transform: rotate(720deg) scale(0.03); }
+      28%{ transform: rotate(1080deg) scale(0.08); }
+      50%{ transform: rotate(1440deg) scale(0.25); filter:blur(0.2px); }
+      74%{ transform: rotate(60deg) scale(0.85); }
+      92%{ transform: rotate(6deg) scale(0.98); }
+      100%{ opacity:1; transform: rotate(0deg) scale(1); filter:blur(0); }
     }
 
     /* when visible, pointer-events: auto to allow click to dismiss */
     #finalOverlay.show{ display:flex; pointer-events:auto; }
-    #finalOverlay.show #finalMsg{ animation: growFill var(--final-duration) cubic-bezier(.2,.9,.2,1) forwards; }
-    /* allow a subtle pulse at the end */
-    #finalOverlay.show.pulse #finalMsg{ animation-name: growFill, pulseScale; animation-duration: var(--final-duration), 1.2s; animation-delay: 0s, calc(var(--final-duration) - 1.2s); animation-fill-mode:forwards,forwards; }
-    @keyframes pulseScale{ 0%{transform:scale(1)} 50%{transform:scale(0.98)} 100%{transform:scale(1)} }
+    /* apply animation only when overlay is shown */
+    #finalOverlay.show #finalMsg{ animation: spinGrow var(--final-duration) cubic-bezier(.2,.9,.2,1) forwards; }
+    /* subtle end pulse */
+    #finalOverlay.show.pulse #finalMsg{ animation-name: spinGrow, none; animation-duration: var(--final-duration), 1.2s; animation-delay: 0s, calc(var(--final-duration) - 1.2s); animation-fill-mode:forwards,forwards; }
 
   </style>
 </head>
@@ -179,7 +181,7 @@
       </label>
 
       <label>T_final:
-        <input id="Tfinal" type="number" value="15" step="1" style="width:80px">
+        <input id="Tfinal" type="number" value="100" step="1" style="width:80px">
       </label>
 
       <label style="display:flex;align-items:center;gap:6px" title="Si décoché, pas de calcul du champ (beaucoup plus rapide)">
@@ -558,10 +560,17 @@ json.dumps(res)
     }
     playBtn.textContent = 'Pause';
     const maxIdx = simData.t.length - 1;
+    let prevIdx = parseInt(timeSlider.value);
     playInterval = setInterval(()=>{
       let idx = parseInt(timeSlider.value);
-      idx = (idx < maxIdx) ? idx + 1 : 0;
-      updateFrame(idx);
+      const nextIdx = (idx < maxIdx) ? idx + 1 : 0;
+      // if autoplay just wrapped from last frame to 0 -> show final message
+      if(idx === maxIdx && nextIdx === 0){
+        // only trigger when autoplay wrapping (playInterval active)
+        try{ showFinalMessage(Math.min(14, Math.max(4, Math.round((parseFloat(TfinalInput.value)||100)/10)))); }catch(e){}
+      }
+      updateFrame(nextIdx);
+      prevIdx = nextIdx;
     }, playSpeedMs);
   });
 
@@ -572,17 +581,22 @@ json.dumps(res)
       // bound duration between 3s and 20s
       const safe = Math.max(3, Math.min(20, dur));
       document.documentElement.style.setProperty('--final-duration', safe + 's');
+
+      // force-reset animation so it can play again
+      finalOverlay.classList.remove('show','pulse');
+      // force reflow to reset CSS animation
+      void finalOverlay.offsetWidth;
+
       finalOverlay.classList.add('show');
       finalOverlay.setAttribute('aria-hidden', 'false');
-      // add a pulse class near the end for a little life
+
+      // add a pulse near the end for a little life
       setTimeout(()=> finalOverlay.classList.add('pulse'), Math.max(0, (safe*1000) - 1200));
 
       // clicking or pressing Escape dismisses the overlay
       const dismiss = (e)=>{
         if(e.type === 'keydown' && e.key !== 'Escape') return;
-        finalOverlay.classList.remove('show');
-        finalOverlay.classList.remove('pulse');
-        finalOverlay.setAttribute('aria-hidden', 'true');
+        hideFinalMessage();
         document.removeEventListener('keydown', dismiss);
         finalOverlay.removeEventListener('click', dismiss);
       };
@@ -592,10 +606,19 @@ json.dumps(res)
   }
 
   // allow programmatic hide as well
-  function hideFinalMessage(){ finalOverlay.classList.remove('show'); finalOverlay.classList.remove('pulse'); finalOverlay.setAttribute('aria-hidden', 'true'); }
+  function hideFinalMessage(){
+    finalOverlay.classList.remove('show');
+    finalOverlay.classList.remove('pulse');
+    finalOverlay.setAttribute('aria-hidden', 'true');
+    // force reflow so next show restarts animation
+    void finalOverlay.offsetWidth;
+  }
 
   // --- Main run button flow ---
   runBtn.addEventListener('click', async ()=>{
+    // if the final overlay is visible, hide and reset it so it can replay at end
+    hideFinalMessage();
+
     runBtn.disabled = true;
     progressBar.style.width = '2%';
     try {
@@ -634,7 +657,5 @@ json.dumps(res)
     }
   });
 </script>
-</body>
-</html>
 </body>
 </html>
