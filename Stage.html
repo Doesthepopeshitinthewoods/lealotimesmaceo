@@ -191,6 +191,45 @@
 
 
   <div>
+
+    <header>
+<h1>Fiche analytique — Jetlets (ordre 0) et bruit LU</h1>
+<p class="small">Objectif : expliquer clairement le modèle de Cotter et al. (2014) — introduction de l'opérateur \(\mathcal{A}\), rôle du paramètre \(s\), inversion par le noyau \(K\), définition de l'ansatz en jets (notation détaillée), justification de l'ordre 0, puis introduction du bruit LU et projection sur les particules.</p>
+</header>
+
+
+<section class="box">
+<h2>1. Motivation physique et mathématique</h2>
+<p>Les équations d'Euler préservent la structure hamiltonienne mais n'offrent pas de contrôle sur les hautes fréquences ; les solutions peuvent développer des structures fines. Pour obtenir un modèle analytiquement maniable et numériquement stable on introduit une métrique régularisée via un opérateur \(\mathcal{A}\) — ce qui revient à travailler dans une topologie de Sobolev plutôt que dans \(L^2\).</p>
+</section>
+
+
+<section>
+<h2>2. Lagrangien régularisé et définition de \(\mathcal{A}\)</h2>
+<p>On pose l'énergie :</p>
+<p style="text-align:center;">\[ \mathcal{L}[u] = \tfrac12\int_{\mathbb{R}^d} u(x)\cdot (\mathcal{A} u)(x)\;dx. \]</p>
+
+
+<h3>2.1 Choix usuels et interprétation</h3>
+<p>Un choix standard est :</p>
+<p style="text-align:center;">\[ \mathcal{A} = (1-\alpha^2\Delta)^s, \]</p>
+<p>avec \(\alpha>0\) (longueur de coupure) et \(s>0\) (ordre). Voici à quoi correspond le paramètre <strong>\(s\)</strong> :</p>
+<ul>
+<li>En transformée de Fourier, \(\widehat{\mathcal{A}}(k) = (1+\alpha^2|k|^2)^s\) : l'opérateur multiplie chaque mode par ce facteur. Ainsi plus \(s\) est grand, plus on amplifie les composantes de haute fréquence dans \(m=\mathcal{A}u\).</li>
+<li>Autrement dit, \(s\) règle la <em>pénalisation spectrale</em> des hautes fréquences : l'énergie pèse davantage les oscillations fines lorsque \(s\) augmente.</li>
+<li>Conséquence : l'inverse \(\mathcal{A}^{-1}\) (le noyau \(K\)) atténue les hautes fréquences comme \((1+\alpha^2|k|^2)^{-s}\). Plus \(s\) est grand, plus le filtrage est fort (noyau plus lissant).</li>
+<li>Mathématiquement, \(s\) détermine la régularité contrôlée par la métrique (espace de Sobolev \(H^s\)).</li>
+</ul>
+<p class="small">Valeurs pratiques : on rencontre fréquemment \(s=1\) (métrique \(H^1\)) ; des valeurs non entières correspondent à des opérateurs pseudo‑différentiels qui sont aussi utilisés en modélisation.</p>
+
+
+<h3>2.2 Momentum et EPDiff</h3>
+<p>On définit le momentum :</p>
+<p style="text-align:center;">\[ m = \mathcal{A}u. \]</p>
+<p>Les équations EPDiff s'expriment ensuite en terme de \(m\) :</p>
+<p style="text-align:center;">\[ \partial_t m + \nabla\cdot(u\otimes m) + (\nabla u)^T m = 0. \]</p>
+</section>
+
 <section class="box">
 <h2>3. Inversion : du momentum au champ de vitesse — noyau \(K\)</h2>
 <p>Si \(\mathcal{A}\) est inversible, on a :</p>
