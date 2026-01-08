@@ -115,12 +115,142 @@ def simulate(steps=200, dt=0.1):
 </footer>
 
 <script>
+  // affiche l'année
   document.getElementById('year').textContent = new Date().getFullYear();
 
-  // éléments
+  // éléments DOM
   const statusEl = document.getElementById('status');
   const runBtn = document.getElementById('run');
   const loadDefaultBtn = document.getElementById('load-default');
   const loadRawBtn = document.getElementById('load-raw');
-  const rawUrlInput = document.get
+  const rawUrlInput = document.getElementById('rawurl');
+  const pycodeEl = document.getElementById('pycode');
+  const stepsInput = document.getElementById('steps');
+  const dtInput = document.getElementById('dt');
+
+  let pyodide = null;
+  let pyReady = false;
+
+  // charge Pyodide si nécessaire
+  async function ensurePyodide(){
+    if (pyReady) return;
+    statusEl.textContent = 'Chargement de Pyodide (quelques secondes)...';
+    try {
+      pyodide = await loadPyodide();
+      // si tu utilises numpy ou scipy, décommente la ligne suivante :
+      // await pyodide.loadPackage(['numpy']);
+      pyReady = true;
+      statusEl.textContent = 'Pyodide chargé.';
+    } catch (err) {
+      console.error(err);
+      statusEl.textContent = 'Erreur chargement Pyodide : ' + err;
+      throw err;
+    }
+  }
+
+  // injecte le code Python dans l'interpréteur
+  async function injectCode(codeText){
+    await ensurePyodide();
+    statusEl.textContent = 'Injection du code Python...';
+    try {
+      // runPythonAsync permet d'exécuter le code et de définir simulate(...)
+      await pyodide.runPythonAsync(codeText);
+      statusEl.textContent = 'Code chargé — prêt.';
+      return true;
+    } catch (err) {
+      console.error('Erreur injection code:', err);
+      statusEl.textContent = 'Erreur lors de l\'injection du code : ' + (err.message || err);
+      return false;
+    }
+  }
+
+  // charger depuis raw GitHub (raw.githubusercontent.com)
+  loadRawBtn.addEventListener('click', async () => {
+    const url = rawUrlInput.value.trim();
+    if (!url) { statusEl.textContent = 'Entrez une URL raw GitHub valide.'; return; }
+    try {
+      statusEl.textContent = 'Téléchargement du fichier depuis l\'URL...';
+      const r = await fetch(url);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const txt = await r.text();
+      pycodeEl.value = txt;
+      const ok = await injectCode(txt);
+      if (ok) statusEl.textContent = 'Fichier chargé depuis GitHub — prêt à exécuter.';
+    } catch (e) {
+      console.error(e);
+      statusEl.textContent = 'Impossible de charger le fichier : ' + e;
+    }
+  });
+
+  // restaurer l'exemple
+  loadDefaultBtn.addEventListener('click', () => {
+    pycodeEl.value = `# Exemple minimal — remplace par ton simulation.py
+import math
+def simulate(steps=200, dt=0.1):
+    t = [i*dt for i in range(steps)]
+    x = [math.cos(0.12*ti) * (1 + 0.12*math.sin(0.05*ti)) for ti in t]
+    y = [math.sin(0.12*ti) * (1 + 0.10*math.cos(0.07*ti)) for ti in t]
+    return {'t': t, 'x': x, 'y': y}
+`;
+    statusEl.textContent = 'Exemple restauré dans l\'éditeur.';
+  });
+
+  // exécution : on injecte toujours le contenu actuel du textarea (pratique pour éditer)
+  runBtn.addEventListener('click', async () => {
+    runBtn.disabled = true;
+    statusEl.textContent = 'Préparation...';
+    try {
+      const codeText = pycodeEl.value;
+      const ok = await injectCode(codeText);
+      if (!ok) { runBtn.disabled = false; return; }
+
+      const steps = parseInt(stepsInput.value) || 200;
+      const dt = parseFloat(dtInput.value) || 0.1;
+
+      statusEl.textContent = `Exécution de simulate(steps=${steps}, dt=${dt})...`;
+
+      // Sérialise le résultat côté Python en JSON pour éviter les PyProxy
+      const pyCmd = `
+import json
+res = simulate(steps=${steps}, dt=${dt})
+json.dumps(res)
+`;
+      const jsonStr = await pyodide.runPythonAsync(pyCmd);
+      const data = JSON.parse(jsonStr);
+
+      statusEl.textContent = 'Simulation terminée — affichage...';
+      plotData(data);
+    } catch (err) {
+      console.error('Erreur pendant la simulation:', err);
+      statusEl.textContent = 'Erreur pendant la simulation : ' + (err.message || err);
+    } finally {
+      runBtn.disabled = false;
+    }
+  });
+
+  // trace Plotly
+  function plotData(data){
+    if (!data || !data.t) {
+      statusEl.textContent = 'Données invalides : la clé "t" est requise dans le dict retourné.';
+      return;
+    }
+    const t = data.t;
+    const traces = [];
+    Object.keys(data).forEach(k => {
+      if (k === 't') return;
+      // assure que les séries sont des arrays JS
+      traces.push({ x: t, y: data[k], name: k });
+    });
+    const layout = { margin:{t:36}, title: 'Résultat de la simulation', height:420 };
+    Plotly.newPlot('plot', traces, layout, {responsive:true});
+  }
+
+  // Option : précharger Pyodide en fond au chargement de la page (décommente si souhaité)
+  // window.addEventListener('load', () => { ensurePyodide().catch(()=>{}); });
+
+</script>
+
+</body>
+</html>
+
 
