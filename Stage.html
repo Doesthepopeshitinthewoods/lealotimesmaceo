@@ -1,50 +1,169 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <title>Stage — Champ & particules (instantané)</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="utf-8">
+  <title>Articles — Blog de l'intranquilité — Simulation</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.24.0/full/pyodide.js"></script>
+
   <style>
-    body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;margin:0;padding:16px;background:#fff;color:#111}
-    h1{font-family:serif;margin:0 0 12px}
-    .controls{display:flex;gap:10px;align-items:center;margin-bottom:12px}
-    input[type="number"]{padding:6px;border-radius:6px;border:1px solid #ddd}
-    .btn{background:#8b0000;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
-    #plot{width:100%;height:720px}
-    .small{font-size:13px;color:#666}
+    :root{
+      --maxw:760px; --bg:#ffffff; --text:#111827; --muted:#6b7280; --accent:#1f2937;
+      --brand:#8b0000;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.7}
+    a{color:var(--accent);text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    header{background:var(--brand);border-bottom:1px solid #7a0000}
+    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    h1{margin:0;font-family:Merriweather,serif;font-size:20px;font-weight:700;color:#fff}
+
+    nav{display:flex;align-items:center;gap:14px;flex-wrap:nowrap}
+    nav a{color:#f3f4f6;font-size:14px}
+    nav a.active{text-decoration:underline;font-weight:600}
+
+    .menu-projets,.menu-culture{position:relative;display:flex;align-items:center}
+    .projets-dropdown,.culture-dropdown{
+      display:none; position:absolute; top:100%; left:0; background:#fff; border:1px solid #e5e7eb; border-radius:6px; min-width:160px; z-index:10;
+    }
+    .projets-dropdown a,.culture-dropdown a{display:block;padding:8px 12px;color:var(--text)}
+    .menu-projets:hover .projets-dropdown,.menu-culture:hover .culture-dropdown{display:block}
+
+    .langs{display:flex;gap:6px;align-items:center}
+    .langs img.flag{width:22px;height:14px;border-radius:2px;border:1px solid transparent;cursor:pointer}
+
+    main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
+    .toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+    .search{flex:1;max-width:360px}
+    input[type="search"]{width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit}
+
+    .card{border:1px solid #e6e6e9;border-radius:8px;padding:14px;background:#fff}
+    .small{font-size:13px;color:var(--muted)}
+    .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+    input[type="number"]{padding:6px;border:1px solid #ddd;border-radius:6px}
+    .btn{background:var(--brand);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+    #plot{width:100%;height:760px;margin-top:8px}
     .progress-wrap{height:14px;background:#fff;border:2px solid #ddd;border-radius:4px;overflow:hidden;margin-top:8px}
     .progress-bar{height:100%;width:0;background:#1f77b4}
+    .controls-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+
+    @media (max-width:640px){
+      .wrap{padding:14px}
+      main{margin:18px auto}
+      #plot{height:520px}
+    }
   </style>
 </head>
 <body>
-  <h1>Simulation — champ & particules (instantané)</h1>
+<header>
+  <div class="wrap">
+    <h1>Blog de l'intranquilité</h1>
+    <div style="display:flex;align-items:center;gap:16px">
+      <nav aria-label="Navigation principale">
+        <a href="index.html">Accueil</a>
+        <a href="articles.html" id="nav-articles">Articles</a>
+        <div class="menu-projets">
+          <a href="projets-libres-pensees.html">Projets ▾</a>
+          <div class="projets-dropdown" role="menu" aria-label="Projets">
+            <a href="projets-libres-pensees.html">Libres Pensées</a>
+            <a href="#">Bref</a>
+          </div>
+        </div>
+        <div class="menu-culture">
+          <a href="#" class="culture-btn">Culture ▾</a>
+          <div class="culture-dropdown" role="menu" aria-label="Culture">
+            <a href="culture-films.html">Films</a>
+            <a href="culture-livres.html">Livres</a>
+            <a href="culture-musiques.html">Musiques</a>
+          </div>
+        </div>
+      </nav>
 
-  <div class="controls">
-    <button id="run" class="btn">Lancer la simulation</button>
-    <label>n_images: <input id="n_image" type="number" value="100" min="5" style="width:80px"></label>
-    <label>grid (nx): <input id="grid_nx" type="number" value="100" min="8" style="width:80px"></label>
-    <label>grid (ny): <input id="grid_ny" type="number" value="100" min="8" style="width:80px"></label>
-    <label>T_final: <input id="Tfinal" type="number" value="100" step="1" style="width:80px"></label>
-    <label style="display:flex;align-items:center;gap:6px"><input id="compute_field" type="checkbox" checked> Calculer le champ</label>
-    <div style="margin-left:auto"><span id="status" class="small">Prêt — serve via HTTP.</span></div>
+      <div class="langs" role="navigation" aria-label="Choix de la langue">
+        <img src="https://flagcdn.com/w20/fr.png" data-lang="fr" alt="Français" class="flag" tabindex="0">
+        <img src="https://flagcdn.com/w20/gb.png" data-lang="en" alt="English" class="flag" tabindex="0">
+        <img src="https://flagcdn.com/w20/pt.png" data-lang="pt" alt="Português" class="flag" tabindex="0">
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="toolbar">
+    <h2 style="margin:0;font-family:Merriweather,serif">Simulation — jetlets 0 (champ & particules)</h2>
+    <div class="search" aria-hidden="false">
+      <input id="q" type="search" placeholder="Recherche rapide (non utilisée ici)">
+    </div>
   </div>
 
-  <div id="plot"></div>
+  <section class="card">
+    <div class="controls">
+      <button id="run" class="btn">Lancer la simulation</button>
 
-  <div class="progress-wrap"><div id="progressBar" class="progress-bar"></div></div>
+      <label>n_images:
+        <input id="n_image" type="number" value="100" min="5" style="width:80px">
+      </label>
 
-  <div style="display:flex;align-items:center;gap:12px;margin-top:8px">
-    <div class="small">Temps : <span id="timeDisplay">—</span> s</div>
-    <input id="timeSlider" type="range" min="0" max="0" value="0" step="1" style="flex:1">
-    <label style="display:flex;align-items:center;gap:6px">Vitesse:
-      <input id="speedRange" type="range" min="10" max="500" value="100" style="width:160px">
-    </label>
-    <button id="play" class="btn">▶ Play</button>
-  </div>
+      <label>grid (nx):
+        <input id="grid_nx" type="number" value="100" min="8" style="width:70px">
+      </label>
+
+      <label>grid (ny):
+        <input id="grid_ny" type="number" value="100" min="8" style="width:70px">
+      </label>
+
+      <label>T_final:
+        <input id="Tfinal" type="number" value="100" step="1" style="width:80px">
+      </label>
+
+      <label style="display:flex;align-items:center;gap:6px" title="Si décoché, pas de calcul du champ (beaucoup plus rapide)">
+        <input id="compute_field" type="checkbox" checked style="width:16px;height:16px"> Calculer le champ
+      </label>
+
+      <div class="controls-right">
+        <div style="text-align:right"><span id="status" class="small">Prêt — place Stage.html et simulation.py dans le même dossier, servez via HTTP.</span></div>
+      </div>
+    </div>
+
+    <!-- PLOT -->
+    <div id="plot"></div>
+
+    <div class="progress-wrap"><div id="progressBar" class="progress-bar"></div></div>
+
+    <div style="display:flex;align-items:center;gap:12px;margin-top:12px">
+      <div class="small">Temps : <span id="timeDisplay">—</span> s</div>
+      <input id="timeSlider" type="range" min="0" max="0" value="0" step="1" style="flex:1">
+      <label style="display:flex;align-items:center;gap:6px">Vitesse:
+        <input id="speedRange" type="range" min="10" max="500" value="100" style="width:160px">
+      </label>
+      <button id="play" class="btn">▶ Play</button>
+    </div>
+
+    <div style="margin-top:8px" class="small">Affichage : palette <strong>plasma</strong>, lignes de courant (contour) + quiver échantillonné, particules rouges + flèches de vitesse instantanées.</div>
+  </section>
+</main>
+
+<footer style="border-top:1px solid #e5e7eb;text-align:center;font-size:14px;color:var(--muted);padding:18px 20px;margin-top:18px">
+  © <span id="year"></span> — Blog personnel
+</footer>
 
 <script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // --- styles réglables (ajuste ici si tu veux modifier aspect) ---
+  const STYLE = {
+    contourLineWidth: 1.8,     // épaisseur des lignes de contour / courants
+    backgroundQuiverWidth: 1.4,// épaisseur des lignes du quiver de fond
+    backgroundQuiverHeadSize: 5,
+    particleArrowWidth: 2.6,   // épaisseur flèches particules
+    particleArrowHeadSize: 8,
+    particleMarkerSize: 8
+  };
+
   // DOM
   const runBtn = document.getElementById('run');
   const statusEl = document.getElementById('status');
@@ -63,7 +182,6 @@
   let pyodide = null, pyReady=false;
   let simData = null, playInterval = null, playSpeedMs = 100;
 
-  // helper to unpack flat [x0,y0,x1,y1,...]
   function flatToXY(flat){
     const xs=[], ys=[];
     for(let i=0;i<flat.length;i+=2){ xs.push(flat[i]); ys.push(flat[i+1]); }
@@ -77,7 +195,6 @@
     statusEl.textContent = 'Pyodide chargé — chargement numpy...';
     try { await pyodide.loadPackage(['numpy']); statusEl.textContent='numpy prêt.'; }
     catch(e){
-      // fallback micropip
       await pyodide.loadPackage(['micropip']);
       await pyodide.runPythonAsync(`import micropip\nawait micropip.install("numpy")`);
       statusEl.textContent='numpy installé via micropip.';
@@ -111,16 +228,15 @@ json.dumps(res)
 
   function initPlot(data){
     simData = data;
-    // field (contour + quiver background)
-    const hasField = Array.isArray(data.Ux_fields) && data.Ux_fields.length>0 && data.Ux_fields[0].length>0;
     const traces = [];
+    const hasField = Array.isArray(data.Ux_fields) && data.Ux_fields.length>0 && data.Ux_fields[0].length>0;
 
     if(hasField){
+      // contour magnitude frame0
       const grid_nx = data.grid_nx, grid_ny = data.grid_ny;
-      // contour magnitude (frame 0)
       const z = [];
       for(let j=0;j<grid_ny;j++){
-        const row = [];
+        const row=[];
         for(let i=0;i<grid_nx;i++){
           const idx = j*grid_nx + i;
           row.push(Math.hypot(data.Ux_fields[0][idx], data.Uy_fields[0][idx]));
@@ -129,51 +245,54 @@ json.dumps(res)
       }
       traces.push({
         z:z, x:data.grid_x, y:data.grid_y, type:'contour',
-        colorscale:'Plasma', contours:{coloring:'lines'}, showscale:true, colorbar:{title:'|u|',thickness:20}
+        colorscale:'Plasma',
+        contours:{coloring:'lines'},
+        line:{width: STYLE.contourLineWidth},
+        showscale:true,
+        colorbar:{title:'|u|',thickness:20}
       });
 
-      // background quiver (sampled)
+      // background sampled quiver (contour background arrows)
       const stride = Math.max(1, Math.floor(grid_nx / 20));
       const qx=[], qy=[], quvx=[], quvy=[];
       for(let j=0;j<grid_ny;j+=stride){
         for(let i=0;i<grid_nx;i+=stride){
-          const idx=j*grid_nx + i;
+          const idx = j*grid_nx + i;
           qx.push(data.grid_x[i]); qy.push(data.grid_y[j]);
           quvx.push(data.Ux_fields[0][idx]); quvy.push(data.Uy_fields[0][idx]);
         }
       }
-      // convert quiver to line segments for Plotly
-      const ax=[], ay=[], axh=[], ayh=[];
+      const ax=[], ay=[], headx=[], heady=[];
       const scale = 0.25 * Math.max(Math.abs(data.grid_x[1]-data.grid_x[0]), Math.abs(data.grid_y[1]-data.grid_y[0]));
       for(let k=0;k<qx.length;k++){
         const x0=qx[k], y0=qy[k];
         const x1=x0 + scale*quvx[k], y1=y0 + scale*quvy[k];
         ax.push(x0); ax.push(x1); ax.push(null);
         ay.push(y0); ay.push(y1); ay.push(null);
-        axh.push(x1); ayh.push(y1);
+        headx.push(x1); heady.push(y1);
       }
-      traces.push({ x:ax, y:ay, mode:'lines', line:{color:'rgb(45,32,110)', width:1.2}, hoverinfo:'none', showlegend:false });
-      traces.push({ x:axh, y:ayh, mode:'markers', marker:{size:5,symbol:'triangle-up',color:'rgb(45,32,110)'}, hoverinfo:'none', showlegend:false });
+      traces.push({ x:ax, y:ay, mode:'lines', line:{color:'rgb(45,32,110)', width:STYLE.backgroundQuiverWidth}, hoverinfo:'none', showlegend:false });
+      traces.push({ x:headx, y:heady, mode:'markers', marker:{size: STYLE.backgroundQuiverHeadSize, symbol:'triangle-up', color:'rgb(45,32,110)'}, hoverinfo:'none', showlegend:false });
     }
 
-    // particles markers (only instantaneous positions)
+    // particles markers (instantané)
     const frame0 = data.qs_hist[0];
-    const {xs:px0, ys:py0} = flatToXY(frame0);
-    traces.push({ x: px0, y: py0, mode:'markers', marker:{size:8,color:'red'}, name:'particles', hoverinfo:'text' });
+    const {xs:px0, ys:py0} = (function(flat){ const xs=[], ys=[]; for(let i=0;i<flat.length;i+=2){ xs.push(flat[i]); ys.push(flat[i+1]); } return {xs,ys}; })(frame0);
+    traces.push({ x: px0, y: py0, mode:'markers', marker:{size:STYLE.particleMarkerSize, color:'red'}, name:'particles', hoverinfo:'text' });
 
-    // particle velocity arrows (lines + heads) computed from u_selfs[0]
+    // particle arrows (instantaneous)
     const u0 = data.u_selfs[0];
-    const ax_p=[], ay_p=[], headx=[], heady=[];
+    const axp=[], ayp=[], hxp=[], hyp=[];
     for(let i=0;i<frame0.length;i+=2){
       const x0=frame0[i], y0=frame0[i+1];
       const vx=u0[i], vy=u0[i+1];
       const x1 = x0 + 0.6 * vx, y1 = y0 + 0.6 * vy;
-      ax_p.push(x0); ax_p.push(x1); ax_p.push(null);
-      ay_p.push(y0); ay_p.push(y1); ay_p.push(null);
-      headx.push(x1); heady.push(y1);
+      axp.push(x0); axp.push(x1); axp.push(null);
+      ayp.push(y0); ayp.push(y1); ayp.push(null);
+      hxp.push(x1); hyp.push(y1);
     }
-    traces.push({ x:ax_p, y:ay_p, mode:'lines', line:{color:'red', width:2.0}, hoverinfo:'none', showlegend:false });
-    traces.push({ x:headx, y:heady, mode:'markers', marker:{size:6,symbol:'triangle-up',color:'red'}, hoverinfo:'none', showlegend:false });
+    traces.push({ x:axp, y:ayp, mode:'lines', line:{color:'red', width: STYLE.particleArrowWidth}, hoverinfo:'none', showlegend:false });
+    traces.push({ x:hxp, y:hyp, mode:'markers', marker:{size: STYLE.particleArrowHeadSize, symbol:'triangle-up', color:'red'}, hoverinfo:'none', showlegend:false });
 
     const layout = {
       title: 'Champ |u| + particules (instantané)',
@@ -182,7 +301,6 @@ json.dumps(res)
     };
 
     Plotly.newPlot(plotDiv, traces, layout, {responsive:true});
-    // slider setup
     timeSlider.min = 0;
     timeSlider.max = Math.max(0, data.t.length - 1);
     timeSlider.value = 0;
@@ -194,13 +312,11 @@ json.dumps(res)
     const data = simData;
     const frame = data.qs_hist[idx];
     const u = data.u_selfs[idx];
-
-    // update contour & background quiver if available
     const hasField = Array.isArray(data.Ux_fields) && data.Ux_fields.length>0 && data.Ux_fields[0].length>0;
+
     if(hasField){
       const grid_nx = data.grid_nx, grid_ny = data.grid_ny;
       const Ux = data.Ux_fields[idx], Uy = data.Uy_fields[idx];
-      // update contour magnitude
       const z = [];
       for(let j=0;j<grid_ny;j++){
         const row=[];
@@ -210,8 +326,9 @@ json.dumps(res)
         }
         z.push(row);
       }
-      Plotly.restyle(plotDiv, {'z':[z]}, [0]); // trace 0 = contour
-      // update sampled quiver (trace 1 lines + 2 heads)
+      Plotly.restyle(plotDiv, {'z':[z]}, [0]);
+
+      // update background quiver lines/heads (traces 1 & 2 when hasField)
       const stride = Math.max(1, Math.floor(grid_nx / 20));
       const ax=[], ay=[], hx=[], hy=[];
       const scale = 0.25 * Math.max(Math.abs(data.grid_x[1]-data.grid_x[0]), Math.abs(data.grid_y[1]-data.grid_y[0]));
@@ -225,41 +342,38 @@ json.dumps(res)
           hx.push(x1); hy.push(y1);
         }
       }
-      Plotly.restyle(plotDiv, {'x':[ax],'y':[ay]}, [1]); // background arrow lines
-      Plotly.restyle(plotDiv, {'x':[hx],'y':[hy]}, [2]); // background arrow heads
+      Plotly.restyle(plotDiv, {'x':[ax],'y':[ay]}, [1]);
+      Plotly.restyle(plotDiv, {'x':[hx],'y':[hy]}, [2]);
     }
 
-    // update particle positions (last traces are: particles marker, particle arrow lines, particle arrow heads)
-    // find index of particle marker trace: if hasField => last index = 3? we built traces accordingly
-    // compute base index:
-    const has = hasField ? 3 : 0; // if hasField true, before particles we had 3 traces (contour + q lines + q heads)
-    // particle marker trace index:
+    // compute indices for particle marker & arrows
+    const has = hasField ? 3 : 0;
     const markerIdx = has;
     const arrowLinesIdx = has + 1;
     const arrowHeadsIdx = has + 2;
 
-    const {xs, ys} = flatToXY(frame);
-    Plotly.restyle(plotDiv, { 'x':[xs], 'y':[ys] }, [markerIdx]);
+    // update particle markers
+    const xs = [], ys = [];
+    for(let i=0;i<frame.length;i+=2){ xs.push(frame[i]); ys.push(frame[i+1]); }
+    Plotly.restyle(plotDiv, {'x':[xs], 'y':[ys]}, [markerIdx]);
 
-    // particle arrows:
-    const ax_p=[], ay_p=[], hx_p=[], hy_p=[];
+    // update particle arrows
+    const axp=[], ayp=[], hxp=[], hyp=[];
     for(let i=0;i<frame.length;i+=2){
       const x0=frame[i], y0=frame[i+1];
-      const vx = u[i], vy = u[i+1];
+      const vx=u[i], vy=u[i+1];
       const x1 = x0 + 0.6 * vx, y1 = y0 + 0.6 * vy;
-      ax_p.push(x0); ax_p.push(x1); ax_p.push(null);
-      ay_p.push(y0); ay_p.push(y1); ay_p.push(null);
-      hx_p.push(x1); hy_p.push(y1);
+      axp.push(x0); axp.push(x1); axp.push(null);
+      ayp.push(y0); ayp.push(y1); ayp.push(null);
+      hxp.push(x1); hyp.push(y1);
     }
-    Plotly.restyle(plotDiv, {'x':[ax_p],'y':[ay_p]}, [arrowLinesIdx]);
-    Plotly.restyle(plotDiv, {'x':[hx_p],'y':[hy_p]}, [arrowHeadsIdx]);
+    Plotly.restyle(plotDiv, {'x':[axp],'y':[ayp]}, [arrowLinesIdx]);
+    Plotly.restyle(plotDiv, {'x':[hxp],'y':[hyp]}, [arrowHeadsIdx]);
 
-    // update slider/time
     timeSlider.value = idx;
     timeDisplay.textContent = data.t[idx].toFixed(2);
   }
 
-  // slider + play handlers
   timeSlider.addEventListener('input', (e)=> updateFrame(parseInt(e.target.value)));
   speedRange.addEventListener('input', ()=> {
     const v = parseInt(speedRange.value);
@@ -283,7 +397,6 @@ json.dumps(res)
     }, playSpeedMs);
   });
 
-  // Run sequence
   runBtn.addEventListener('click', async ()=>{
     runBtn.disabled = true;
     progressBar.style.width = '2%';
