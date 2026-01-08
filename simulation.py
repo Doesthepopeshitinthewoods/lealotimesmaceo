@@ -8,7 +8,7 @@ import numpy as np
 # ---------- paramètres par défaut (identiques au script original) ----------
 sigma = 1.0
 p0 = np.array([1.0, 0.0])
-T_final = 100.0
+T_final = 40.0
 n_image = 100
 dt_default = T_final / max(1, (n_image - 1))
 
@@ -18,8 +18,8 @@ grid_ny_default = 20
 grid_extent = 5.0
 
 # particules initiales 5x5
-grid_nx = 5
-grid_ny = 5
+grid_nx = 20
+grid_ny = 20
 grid_x_min, grid_x_max = -2.0, 2.0
 grid_y_min, grid_y_max = -2.0, 2.0
 
