@@ -85,59 +85,64 @@
   let simData = null, stored=null, playInterval=null;
 
   async function ensurePyodide(){
-  if(pyReady) return;
-  statusEl.textContent = 'Chargement Pyodide...';
-  pyodide = await loadPyodide({indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.0/full/"});
-  statusEl.textContent = 'Pyodide chargé — installation de numpy...';
+    if(pyReady) return;
+    statusEl.textContent = 'Chargement Pyodide...';
+    // charger pyodide en s'assurant d'utiliser le bon indexURL
+    pyodide = await loadPyodide({indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.0/full/"});
+    statusEl.textContent = 'Pyodide chargé — préparation de numpy...';
 
-  // Première tentative : charger via loadPackage (plus rapide si disponible)
-  try {
-    await pyodide.loadPackage(['numpy']);
-    statusEl.textContent = 'numpy installé via loadPackage.';
-  } catch (e) {
-    console.warn('pyodide.loadPackage(["numpy"]) a échoué, tentative via micropip', e);
-    // fallback : installer micropip puis numpy via micropip
+    // Tentative standard (loadPackage) puis fallback micropip si besoin
     try {
-      await pyodide.loadPackage(['micropip']);
-    } catch(err) {
-      console.warn('loadPackage micropip a échoué (peut être déjà dispo):', err);
-    }
-    // micropip peut nécessiter un import await dans le contexte Pyodide
-    try {
-      await pyodide.runPythonAsync(`
+      await pyodide.loadPackage(['numpy']);
+      statusEl.textContent = 'numpy chargé via loadPackage.';
+    } catch (e) {
+      console.warn('loadPackage numpy failed, fallback to micropip', e);
+      try {
+        await pyodide.loadPackage(['micropip']);
+      } catch(err) {
+        console.warn('loadPackage micropip failed (peut être déjà présent):', err);
+      }
+      try {
+        // installer numpy via micropip
+        await pyodide.runPythonAsync(`
 import micropip
 await micropip.install("numpy")
 `);
-      statusEl.textContent = 'numpy installé via micropip.';
-    } catch(err2){
-      console.error('Installation numpy via micropip a échoué:', err2);
-      statusEl.textContent = 'Erreur installation numpy: ' + (err2.message || err2);
-      throw err2;
+        statusEl.textContent = 'numpy installé via micropip.';
+      } catch(err2){
+        console.error('Impossible d\'installer numpy via micropip:', err2);
+        statusEl.textContent = 'Erreur: impossible d\'installer numpy: ' + (err2.message || err2);
+        throw err2;
+      }
     }
+
+    pyReady = true;
+    statusEl.textContent = 'Pyodide & numpy prêts.';
   }
-
-  pyReady = true;
-  statusEl.textContent = 'Pyodide et numpy prêts.';
-}
-
 
   async function fetchAndInjectSimulation(){
     statusEl.textContent = 'Récupération simulation.py ...';
     const r = await fetch('simulation.py', {cache:'no-store'});
     if(!r.ok){ statusEl.textContent = 'Erreur fetch simulation.py: HTTP ' + r.status; throw new Error('fetch error'); }
     const txt = await r.text();
-    statusEl.textContent = 'Injection du code...';
-    await pyodide.runPythonAsync(txt);
-    statusEl.textContent = 'Code injecté.';
+    statusEl.textContent = 'Injection du code Python...';
+    // on exécute le fichier (il définit simulate)
+    try {
+      await pyodide.runPythonAsync(txt);
+      statusEl.textContent = 'Code Python injecté.';
+    } catch(err){
+      console.error('Erreur lors de l\'injection/exécution de simulation.py', err);
+      statusEl.textContent = 'Erreur exécution simulation.py: ' + (err.message || err);
+      throw err;
+    }
   }
 
   async function callSim(n_image, grid_nx, grid_ny, Tfinal){
     statusEl.textContent = 'Exécution simulate(...) (peut prendre du temps)...';
-    // prepare call: call simulate(n_image=n_image, dt=Tfinal/(n_image-1), grid_nx_field=grid_nx, grid_ny_field=grid_ny)
     const dt = Tfinal / Math.max(1, (n_image - 1));
     const pyCall = `
 import json
-res = simulate(n_image_local=${n_image}, dt=${dt}, grid_nx_field=${grid_nx}, grid_ny_field=${grid_ny}, grid_extent_local=5.0)
+res = simulate(steps=None, dt=${dt}, n_image_local=${n_image}, grid_nx_field=${grid_nx}, grid_ny_field=${grid_ny}, grid_extent_local=5.0)
 json.dumps(res)
 `;
     const jsonStr = await pyodide.runPythonAsync(pyCall);
