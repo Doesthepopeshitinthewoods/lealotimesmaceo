@@ -86,9 +86,12 @@
     /* Final message overlay */
     #finalOverlay{
       display:none; /* shown programmatically */
-      position:fixed; inset:0; z-index:10050; pointer-events:auto; /* block interactions below */
+      position:fixed; inset:0; z-index:100500; pointer-events:auto; /* block interactions below */
       align-items:center; justify-content:center; background: rgba(255,255,255,0.0); /* transparent background so simulation visible below */
     }
+    /* ensure .show actually makes the overlay visible */
+    #finalOverlay.show{ display:flex; }
+
     #finalMsg{
       font-family: Merriweather, serif; font-weight:900; text-transform:uppercase; letter-spacing:0.06em;
       white-space:nowrap; user-select:none; -webkit-user-select:none;
@@ -151,7 +154,7 @@
       <button id="run" class="btn">Lancer la simulation</button>
 
       <label>n_images:
-        <input id="n_image" type="number" value="50" min="5" style="width:80px">
+        <input id="n_image" type="number" value="100" min="5" style="width:80px">
       </label>
 
       <label>grid (nx):
@@ -163,7 +166,7 @@
       </label>
 
       <label>T_final:
-        <input id="Tfinal" type="number" value="15" step="1" style="width:80px">
+        <input id="Tfinal" type="number" value="100" step="1" style="width:80px">
       </label>
 
       <label style="display:flex;align-items:center;gap:6px" title="Si décoché, pas de calcul du champ (beaucoup plus rapide)">
@@ -579,7 +582,7 @@ json.dumps(res)
       span.className = 'final-char';
       span.textContent = ch;
       // ensure non-breaking spaces for spaces so layout stays
-      if(ch === ' ') span.textContent = '\u00A0';
+      if(ch === ' ') span.textContent = ' ';
       finalMsg.appendChild(span);
       // schedule reveal with slight random jitter for a natural effect
       const jitter = Math.round((Math.random() - 0.5) * Math.min(30, per * 0.4));
