@@ -12,10 +12,7 @@
     :root{
       --maxw:760px; --bg:#ffffff; --text:#111827; --muted:#6b7280; --accent:#1f2937;
       --brand:#8b0000;
-      /* final message CSS vars */
-      --final-duration: 6s; /* default animation duration for reveal overall */
-      --final-color-dark: #000000; /* black, per request */
-      --final-shadow: rgba(0,0,0,0.55);
+      --final-backdrop: rgba(0,0,0,0.55);
     }
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.7}
@@ -50,7 +47,7 @@
     .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
     input[type="number"]{padding:6px;border:1px solid #ddd;border-radius:6px}
     .btn{background:var(--brand);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
-    #plot{width:100%;height:760px;margin-top:8px}
+    #plot{width:100%;height:760px;margin-top:8px;position:relative;overflow:hidden}
     .progress-wrap{height:14px;background:#fff;border:2px solid #ddd;border-radius:4px;overflow:hidden;margin-top:8px}
     .progress-bar{height:100%;width:0;background:#1f77b4}
     .controls-right{margin-left:auto;display:flex;align-items:center;gap:8px}
@@ -83,30 +80,31 @@
       #loaderBox{padding:12px}
     }
 
-    /* Final message overlay */
+    /* Final message overlay pinned to the plot area */
     #finalOverlay{
       display:none; /* shown programmatically */
-      position:fixed; inset:0; z-index:100500; pointer-events:auto; /* block interactions below */
-      align-items:center; justify-content:center; background: rgba(255,255,255,0.0); /* transparent background so simulation visible below */
+      position:absolute; inset:0; z-index:10050; align-items:center; justify-content:center;
+      pointer-events:auto; /* block interactions below */
     }
-    /* ensure .show actually makes the overlay visible */
     #finalOverlay.show{ display:flex; }
 
+    /* backdrop fades in behind text */
+    #finalOverlay .backdrop{ position:absolute; inset:0; background:var(--final-backdrop); opacity:0; transition:opacity 420ms ease; }
+    #finalOverlay.show .backdrop{ opacity:1; }
+
     #finalMsg{
-      font-family: Merriweather, serif; font-weight:900; text-transform:uppercase; letter-spacing:0.06em;
-      white-space:nowrap; user-select:none; -webkit-user-select:none;
-      color: var(--final-color-dark);
-      text-shadow: 0 10px 30px var(--final-shadow), 0 2px 6px rgba(0,0,0,0.35);
-      opacity:0; transform-origin:center center; will-change:opacity,transform;
-      padding:6px 10px; font-size:30vh; line-height:1; pointer-events:none; /* not interactive */
-      display:inline-block; text-align:center;
+      position:relative; z-index:2; font-family: Merriweather, serif; font-weight:900; text-transform:uppercase; letter-spacing:0.04em;
+      color: #000; /* black */
+      text-align:center;
+      opacity:0; transform:translateY(6px); transition: opacity 300ms ease, transform 420ms cubic-bezier(.2,.9,.2,1);
+      display:inline-block; white-space:nowrap; line-height:1; pointer-events:none;
+      /* responsive huge size but constrained to the plot area */
+      font-size: clamp(48px, 18vh, 220px);
+      max-width:92%; overflow-wrap:break-word;
     }
 
-    /* each character will animate individually via JS-assigned class */
-    .final-char{
-      display:inline-block; opacity:0; transform: translateY(8px) scale(0.9);
-      transition: opacity 280ms ease, transform 420ms cubic-bezier(.2,.9,.2,1);
-    }
+    /* per-character initial styles (will be revealed by JS) */
+    .final-char{ display:inline-block; opacity:0; transform: translateY(8px) scale(0.95); transition: opacity 280ms ease, transform 420ms cubic-bezier(.2,.9,.2,1); }
 
   </style>
 </head>
@@ -154,7 +152,7 @@
       <button id="run" class="btn">Lancer la simulation</button>
 
       <label>n_images:
-        <input id="n_image" type="number" value="50" min="5" style="width:80px">
+        <input id="n_image" type="number" value="100" min="5" style="width:80px">
       </label>
 
       <label>grid (nx):
@@ -166,7 +164,7 @@
       </label>
 
       <label>T_final:
-        <input id="Tfinal" type="number" value="15" step="1" style="width:80px">
+        <input id="Tfinal" type="number" value="100" step="1" style="width:80px">
       </label>
 
       <label style="display:flex;align-items:center;gap:6px" title="Si décoché, pas de calcul du champ (beaucoup plus rapide)">
@@ -178,7 +176,15 @@
       </div>
     </div>
 
-    <div id="plot"></div>
+    <div id="plot">
+      <!-- Plotly renders inside this div -->
+
+      <!-- Final message overlay pinned to the plot area -->
+      <div id="finalOverlay" aria-hidden="true">
+        <div class="backdrop" aria-hidden="true"></div>
+        <div id="finalMsg" aria-hidden="true"></div>
+      </div>
+    </div>
 
     <div class="progress-wrap"><div id="progressBar" class="progress-bar"></div></div>
 
@@ -212,11 +218,6 @@
       <div id="loaderPct">0%</div>
     </div>
   </div>
-</div>
-
-<!-- Final message overlay (updated) -->
-<div id="finalOverlay" aria-hidden="true">
-  <div id="finalMsg" aria-hidden="true"></div>
 </div>
 
 <script>
@@ -254,6 +255,7 @@
 
   const finalOverlay = document.getElementById('finalOverlay');
   const finalMsg = document.getElementById('finalMsg');
+  const finalBackdrop = finalOverlay.querySelector('.backdrop');
 
   let pyodide = null, pyReady=false;
   let simData = null, playInterval = null, playSpeedMs = 100;
@@ -556,15 +558,16 @@ json.dumps(res)
     }, playSpeedMs);
   });
 
-  // --- Final message helpers (letter-by-letter reveal, stays on screen) ---
+  // --- Final message helpers (letter-by-letter reveal, stays on screen inside plot) ---
   function clearFinalMessageContent(){
     finalMsg.innerHTML = '';
   }
 
   function revealFinalMessageLetters(durationSec){
-    // shows the message progressively, in black, and leaves it on screen large & opaque
     const text = "I DON'T GIVE A DAMN !".toUpperCase();
     clearFinalMessageContent();
+
+    // reset and show overlay
     finalOverlay.classList.remove('show');
     void finalOverlay.offsetWidth; // reflow
     finalOverlay.classList.add('show');
@@ -572,7 +575,6 @@ json.dumps(res)
 
     const total = Math.max(1, text.length);
     const totalMs = (Number(durationSec) || 6) * 1000;
-    // allocate about 70% of the time to individual letters reveal, rest to settle
     const lettersMs = Math.max(200, Math.round(totalMs * 0.75));
     const per = lettersMs / total;
 
@@ -580,35 +582,30 @@ json.dumps(res)
       const ch = text[i];
       const span = document.createElement('span');
       span.className = 'final-char';
-      span.textContent = ch;
-      // ensure non-breaking spaces for spaces so layout stays
-      if(ch === ' ') span.textContent = ' ';
+      span.textContent = ch === ' ' ? '\u00A0' : ch;
       finalMsg.appendChild(span);
-      // schedule reveal with slight random jitter for a natural effect
       const jitter = Math.round((Math.random() - 0.5) * Math.min(30, per * 0.4));
       setTimeout(((s)=>()=>{ s.style.opacity = '1'; s.style.transform = 'translateY(0) scale(1)'; })(span), Math.max(0, Math.round(i * per) + jitter));
     }
 
-    // after letters are revealed, ensure the whole message is fully visible/opaque
+    // ensure container message is visible/opaque after reveal
     setTimeout(()=>{
       finalMsg.style.opacity = '1';
       finalMsg.style.transform = 'none';
-      // keep it on screen; DO NOT attach dismiss handlers — it stays until next run
+      // leave it on screen — it will remain until simulation restarted
     }, lettersMs + 120);
   }
 
   function hideFinalMessage(){
-    // hide and clear so it can replay when simulation restarts
     finalOverlay.classList.remove('show');
     finalOverlay.setAttribute('aria-hidden', 'true');
     clearFinalMessageContent();
-    // force reflow so next show restarts animation
     void finalOverlay.offsetWidth;
   }
 
   // --- Main run button flow ---
   runBtn.addEventListener('click', async ()=>{
-    // hide any existing final overlay so it can replay at the end
+    // hide existing overlay so it can replay at the end
     hideFinalMessage();
 
     runBtn.disabled = true;
@@ -635,7 +632,7 @@ json.dumps(res)
       statusEl.textContent = 'Terminé';
       progressBar.style.width = '100%';
 
-      // === trigger the final black message progressively ===
+      // === trigger final message inside plot with backdrop fade ===
       const animDurSec = Math.min(14, Math.max(4, Math.round(Tfinal / 10)));
       revealFinalMessageLetters(animDurSec);
 
