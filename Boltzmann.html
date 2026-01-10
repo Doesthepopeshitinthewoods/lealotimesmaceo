@@ -2,19 +2,16 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Diagramme d'échelles — Libres pensées</title>
+  <title>Diagramme — flèches simples</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
   <style>
     :root{
-      --maxw:760px;
+      --maxw:1100px;
       --bg:#fff;
       --text:#111827;
       --muted:#6b7280;
       --accent:#1f2937;
-      --box-bg-1: linear-gradient(180deg,#e9f0fb,#dbeafc);
-      --box-border:#6b86a6;
-      --box-shadow: 0 6px 18px rgba(17,24,39,0.12);
     }
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.7}
@@ -26,19 +23,14 @@
     nav a:hover{text-decoration:underline}
     main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
     h2{font-family:Merriweather,serif;font-size:18px;margin:0 0 12px}
-    section.project{margin-bottom:24px}
-    .meta{color:var(--muted);font-size:13px;margin-bottom:6px}
     footer{border-top:1px solid #e5e7eb;text-align:center;font-size:14px;color:var(--muted);padding:18px 20px}
 
-    /* Diagram container */
-    .diagram-wrap{background:linear-gradient(180deg,#fbfdff,#f4f9ff);padding:18px;border-radius:10px;box-shadow:0 2px 8px rgba(31,41,55,0.05)}
-    .diagram{width:100%;height:auto;display:block;max-width:100%}
-    /* small responsive tweak */
-    @media (min-width:900px){
-      main{max-width:920px}
+    .diagram-wrap{
+      background:linear-gradient(180deg,#fbfdff,#f4f9ff);
+      padding:18px;border-radius:10px;
+      box-shadow:0 2px 8px rgba(31,41,55,0.05);
     }
-    /* Text fallback inside svg */
-    .svg-note{font-family:Inter,system-ui,Arial;font-size:13px;fill:var(--muted)}
+    svg.diagram{width:100%;height:auto;display:block}
   </style>
 </head>
 <body>
@@ -59,97 +51,108 @@
     <h2>Diagramme des descriptions : Microscopic → Mesoscopic → Macroscopic</h2>
 
     <div class="diagram-wrap" role="img" aria-label="Diagramme représentant les relations entre la description microscopique, mésoscopique et macroscopique">
-      <!-- SVG vectoriel du diagramme -->
-      <svg class="diagram" viewBox="0 0 1000 640" xmlns="http://www.w3.org/2000/svg" aria-labelledby="title desc">
-        <title id="title">Diagramme d'échelles : Microscopic, Mesoscopic, Macroscopic</title>
-        <desc id="desc">Trois boîtes arrondies reliées par des flèches avec annotations.</desc>
+      <svg class="diagram" viewBox="0 0 1200 760" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMin meet" aria-labelledby="title desc">
+        <title id="title">Diagramme : Microscopic, Mesoscopic, Macroscopic</title>
+        <desc id="desc">Trois boîtes arrondies reliées par des flèches droites simples.</desc>
 
-        <!-- defs : gradient, shadow, arrow marker -->
         <defs>
           <linearGradient id="gradBox" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stop-color="#f0f6ff"/>
+            <stop offset="0%" stop-color="#f6fbff"/>
             <stop offset="100%" stop-color="#dbeafc"/>
           </linearGradient>
 
+          <!-- ombre -->
           <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
-            <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#091421" flood-opacity="0.12"/>
+            <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#091421" flood-opacity="0.10"/>
           </filter>
 
-          <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
+          <!-- flèche simple (triangle) -->
+          <marker id="arrowSimple" markerWidth="10" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
             <path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/>
           </marker>
 
           <style type="text/css">
-            .box-title{font-family:Merriweather,serif;font-weight:700; font-size:20px; fill:#08263b}
-            .box-body{font-family:Inter,system-ui,Arial;font-size:15px; fill:#0f1720}
-            .annotation{font-family:Inter,system-ui,Arial;font-size:14px; fill:#111827}
+            .title{font-family:Merriweather,serif;font-weight:700; font-size:22px; fill:#08263b}
+            .body{font-family:Inter,system-ui,Arial;font-size:15px; fill:#0f1720}
             .muted{font-family:Inter,system-ui,Arial;font-size:13px; fill:#6b7280}
-            .small-muted{font-family:Inter,system-ui,Arial;font-size:12px; fill:#6b7280}
+            .note{font-family:Inter,system-ui,Arial;font-size:13px; fill:#6b7280}
           </style>
         </defs>
 
         <!-- Boxes -->
-        <!-- Microscopic (top-left) -->
-        <g transform="translate(60,40)">
-          <rect x="0" y="0" rx="12" ry="12" width="420" height="170" fill="url(#gradBox)" stroke="#8aa6c9" stroke-width="2" filter="url(#softShadow)"/>
-          <text x="24" y="38" class="box-title">Microscopic description</text>
-          <text x="24" y="74" class="box-body">
-            <tspan x="24" dy="0">System of N particles of size ε</tspan>
-            <tspan x="24" dy="22">Newton’s equations</tspan>
-          </text>
-          <!-- small side label -->
-          <text x="430" y="110" class="small-muted">N≫1, Nε<sup>d-1</sup> = α</text>
-          <text x="430" y="130" class="small-muted">Low density limit</text>
-        </g>
-
-        <!-- Mesoscopic (top-right) -->
-        <g transform="translate(540,60)">
-          <rect x="0" y="0" rx="12" ry="12" width="380" height="180" fill="url(#gradBox)" stroke="#8aa6c9" stroke-width="2" filter="url(#softShadow)"/>
-          <text x="22" y="40" class="box-title">Mesoscopic description</text>
-          <text x="22" y="80" class="box-body">
-            <tspan x="22" dy="0">Large system of particles with</tspan>
-            <tspan x="22" dy="22">negligible size</tspan>
-            <tspan x="22" dy="22">Boltzmann’s kinetic equation</tspan>
+        <!-- Microscopic -->
+        <g>
+          <rect x="60" y="40" rx="14" ry="14" width="460" height="170" fill="url(#gradBox)" stroke="#8aa6c9" stroke-width="2" filter="url(#softShadow)"/>
+          <text x="90" y="80" class="title">Microscopic description</text>
+          <text x="90" y="110" class="body">
+            <tspan x="90" dy="0">System of N particles of size ε</tspan>
+            <tspan x="90" dy="24">Newton’s equations</tspan>
           </text>
         </g>
 
-        <!-- Macroscopic (bottom-left) -->
-        <g transform="translate(120,350)">
-          <rect x="0" y="0" rx="12" ry="12" width="760" height="170" fill="url(#gradBox)" stroke="#8aa6c9" stroke-width="2" filter="url(#softShadow)"/>
-          <text x="30" y="40" class="box-title">Macroscopic description</text>
-          <text x="30" y="86" class="box-body">
-            <tspan x="30" dy="0">Continuous fluid</tspan>
-            <tspan x="30" dy="22">equations of hydrodynamics</tspan>
-            <tspan x="30" dy="22">(Euler, Navier-Stokes...)</tspan>
+        <!-- Mesoscopic -->
+        <g>
+          <rect x="680" y="60" rx="14" ry="14" width="440" height="180" fill="url(#gradBox)" stroke="#8aa6c9" stroke-width="2" filter="url(#softShadow)"/>
+          <text x="712" y="100" class="title">Mesoscopic description</text>
+          <text x="712" y="132" class="body">
+            <tspan x="712" dy="0">Large system of particles with</tspan>
+            <tspan x="712" dy="24">negligible size</tspan>
+            <tspan x="712" dy="24">Boltzmann’s kinetic equation</tspan>
           </text>
         </g>
 
-        <!-- Arrows -->
-        <!-- Microscopic -> Mesoscopic (diagonal right) -->
-        <g stroke="#124" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M420 120 C 480 120, 520 130, 540 150" marker-end="url(#arrow)" />
+        <!-- Macroscopic -->
+        <g>
+          <rect x="160" y="420" rx="14" ry="14" width="880" height="180" fill="url(#gradBox)" stroke="#8aa6c9" stroke-width="2" filter="url(#softShadow)"/>
+          <text x="200" y="464" class="title">Macroscopic description</text>
+          <text x="200" y="496" class="body">
+            <tspan x="200" dy="0">Continuous fluid</tspan>
+            <tspan x="200" dy="24">equations of hydrodynamics</tspan>
+            <tspan x="200" dy="24">(Euler, Navier-Stokes...)</tspan>
+          </text>
         </g>
-        <!-- label near diagonal arrow -->
-        <text x="470" y="112" class="muted" transform="rotate(-8 470 112)">N≫1, Nε<sup>d-1</sup> = α</text>
 
-        <!-- Microscopic -> Macroscopic (vertical down) -->
-        <g stroke="#124" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M180 210 C 180 260, 200 300, 220 320" marker-end="url(#arrow)" />
+        <!-- Simple straight arrows -->
+        <!-- Microscopic -> Mesoscopic (ligne droite) -->
+        <!-- start at right-middle of microscopic, end at left-middle of mesoscopic -->
+        <g stroke="#1f2937" stroke-width="4" fill="none" stroke-linecap="round">
+          <line x1="520" y1="125" x2="680" y2="150" marker-end="url(#arrowSimple)"/>
         </g>
-        <text x="120" y="250" class="muted">Nε<sup>d-1</sup> ≫1, Nε<sup>d</sup> ≪1</text>
+        <text x="560" y="120" class="muted" transform="rotate(-6 560 120)">
+          <tspan>N≫1, </tspan>
+          <tspan baseline-shift="super" font-size="12">Nε</tspan>
+          <tspan baseline-shift="super" font-size="12">d-1</tspan>
+          <tspan> = α</tspan>
+        </text>
 
-        <!-- Mesoscopic -> Macroscopic (diagonal down-left) -->
-        <g stroke="#124" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M655 235 C 600 290, 540 320, 380 360" marker-end="url(#arrow)" />
+        <!-- Microscopic -> Macroscopic (vertical simple) -->
+        <g stroke="#1f2937" stroke-width="4" fill="none" stroke-linecap="round">
+          <!-- droite verticale partant du centre-bas de la boîte microscopic -->
+          <line x1="290" y1="210" x2="290" y2="420" marker-end="url(#arrowSimple)"/>
         </g>
-        <text x="560" y="310" class="muted" transform="rotate(10 560 310)">α≫1</text>
-        <text x="560" y="328" class="muted" transform="rotate(10 560 328)">Fast relaxation limit</text>
+        <text x="200" y="280" class="muted">
+          <tspan>Nε</tspan><tspan baseline-shift="super" font-size="12">d-1</tspan>
+          <tspan> ≫ 1, </tspan>
+          <tspan>Nε</tspan><tspan baseline-shift="super" font-size="12">d</tspan>
+          <tspan> ≪ 1</tspan>
+        </text>
 
-        <!-- small credits / scale note -->
-        <text x="20" y="620" class="svg-note">Diagramme vectoriel — représentation schématique des limites et passages d'échelle.</text>
+        <!-- Mesoscopic -> Macroscopic (ligne droite) -->
+        <g stroke="#1f2937" stroke-width="4" fill="none" stroke-linecap="round">
+          <!-- start near left-middle of mesoscopic, end at top area of macroscopic -->
+          <line x1="680" y1="150" x2="600" y2="420" marker-end="url(#arrowSimple)"/>
+        </g>
+        <text x="710" y="300" class="muted" transform="rotate(8 710 300)">
+          <tspan>α≫1</tspan>
+        </text>
+        <text x="710" y="320" class="muted" transform="rotate(8 710 320)">
+          <tspan>Fast relaxation limit</tspan>
+        </text>
+
+        <!-- small footer note -->
+        <text x="24" y="735" class="note">Diagramme vectoriel — limites et passages d'échelle.</text>
       </svg>
     </div>
-
   </main>
 
   <footer>
