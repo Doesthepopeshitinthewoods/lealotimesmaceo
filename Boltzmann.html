@@ -1,3 +1,5 @@
+
+
 <!doctype html>
 <html lang="fr">
 <head>
@@ -160,7 +162,23 @@
       </nav>
     </div>
   </header>
-
+<!-- config MathJax (placer avant le script) -->
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$','$$'], ['\\[','\\]']],
+      processEscapes: true
+    },
+    svg: { fontCache: 'global' }
+  };
+  </script>
+  
+  <!-- charger MathJax (CDN) -->
+  <script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+  </script>
+  
   <main>
     <div class="card" role="region" aria-labelledby="diagram-title">
       
@@ -371,7 +389,7 @@
       <div>
         Du point de vue trajectorial, la position renormalisée
         $$\Xi(\tau):=x_1(\alpha\tau)$$
-        converge en loi vers un mouvement brownien de variance \(\kappa_\beta\). L'article établit rigoureusement la convergence des densités et des trajectoires.
+        converge en loi vers un mouvement brownien de variance \(\kappa_\beta\).  
       </div>
     
       <div>
@@ -389,3 +407,5 @@
   </main>
 </body>
 </html>
+
+
