@@ -2,133 +2,118 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
+  <title>Diagramme — Descriptions multi‑échelles</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Diagramme : microscopic → mesoscopic → macroscopic</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
   <style>
     :root{
-      --bg:#f4f7fb;
-      --panel-top:#e9eef8;
-      --panel-bottom:#eef6f9;
-      --accent: #1f6feb;
-      --shadow: 0 8px 18px rgba(22,40,80,0.12);
-      --radius:14px;
-      --text:#0f1724;
+      --maxw:760px;
+      --bg:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --accent:#1f2937;
+      --border:#e5e7eb;
+      --panel:#f9fafb;
     }
     *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;color:var(--text);background:linear-gradient(180deg,var(--bg),#ffffff);}
-
-    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px}
-    .card{
-      width:1100px;max-width:95vw;background:transparent;padding:36px;border-radius:18px;position:relative
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+      line-height:1.7
     }
+    header{background:#8b0000;border-bottom:1px solid #7a0000}
+    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between}
+    h1{margin:0;font-family:Merriweather,serif;font-size:20px;font-weight:700;color:#fff}
+    nav{display:flex;gap:12px;align-items:center}
+    nav a{color:#f3f4f6;text-decoration:none;font-size:14px}
+    nav a:hover{text-decoration:underline}
+    main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
+    h2{font-family:Merriweather,serif;font-size:18px;margin:0 0 16px}
+    p.lead{color:var(--muted);font-size:14px;margin:0 0 24px}
 
-    /* SVG stage will scale responsively */
-    svg.diagram{width:100%;height:auto;display:block}
+    /* Diagram container */
+    .diagram-wrap{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px}
+    svg{width:100%;height:auto;display:block}
 
-    /* small caption text styles (used as foreignObject inside svg) */
-    .panel-title{font-weight:800;font-size:20px;margin-bottom:6px}
-    .panel-sub{font-weight:500;font-size:15px;opacity:0.9}
-    .panel-note{font-weight:500;font-size:14px;opacity:0.8}
+    .panel-title{font-family:Merriweather,serif;font-weight:700;font-size:16px;margin-bottom:4px}
+    .panel-sub{font-size:14px;color:var(--text)}
+    .small{font-size:13px;fill:var(--muted)}
 
-    /* legend notes outside SVG for accessibility */
-    .legend{font-size:13px;color:#425066;margin-top:12px}
-
-    /* subtle hover animation for boxes */
-    .box-rect{transition:transform .22s ease, filter .22s ease}
-    .box-rect:hover{transform:translateY(-6px);filter:drop-shadow(0 14px 30px rgba(25,62,144,0.06))}
-
-    /* small responsive tweaks */
-    @media (max-width:720px){
-      .card{padding:18px}
-    }
+    footer{border-top:1px solid var(--border);text-align:center;font-size:14px;color:var(--muted);padding:18px 20px;margin-top:48px}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card" role="img" aria-label="Diagramme montrant la relation entre description microscopique, mésoscopique et macroscopique">
+  <header>
+    <div class="wrap">
+      <h1>Blog de l'intranquilité</h1>
+      <nav aria-label="Navigation principale">
+        <a href="index.html">Accueil</a>
+        <a href="culture-films.html">Films</a>
+        <a href="culture-livres.html">Livres</a>
+        <a href="culture-musiques.html">Musiques</a>
+        <a href="projets-libres-pensees.html">Projets</a>
+      </nav>
+    </div>
+  </header>
 
-      <!-- Inline SVG diagram. It scales with the container. Text is placed using <foreignObject> for crisp fonts. -->
-      <svg class="diagram" viewBox="0 0 1100 700" xmlns="http://www.w3.org/2000/svg" aria-hidden="false">
+  <main>
+    <h2>Descriptions microscopique, mésoscopique et macroscopique</h2>
+    <p class="lead">Schéma synthétique illustrant les différents niveaux de description d’un système de particules et les limites asymptotiques reliant ces échelles.</p>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 760 520" xmlns="http://www.w3.org/2000/svg" aria-label="Diagramme multi-échelles">
         <defs>
-          <linearGradient id="panelGrad" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stop-color="#f6f9ff" />
-            <stop offset="100%" stop-color="#e9eef8" />
-          </linearGradient>
-          <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
-            <feDropShadow dx="0" dy="10" stdDeviation="18" flood-color="#0e1f3d" flood-opacity="0.08"/>
-          </filter>
           <marker id="arrow" markerWidth="10" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
-            <path d="M0,0 L10,5 L0,10 L3,5 z" fill="#0f1724" />
+            <path d="M0,0 L10,5 L0,10 L3,5 z" fill="#111827" />
           </marker>
-          <style><![CDATA[
-            .label { font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; fill:#0f1724 }
-            .small { font-size:13px }
-            .big { font-weight:800; font-size:18px }
-            .sub { font-weight:500; font-size:14px; opacity:0.95 }
-          ]]></style>
         </defs>
 
-        <!-- Boxes positions -->
-        <!-- Top-left: Microscopic -->
-        <g transform="translate(70,50)">
-          <rect class="box-rect" x="0" y="0" rx="14" ry="14" width="420" height="140" fill="url(#panelGrad)" stroke="#bfcfe9" stroke-width="1" filter="url(#softShadow)"/>
+        <!-- Microscopic -->
+        <rect x="20" y="20" rx="10" ry="10" width="300" height="100" fill="#ffffff" stroke="#d1d5db"/>
+        <foreignObject x="36" y="34" width="268" height="72">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            <div class="panel-title">Description microscopique</div>
+            <div class="panel-sub">N particules de taille ε<br/>Équations de Newton</div>
+          </div>
+        </foreignObject>
 
-          <foreignObject x="18" y="14" width="384" height="112">
-            <div xmlns="http://www.w3.org/1999/xhtml" style="height:100%;padding:8px;">
-              <div class="panel-title">Microscopic description</div>
-              <div class="panel-sub">System of N particles of size ε<br/>Newton’s equations</div>
-            </div>
-          </foreignObject>
-        </g>
+        <!-- Mesoscopic -->
+        <rect x="440" y="40" rx="10" ry="10" width="300" height="100" fill="#ffffff" stroke="#d1d5db"/>
+        <foreignObject x="456" y="54" width="268" height="72">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            <div class="panel-title">Description mésoscopique</div>
+            <div class="panel-sub">Grand nombre de particules<br/>Équation de Boltzmann</div>
+          </div>
+        </foreignObject>
 
-        <!-- Top-right: Mesoscopic -->
-        <g transform="translate(610,70)">
-          <rect class="box-rect" x="0" y="0" rx="14" ry="14" width="420" height="140" fill="url(#panelGrad)" stroke="#bfcfe9" stroke-width="1" filter="url(#softShadow)"/>
-          <foreignObject x="18" y="14" width="384" height="112">
-            <div xmlns="http://www.w3.org/1999/xhtml" style="height:100%;padding:8px;">
-              <div class="panel-title">Mesoscopic description</div>
-              <div class="panel-sub">Large system of particles with negligible size<br/>Boltzmann’s kinetic equation</div>
-            </div>
-          </foreignObject>
-        </g>
-
-        <!-- Bottom-left: Macroscopic -->
-        <g transform="translate(300,440)">
-          <rect class="box-rect" x="-150" y="0" rx="14" ry="14" width="540" height="140" fill="url(#panelGrad)" stroke="#bfcfe9" stroke-width="1" filter="url(#softShadow)"/>
-          <foreignObject x="-130" y="14" width="500" height="112">
-            <div xmlns="http://www.w3.org/1999/xhtml" style="height:100%;padding:12px;">
-              <div class="panel-title">Macroscopic description</div>
-              <div class="panel-sub">Continuous fluid<br/>equations of hydrodynamics<br/>(Euler, Navier–Stokes…)</div>
-            </div>
-          </foreignObject>
-        </g>
+        <!-- Macroscopic -->
+        <rect x="200" y="360" rx="10" ry="10" width="360" height="110" fill="#ffffff" stroke="#d1d5db"/>
+        <foreignObject x="216" y="374" width="328" height="82">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            <div class="panel-title">Description macroscopique</div>
+            <div class="panel-sub">Fluide continu<br/>Équations d’Euler, Navier–Stokes…</div>
+          </div>
+        </foreignObject>
 
         <!-- Arrows -->
-        <!-- Microscopic -> Mesoscopic (top-left to top-right) -->
-        <path d="M490,120 C540,110 620,100 610,130" stroke="#1f6feb" stroke-width="8" fill="none" marker-end="url(#arrow)" stroke-linecap="round" opacity="0.95"/>
-        <!-- label near that arrow -->
-        <text x="540" y="90" class="label small" text-anchor="middle">N&gt;&gt;1, Nε^{d-1} = α — Low density limit</text>
+        <path d="M320,70 C380,60 420,60 440,90" stroke="#111827" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+        <text x="380" y="48" class="small">N ≫ 1, Nε^{d−1} = α</text>
 
-        <!-- Microscopic -> Macroscopic (downwards) -->
-        <path d="M300,190 C300,260 300,320 280,380" stroke="#0f1724" stroke-width="6" fill="none" marker-end="url(#arrow)" stroke-linecap="round" opacity="0.9"/>
+        <path d="M170,120 C170,220 230,300 320,360" stroke="#111827" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+        <text x="36" y="220" class="small">Nε^{d−1} ≫ 1<br/>Nε^{d} ≪ 1</text>
 
-        <!-- Mesoscopic -> Macroscopic (diagonal) -->
-        <path d="M760,200 C680,290 560,350 520,420" stroke="#0f1724" stroke-width="6" fill="none" marker-end="url(#arrow)" stroke-linecap="round" opacity="0.9"/>
-        <text x="700" y="310" class="label small">α&gt;&gt;1 — Fast relaxation limit</text>
-
-        <!-- Additional small textual annotation near left downward arrow -->
-        <text x="220" y="260" class="label small">Nε^{d-1} &gt;&gt;1, Nε^{d} &lt;&lt; 1</text>
-
-        <!-- Decorative title inside SVG -->
-        <text x="60" y="28" class="label big">Multiscale description</text>
-
+        <path d="M590,140 C560,240 480,300 420,360" stroke="#111827" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+        <text x="560" y="260" class="small">α ≫ 1<br/>Relaxation rapide</text>
       </svg>
-
-      <p class="legend">Vous pouvez copier-coller ce fichier dans votre projet. L'image est réactive : l'élément SVG s'adapte à la largeur du conteneur. Si vous souhaitez une version exportable (PNG/SVG séparé), ou une variante graphique (couleurs, typographie, français intégral), dites-le moi.</p>
-
     </div>
-  </div>
+  </main>
+
+  <footer>
+    © <span id="year"></span> — Blog personnel
+  </footer>
+
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 </body>
 </html>
- 
