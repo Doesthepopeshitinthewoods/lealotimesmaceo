@@ -4,317 +4,295 @@
   <meta charset="utf-8">
   <title>Projets — Libres pensées</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Polices -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
+
+  <!-- Styles améliorés (sans toucher au contenu texte) -->
   <style>
-    :root{--maxw:760px;--bg:#fff;--text:#111827;--muted:#6b7280;--accent:#1f2937}
+    :root{
+      --maxw:900px;
+      --bg:#fafafa;
+      --paper:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --accent:#1f2937;
+      --brand:#8b0000;
+      --card-border:#e6e6e6;
+      --radius:8px;
+      --gap:18px;
+    }
+
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.7}
-    header{background:#8b0000;border-bottom:1px solid #7a0000}
-    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between}
-    h1{margin:0;font-family:Merriweather,serif;font-size:20px;font-weight:700;color:#fff}
-    nav{display:flex;gap:12px;align-items:center}
-    nav a{color:#f3f4f6;text-decoration:none;font-size:14px}
-    nav a:hover{text-decoration:underline}
-    main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
-    h2{font-family:Merriweather,serif;font-size:18px;margin:0 0 8px}
-    section.project{margin-bottom:24px}
-    .meta{color:var(--muted);font-size:13px;margin-bottom:6px}
-    footer{border-top:1px solid #e5e7eb;text-align:center;font-size:14px;color:var(--muted);padding:18px 20px}
-    /* styles complémentaires pour la fiche */
-    .card{background:#ffffff;border:1px solid #e6e6e6;padding:14px;border-radius:6px;box-shadow:0 1px 0 rgba(0,0,0,0.02)}
-    .statement{margin:10px 0;padding:10px;background:#fbfbfb;border-radius:6px;border:1px solid #f0f0f0}
-    details summary{cursor:pointer;font-weight:600;color:var(--accent)}
-    code{background:#f3f4f6;padding:2px 6px;border-radius:4px;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace}
-    ol{padding-left:18px}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:linear-gradient(180deg, #fbfbfb 0%, var(--bg) 100%);
+      color:var(--text);
+      font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.65;
+      -webkit-text-size-adjust:100%;
+    }
+
+    /* Page wrapper */
+    .site{
+      display:flex;
+      flex-direction:column;
+      min-height:100vh;
+    }
+
+    /* Header */
+    header{
+      background:var(--brand);
+      border-bottom:4px solid rgba(0,0,0,0.06);
+      color:#fff;
+    }
+    .wrap{
+      max-width:var(--maxw);
+      margin:0 auto;
+      padding:18px 20px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    h1{
+      margin:0;
+      font-family:Merriweather,serif;
+      font-size:20px;
+      font-weight:700;
+      color:#fff;
+      letter-spacing:0.2px;
+    }
+
+    /* Navigation */
+    nav{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    nav a{
+      color:rgba(243,244,246,0.95);
+      text-decoration:none;
+      font-size:14px;
+      padding:6px 8px;
+      border-radius:6px;
+    }
+    nav a:hover{
+      background:rgba(255,255,255,0.06);
+      text-decoration:none;
+    }
+
+    /* Main content */
+    main{
+      max-width:var(--maxw);
+      margin:34px auto;
+      padding:0 20px 36px;
+      width:100%;
+      flex:1;
+    }
+    h2{
+      font-family:Merriweather,serif;
+      font-size:20px;
+      margin:0 0 14px;
+      color:var(--accent);
+    }
+
+    /* Card / fiche */
+    .project.card{
+      background:var(--paper);
+      border:1px solid var(--card-border);
+      padding:18px;
+      border-radius:var(--radius);
+      box-shadow: 0 6px 18px rgba(16,24,40,0.03);
+      margin-bottom:22px;
+    }
+
+    .meta{
+      color:var(--muted);
+      font-size:13px;
+      margin-bottom:12px;
+    }
+
+    h3{
+      margin:14px 0 8px;
+      font-family:Merriweather,serif;
+      font-size:16px;
+      color:var(--brand);
+    }
+
+    .statement{
+      margin:10px 0;
+      padding:12px;
+      background:#fbfbfb;
+      border-radius:8px;
+      border:1px solid #f0f0f0;
+      line-height:1.6;
+      font-size:15px;
+    }
+
+    .statement strong{display:block;margin-bottom:6px}
+    .statement details{margin-top:8px}
+    details summary{cursor:pointer;font-weight:600;color:var(--accent);outline:none}
+    details[open] summary{color:var(--brand)}
+
+    code{
+      background:#f3f4f6;
+      padding:2px 6px;
+      border-radius:4px;
+      font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
+      font-size:13px;
+    }
+
+    ol{padding-left:20px;margin:8px 0}
+    ul{margin:8px 0 0 18px}
     .muted{color:var(--muted);font-size:13px}
+
+    /* Footer */
+    footer{
+      border-top:1px solid #e9e9ef;
+      text-align:center;
+      font-size:14px;
+      color:var(--muted);
+      padding:18px 20px;
+      background:transparent;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width:640px){
+      .wrap{padding:14px 16px}
+      main{margin:20px auto;padding:0 16px 28px}
+      h2{font-size:18px}
+      h3{font-size:15px}
+      .project.card{padding:14px}
+    }
   </style>
 
   <!-- MathJax v3 : permet d'utiliser $...$ et $$...$$ dans la page HTML -->
   <script>
-  window.MathJax = {
-    tex: {
-      inlineMath: [['$', '$'], ['\\(', '\\)']],
-      displayMath: [['$$','$$'], ['\\[','\\]']],
-      packages: {'[+]': ['ams']}
-    },
-    options: {
-      processHtmlClass: 'mathjax_process',
-      ignoreHtmlClass: 'mathjax_ignore'
-    }
-  };
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$','$$'], ['\\[','\\]']],
+        packages: {'[+]': ['ams']}
+      },
+      options: {
+        processHtmlClass: 'mathjax_process',
+        ignoreHtmlClass: 'mathjax_ignore'
+      }
+    };
   </script>
   <script id="MathJax-script" async
     src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
   </script>
 </head>
+
 <body>
-  <header>
-    <div class="wrap">
-      <h1>Blog de l'intranquilité</h1>
-      <nav aria-label="Navigation principale">
-        <a href="index.html">Accueil</a>
-        <a href="culture-films.html">Films</a>
-        <a href="culture-livres.html">Livres</a>
-        <a href="culture-musiques.html">Musiques</a>
-        <a href="projets-libres-pensees.html">Projets</a>
-      </nav>
-    </div>
-  </header>
-
-  <main>
-    <h2>Fiche — Théorèmes de convergence des martingales</h2>
-
-    <section class="project card">
-      <div class="meta">Résumé synthétique des principaux résultats (énoncés, hypothèses, idées de preuve). LaTeX : $...$ et $$...$$ supportés.</div>
-
-      <h3 style="margin-top:8px">Inégalité maximale de Doob — Décomposition</h3>
-      <div class="statement">
-        <strong>Inégalité de Doob (p &gt; 1).</strong>
-        Si $(M_n)_{n\ge0}$ est une martingale et $p>1$, alors pour tout $n$ :
-        $$\mathbb{E}\big[(M_n^*)^p\big] \le \left(\frac{p}{p-1}\right)^p \mathbb{E}\big[|M_n|^p\big],\qquad
-        M_n^*=\sup_{0\le k\le n}|M_k|.$$
-        <details><summary>Idée de preuve</summary>
-          Utiliser la convexité $x\mapsto|x|^p$, la transformée de Doob et Hölder pour relier $M_n^*$ et $M_n$. Cette inégalité permet un contrôle des queues et est utilisée pour déduire l'uniforme intégrabilité.
-        </details>
+  <div class="site">
+    <header>
+      <div class="wrap">
+        <h1>Blog de l'intranquilité</h1>
+        <nav aria-label="Navigation principale">
+          <a href="index.html">Accueil</a>
+          <a href="culture-films.html">Films</a>
+          <a href="culture-livres.html">Livres</a>
+          <a href="culture-musiques.html">Musiques</a>
+          <a href="projets-libres-pensees.html">Projets</a>
+        </nav>
       </div>
+    </header>
 
-      <h3>Martingales bornées dans $L^2$ (Th. 4.8.1)</h3>
-      <div class="statement">
-        <strong>Énoncé.</strong> Si $(M_n)$ est une martingale telle que $\sup_n\mathbb{E}[M_n^2]<\infty$, alors il existe $M_\infty\in L^2$ avec
-        $$M_n \to M_\infty\quad\text{presque sûrement et dans }L^2.$$
-        <details><summary>Croquis</summary>
-          L'orthogonalité des accroissements entraîne $\sum \mathbb{E}[(\Delta M_k)^2]<\infty$, ce qui implique que $(M_n)$ est de Cauchy en $L^2$ et converge. La convergence presque sûre découle ensuite d'arguments standards (sous-suites, contrôle de la variation quadratique).
-        </details>
-      </div>
+    <main>
+      <h2>Fiche — Théorèmes de convergence des martingales</h2>
 
-      <h3>Surmartingales positives (Th. 4.8.3)</h3>
-      <div class="statement">
-        <strong>Énoncé.</strong> Si $(X_n)$ est une surmartingale avec $X_n\ge0$ et $\sup_n\mathbb{E}[X_n]<\infty$, alors $X_n$ converge presque sûrement vers $X_\infty$ et
-        $$\mathbb{E}[X_\infty]\le\liminf_{n\to\infty}\mathbb{E}[X_n].$$
-        <details><summary>Idée</summary>
-          On utilise la troncature et la décomposition de Doob ; l'hypothèse de positivité empêche les trajectoires de diverger positivement de manière incontrôlable.
-        </details>
-      </div>
+      <section class="project card">
+        <div class="meta">Résumé synthétique des principaux résultats (énoncés, hypothèses, idées de preuve). LaTeX : $...$ et $$...$$ supportés.</div>
 
-      <h3>Sous-martingales bornées dans $L^1$ (Th. 4.8.4)</h3>
-      <div class="statement">
-        <strong>Énoncé.</strong> Une sous-martingale $(X_n)$ telle que $\sup_n\mathbb{E}[X_n^+]<\infty$ converge presque sûrement vers une limite finie $X_\infty$ (et $X_\infty\in L^1$).
-        <details><summary>Preuve courte</summary>
-          Méthode des montées-descents (comptage des traversées d'intervalles) : montrer que le nombre de traversées d'un intervalle $[a,b]$ est presque sûrement fini, ce qui force la convergence des trajectoires.
-        </details>
-      </div>
-
-      <h3>Martingales fermées ⇔ uniformément intégrables (Th. 4.10.1)</h3>
-      <div class="statement">
-        <strong>Énoncé.</strong> Pour une martingale $(M_n)$, les assertions suivantes sont équivalentes :
-        <ol>
-          <li>$M_n \to M_\infty$ presque sûrement et dans $L^1$ ;</li>
-          <li>il existe $X\in L^1$ tel que $M_n=\mathbb{E}[X\mid\mathcal{F}_n]$ pour tout $n$ (martingale fermée) ;</li>
-          <li>la famille $(M_n)$ est uniformément intégrable (u.i.).</li>
-        </ol>
-        <details><summary>Remarques</summary>
-          En pratique, montrer la u.i. (par ex. via La Vallée-Poussin) donne la convergence en $L^1$ et la représentation comme espérance conditionnelle.
-        </details>
-      </div>
-
-      <h3>Théorème limite central pour martingales (Th. 4.12.1)</h3>
-      <div class="statement">
-        <strong>Énoncé (forme usuelle).</strong> Soit $(M_n)$ une martingale de carré intégrable et $(\sigma_n)$ une suite croissante telle que
-        <ol>
-          <li>$\langle M\rangle_n/\sigma_n^2 \to 1$ en probabilité (variation quadratique prévisible normalisée),</li>
-          <li>condition de Lindeberg conditionnelle : les gros incréments sont négligeables.</li>
-        </ol>
-        Alors
-        $$\frac{M_n}{\sigma_n} \xrightarrow{d} \mathcal{N}(0,1).$$
-        <details><summary>Commentaire</summary>
-          C'est l'analogue du TLC classique : la variance empirique est remplacée par $\langle M\rangle_n$ et la condition de Lindeberg s'exprime en termes d'espérances conditionnelles.
-        </details>
-      </div>
-
-      <div class="muted" style="margin-top:8px">
-        Remarques pratiques :
-        <ul>
-          <li>MathJax est chargé en tête : tu peux écrire des formules avec <code>$...$</code> et <code>$$...$$</code>.</li>
-          <li>Si tu préfères KaTeX pour la vitesse, dis-le et je te fournis la variante.</li>
-          <li>Si tu publies un fichier Markdown (.md) sur GitHub, note que GitHub n'exécute pas de scripts dans les README — publie la page en HTML (ex. `docs/martingales-convergence.html`) pour que MathJax fonctionne.</li>
-        </ul>
-      </div>
-    </section>
-<script>
-/* Script : insère dynamiquement autres théorèmes de martingales et met à jour l'année.
-   Colle ceci à la fin du <body>, à la place de l'ancien script qui mettait juste l'année. */
-
-(function () {
-  // données textuelles (titre + contenu avec latex MathJax)
-  const theorems = [
-    {
-      id: 'doob-stopping',
-      title: "Théorème d'arrêt de Doob",
-      html: `
-        <div class="statement card" style="margin-top:12px">
-          <strong>Énoncé (simplifié).</strong>
-          Si $(M_n)_{n\ge0}$ est une martingale intégrable et $T$ un temps d'arrêt borné, alors
-          $$\mathbb{E}[M_T]=\mathbb{E}[M_0].$$
-          <details><summary>Remarques</summary>
-            Ce résultat se généralise sous conditions d'intégrabilité/limites pour des temps d'arrêt non bornés (versions de type uniforme-intégrabilité). Voir la section sur temps d'arrêt et applications (ex. jeux de hasard). 
+        <h3 style="margin-top:8px">Inégalité maximale de Doob — Décomposition</h3>
+        <div class="statement">
+          <strong>Inégalité de Doob (p &gt; 1).</strong>
+          Si $(M_n)_{n\ge0}$ est une martingale et $p>1$, alors pour tout $n$ :
+          $$\mathbb{E}\big[(M_n^*)^p\big] \le \left(\frac{p}{p-1}\right)^p \mathbb{E}\big[|M_n|^p\big],\qquad
+          M_n^*=\sup_{0\le k\le n}|M_k|.$$
+          <details><summary>Idée de preuve</summary>
+            Utiliser la convexité $x\mapsto|x|^p$, la transformée de Doob et Hölder pour relier $M_n^*$ et $M_n$. Cette inégalité permet un contrôle des queues et est utilisée pour déduire l'uniforme intégrabilité.
           </details>
-        </div>`
-    },
-    {
-      id: 'doob-decomposition',
-      title: "Décomposition de Doob",
-      html: `
-        <div class="statement card" style="margin-top:12px">
-          <strong>Énoncé (forme usuelle).</strong>
-          Toute suite intégrable $(X_n)$ adaptée se décompose de manière unique en
-          $$X_n = M_n + A_n,$$
-          où $(M_n)$ est une martingale et $(A_n)$ est une prévisible de variation finie (processus à accroissements prévisibles). 
-          <details><summary>Usage</summary>
-            Cette décomposition permet de réduire l'étude de sous-/sur-martingales à l'étude de martingales pures et d'un terme déterministe prévisible.
+        </div>
+
+        <h3>Martingales bornées dans $L^2$ (Th. 4.8.1)</h3>
+        <div class="statement">
+          <strong>Énoncé.</strong> Si $(M_n)$ est une martingale telle que $\sup_n\mathbb{E}[M_n^2]<\infty$, alors il existe $M_\infty\in L^2$ avec
+          $$M_n \to M_\infty\quad\text{presque sûrement et dans }L^2.$$
+          <details><summary>Croquis</summary>
+            L'orthogonalité des accroissements entraîne $\sum \mathbb{E}[(\Delta M_k)^2]<\infty$, ce qui implique que $(M_n)$ est de Cauchy en $L^2$ et converge. La convergence presque sûre découle ensuite d'arguments standards (sous-suites, contrôle de la variation quadratique).
           </details>
-        </div>`
-    },
-    {
-      id: 'doob-max',
-      title: "Inégalité maximale de Doob",
-      html: `
-        <div class="statement card" style="margin-top:12px">
-          <strong>Inégalité maximale de Doob (p &gt; 1).</strong>
-          Pour une sous-martingale positive $(X_n)$ et $p>1$,
-          $$\\mathbb{E}\\Big[\\sup_{0\\le k\\le n} X_k^p\\Big] \\le \\Big(\\frac{p}{p-1}\\Big)^p \\mathbb{E}[X_n^p].$$
-          <details><summary>Conséquence</summary>
-            Contrôle des queues du maximum, utile pour prouver l'uniforme intégrabilité et des convergences en $L^p$.
-          </details>
-        </div>`
-    },
-    {
-      id: 'convergence-l2',
-      title: "Convergence en $L^2$ (martingales bornées dans $L^2$)",
-      html: `
-        <div class="statement card" style="margin-top:12px">
-          <strong>Énoncé.</strong>
-          Si $(M_n)$ est une martingale telle que $\\sup_n\\mathbb{E}[M_n^2]<\\infty$, alors il existe $M_\\infty\\in L^2$ avec
-          $$M_n\\to M_\\infty\\quad\\text{p.s. et dans }L^2.$$
+        </div>
+
+        <h3>Surmartingales positives (Th. 4.8.3)</h3>
+        <div class="statement">
+          <strong>Énoncé.</strong> Si $(X_n)$ est une surmartingale avec $X_n\ge0$ et $\sup_n\mathbb{E}[X_n]<\infty$, alors $X_n$ converge presque sûrement vers $X_\infty$ et
+          $$\mathbb{E}[X_\infty]\le\liminf_{n\to\infty}\mathbb{E}[X_n].$$
           <details><summary>Idée</summary>
-            L'orthogonalité des accroissements fait que $(M_n)$ est de Cauchy en $L^2$, d'où la convergence.
+            On utilise la troncature et la décomposition de Doob ; l'hypothèse de positivité empêche les trajectoires de diverger positivement de manière incontrôlable.
           </details>
-        </div>`
-    },
-    {
-      id: 'convergence-lp',
-      title: "Martingales bornées dans $L^p$ (p>1)",
-      html: `
-        <div class="statement card" style="margin-top:12px">
-          <strong>Énoncé.</strong>
-          Si $(M_n)$ est bornée dans $L^p$ pour un $p>1$, alors $M_n\\to M_\\infty$ p.s. et dans $L^p$ (et donc dans $L^1$).
-          <details><summary>Remarque</summary>
-            C'est une généralisation de la voie hilbertienne ($p=2$) via l'inégalité maximale de Doob/La Vallée-Poussin.
+        </div>
+
+        <h3>Sous-martingales bornées dans $L^1$ (Th. 4.8.4)</h3>
+        <div class="statement">
+          <strong>Énoncé.</strong> Une sous-martingale $(X_n)$ telle que $\sup_n\mathbb{E}[X_n^+]<\infty$ converge presque sûrement vers une limite finie $X_\infty$ (et $X_\infty\in L^1$).
+          <details><summary>Preuve courte</summary>
+            Méthode des montées-descents (comptage des traversées d'intervalles) : montrer que le nombre de traversées d'un intervalle $[a,b]$ est presque sûrement fini, ce qui force la convergence des trajectoires.
           </details>
-        </div>`
-    },
-    {
-      id: 'surmartingale-positive',
-      title: "Surmartingales positives",
-      html: `
-        <div class="statement card" style="margin-top:12px">
-          <strong>Énoncé.</strong>
-          Si $(X_n)$ est une surmartingale avec $X_n\\ge0$ et $\\sup_n\\mathbb{E}[X_n]<\\infty$, alors $X_n$ converge p.s. vers $X_\\infty$ et
-          $$\\mathbb{E}[X_\\infty]\\le\\liminf_{n\\to\\infty}\\mathbb{E}[X_n].$$
-        </div>`
-    },
-    {
-      id: 'ui-closed',
-      title: "Martingales fermées ⇔ uniformément intégrables",
-      html: `
-        <div class="statement card" style="margin-top:12px">
-          <strong>Énoncé (forme courte).</strong>
-          Pour une martingale $(M_n)$ les assertions suivantes sont équivalentes :
+        </div>
+
+        <h3>Martingales fermées ⇔ uniformément intégrables (Th. 4.10.1)</h3>
+        <div class="statement">
+          <strong>Énoncé.</strong> Pour une martingale $(M_n)$, les assertions suivantes sont équivalentes :
           <ol>
-            <li>$M_n\\to M_\\infty$ p.s. et dans $L^1$ ;</li>
-            <li>il existe $X\\in L^1$ tel que $M_n=\\mathbb{E}[X|\\mathcal{F}_n]$ pour tout $n$ ;</li>
-            <li>la famille $(M_n)$ est uniformément intégrable.</li>
+            <li>$M_n \to M_\infty$ presque sûrement et dans $L^1$ ;</li>
+            <li>il existe $X\in L^1$ tel que $M_n=\mathbb{E}[X\mid\mathcal{F}_n]$ pour tout $n$ (martingale fermée) ;</li>
+            <li>la famille $(M_n)$ est uniformément intégrable (u.i.).</li>
           </ol>
-        </div>`
-    },
-    {
-      id: 'reversed-martingales',
-      title: "Martingales renversées / rétrogrades",
-      html: `
-        <div class="statement card" style="margin-top:12px">
-          <strong>Énoncé.</strong>
-          Les martingales renversées (rétrogrades) satisfont des résultats de convergence vers des constantes conditionnelles (applications : lois du zero-un, de Finetti). 
-          <details><summary>Applications</summary>
-            Permettent de démontrer la LGN pour certaines suites dépendantes et des lois de structure d'échangeabilité.
+          <details><summary>Remarques</summary>
+            En pratique, montrer la u.i. (par ex. via La Vallée-Poussin) donne la convergence en $L^1$ et la représentation comme espérance conditionnelle.
           </details>
-        </div>`
-    },
-    {
-      id: 'clt-martingale',
-      title: "Théorème limite central pour martingales",
-      html: `
-        <div class="statement card" style="margin-top:12px">
-          <strong>Énoncé (forme usuelle).</strong>
-          Soit $(M_n)$ une martingale de carré intégrable et $(\\sigma_n)$ croissante telle que
-          \\[
-            \\langle M\\rangle_n / \\sigma_n^2 \\xrightarrow{P} 1
-          \\]
-          et une condition de Lindeberg conditionnelle. Alors
-          $$\\frac{M_n}{\\sigma_n} \\xrightarrow{d} \\mathcal{N}(0,1).$$
+        </div>
+
+        <h3>Théorème limite central pour martingales (Th. 4.12.1)</h3>
+        <div class="statement">
+          <strong>Énoncé (forme usuelle).</strong> Soit $(M_n)$ une martingale de carré intégrable et $(\sigma_n)$ une suite croissante telle que
+          <ol>
+            <li>$\langle M\rangle_n/\sigma_n^2 \to 1$ en probabilité (variation quadratique prévisible normalisée),</li>
+            <li>condition de Lindeberg conditionnelle : les gros incréments sont négligeables.</li>
+          </ol>
+          Alors
+          $$\frac{M_n}{\sigma_n} \xrightarrow{d} \mathcal{N}(0,1).$$
           <details><summary>Commentaire</summary>
-            Remplace la variance empirique par la variation quadratique prévisible $\\langle M\\rangle_n$.
+            C'est l'analogue du TLC classique : la variance empirique est remplacée par $\langle M\rangle_n$ et la condition de Lindeberg s'exprime en termes d'espérances conditionnelles.
           </details>
-        </div>`
-    }
-  ];
+        </div>
 
-  // cible : la section déjà existante contenant la fiche (on colle après)
-  const main = document.querySelector('main');
-  if (!main) return;
+        <div class="muted" style="margin-top:8px">
+          Remarques pratiques :
+          <ul>
+            <li>MathJax est chargé en tête : tu peux écrire des formules avec <code>$...$</code> et <code>$$...$$</code>.</li>
+            <li>Si tu préfères KaTeX pour la vitesse, dis-le et je te fournis la variante.</li>
+            <li>Si tu publies un fichier Markdown (.md) sur GitHub, note que GitHub n'exécute pas de scripts dans les README — publie la page en HTML (ex. <code>docs/martingales-convergence.html</code>) pour que MathJax fonctionne.</li>
+          </ul>
+        </div>
+      </section>
+    </main>
 
-  // insérer un titre de section résumé (optionnel)
-  const container = document.createElement('section');
-  container.className = 'project card';
-  container.style.marginTop = '8px';
-  container.innerHTML = '<h3 style="margin-top:0">Autres théorèmes importants sur les martingales</h3>';
-  main.appendChild(container);
+    <footer>
+      © <span id="year"></span> — Blog personnel
+    </footer>
+  </div>
 
-  // ajouter chaque théorème
-  theorems.forEach(th => {
-    const el = document.createElement('div');
-    el.id = th.id;
-    el.innerHTML = `<h4 style="margin:10px 0 6px">${th.title}</h4>${th.html}`;
-    container.appendChild(el);
-  });
-
-  // remettre l'année dans le footer
-  const yearSpan = document.getElementById('year');
-  if (yearSpan) yearSpan.textContent = new Date().getFullYear();
-
-  // demander à MathJax de re-rendre les formules (si MathJax est chargé)
-  function typesetMathJax() {
-    try {
-      if (window.MathJax && MathJax.typesetPromise) {
-        MathJax.typesetPromise().catch(function (err) { console.warn('MathJax typeset failed:', err); });
-      } else if (window.MathJax && MathJax.Hub && MathJax.Hub.Queue) {
-        MathJax.Hub.Queue(["Typeset", MathJax.Hub]); // ancien fallback
-      }
-    } catch (e) {
-      console.warn('MathJax not available:', e);
-    }
-  }
-
-  // léger délai pour être sûr que l'élément est dans le DOM
-  setTimeout(typesetMathJax, 50);
-})();
-</script>
-
-  </main>
-
-  <footer>
-    © <span id="year"></span> — Blog personnel
-  </footer>
-
-  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
-
