@@ -140,6 +140,173 @@
         </ul>
       </div>
     </section>
+<script>
+/* Script : insère dynamiquement autres théorèmes de martingales et met à jour l'année.
+   Colle ceci à la fin du <body>, à la place de l'ancien script qui mettait juste l'année. */
+
+(function () {
+  // données textuelles (titre + contenu avec latex MathJax)
+  const theorems = [
+    {
+      id: 'doob-stopping',
+      title: "Théorème d'arrêt de Doob",
+      html: `
+        <div class="statement card" style="margin-top:12px">
+          <strong>Énoncé (simplifié).</strong>
+          Si $(M_n)_{n\ge0}$ est une martingale intégrable et $T$ un temps d'arrêt borné, alors
+          $$\mathbb{E}[M_T]=\mathbb{E}[M_0].$$
+          <details><summary>Remarques</summary>
+            Ce résultat se généralise sous conditions d'intégrabilité/limites pour des temps d'arrêt non bornés (versions de type uniforme-intégrabilité). Voir la section sur temps d'arrêt et applications (ex. jeux de hasard). 
+          </details>
+        </div>`
+    },
+    {
+      id: 'doob-decomposition',
+      title: "Décomposition de Doob",
+      html: `
+        <div class="statement card" style="margin-top:12px">
+          <strong>Énoncé (forme usuelle).</strong>
+          Toute suite intégrable $(X_n)$ adaptée se décompose de manière unique en
+          $$X_n = M_n + A_n,$$
+          où $(M_n)$ est une martingale et $(A_n)$ est une prévisible de variation finie (processus à accroissements prévisibles). 
+          <details><summary>Usage</summary>
+            Cette décomposition permet de réduire l'étude de sous-/sur-martingales à l'étude de martingales pures et d'un terme déterministe prévisible.
+          </details>
+        </div>`
+    },
+    {
+      id: 'doob-max',
+      title: "Inégalité maximale de Doob",
+      html: `
+        <div class="statement card" style="margin-top:12px">
+          <strong>Inégalité maximale de Doob (p &gt; 1).</strong>
+          Pour une sous-martingale positive $(X_n)$ et $p>1$,
+          $$\\mathbb{E}\\Big[\\sup_{0\\le k\\le n} X_k^p\\Big] \\le \\Big(\\frac{p}{p-1}\\Big)^p \\mathbb{E}[X_n^p].$$
+          <details><summary>Conséquence</summary>
+            Contrôle des queues du maximum, utile pour prouver l'uniforme intégrabilité et des convergences en $L^p$.
+          </details>
+        </div>`
+    },
+    {
+      id: 'convergence-l2',
+      title: "Convergence en $L^2$ (martingales bornées dans $L^2$)",
+      html: `
+        <div class="statement card" style="margin-top:12px">
+          <strong>Énoncé.</strong>
+          Si $(M_n)$ est une martingale telle que $\\sup_n\\mathbb{E}[M_n^2]<\\infty$, alors il existe $M_\\infty\\in L^2$ avec
+          $$M_n\\to M_\\infty\\quad\\text{p.s. et dans }L^2.$$
+          <details><summary>Idée</summary>
+            L'orthogonalité des accroissements fait que $(M_n)$ est de Cauchy en $L^2$, d'où la convergence.
+          </details>
+        </div>`
+    },
+    {
+      id: 'convergence-lp',
+      title: "Martingales bornées dans $L^p$ (p>1)",
+      html: `
+        <div class="statement card" style="margin-top:12px">
+          <strong>Énoncé.</strong>
+          Si $(M_n)$ est bornée dans $L^p$ pour un $p>1$, alors $M_n\\to M_\\infty$ p.s. et dans $L^p$ (et donc dans $L^1$).
+          <details><summary>Remarque</summary>
+            C'est une généralisation de la voie hilbertienne ($p=2$) via l'inégalité maximale de Doob/La Vallée-Poussin.
+          </details>
+        </div>`
+    },
+    {
+      id: 'surmartingale-positive',
+      title: "Surmartingales positives",
+      html: `
+        <div class="statement card" style="margin-top:12px">
+          <strong>Énoncé.</strong>
+          Si $(X_n)$ est une surmartingale avec $X_n\\ge0$ et $\\sup_n\\mathbb{E}[X_n]<\\infty$, alors $X_n$ converge p.s. vers $X_\\infty$ et
+          $$\\mathbb{E}[X_\\infty]\\le\\liminf_{n\\to\\infty}\\mathbb{E}[X_n].$$
+        </div>`
+    },
+    {
+      id: 'ui-closed',
+      title: "Martingales fermées ⇔ uniformément intégrables",
+      html: `
+        <div class="statement card" style="margin-top:12px">
+          <strong>Énoncé (forme courte).</strong>
+          Pour une martingale $(M_n)$ les assertions suivantes sont équivalentes :
+          <ol>
+            <li>$M_n\\to M_\\infty$ p.s. et dans $L^1$ ;</li>
+            <li>il existe $X\\in L^1$ tel que $M_n=\\mathbb{E}[X|\\mathcal{F}_n]$ pour tout $n$ ;</li>
+            <li>la famille $(M_n)$ est uniformément intégrable.</li>
+          </ol>
+        </div>`
+    },
+    {
+      id: 'reversed-martingales',
+      title: "Martingales renversées / rétrogrades",
+      html: `
+        <div class="statement card" style="margin-top:12px">
+          <strong>Énoncé.</strong>
+          Les martingales renversées (rétrogrades) satisfont des résultats de convergence vers des constantes conditionnelles (applications : lois du zero-un, de Finetti). 
+          <details><summary>Applications</summary>
+            Permettent de démontrer la LGN pour certaines suites dépendantes et des lois de structure d'échangeabilité.
+          </details>
+        </div>`
+    },
+    {
+      id: 'clt-martingale',
+      title: "Théorème limite central pour martingales",
+      html: `
+        <div class="statement card" style="margin-top:12px">
+          <strong>Énoncé (forme usuelle).</strong>
+          Soit $(M_n)$ une martingale de carré intégrable et $(\\sigma_n)$ croissante telle que
+          \\[
+            \\langle M\\rangle_n / \\sigma_n^2 \\xrightarrow{P} 1
+          \\]
+          et une condition de Lindeberg conditionnelle. Alors
+          $$\\frac{M_n}{\\sigma_n} \\xrightarrow{d} \\mathcal{N}(0,1).$$
+          <details><summary>Commentaire</summary>
+            Remplace la variance empirique par la variation quadratique prévisible $\\langle M\\rangle_n$.
+          </details>
+        </div>`
+    }
+  ];
+
+  // cible : la section déjà existante contenant la fiche (on colle après)
+  const main = document.querySelector('main');
+  if (!main) return;
+
+  // insérer un titre de section résumé (optionnel)
+  const container = document.createElement('section');
+  container.className = 'project card';
+  container.style.marginTop = '8px';
+  container.innerHTML = '<h3 style="margin-top:0">Autres théorèmes importants sur les martingales</h3>';
+  main.appendChild(container);
+
+  // ajouter chaque théorème
+  theorems.forEach(th => {
+    const el = document.createElement('div');
+    el.id = th.id;
+    el.innerHTML = `<h4 style="margin:10px 0 6px">${th.title}</h4>${th.html}`;
+    container.appendChild(el);
+  });
+
+  // remettre l'année dans le footer
+  const yearSpan = document.getElementById('year');
+  if (yearSpan) yearSpan.textContent = new Date().getFullYear();
+
+  // demander à MathJax de re-rendre les formules (si MathJax est chargé)
+  function typesetMathJax() {
+    try {
+      if (window.MathJax && MathJax.typesetPromise) {
+        MathJax.typesetPromise().catch(function (err) { console.warn('MathJax typeset failed:', err); });
+      } else if (window.MathJax && MathJax.Hub && MathJax.Hub.Queue) {
+        MathJax.Hub.Queue(["Typeset", MathJax.Hub]); // ancien fallback
+      }
+    } catch (e) {
+      console.warn('MathJax not available:', e);
+    }
+  }
+
+  // léger délai pour être sûr que l'élément est dans le DOM
+  setTimeout(typesetMathJax, 50);
+})();
+</script>
 
   </main>
 
