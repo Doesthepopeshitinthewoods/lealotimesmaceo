@@ -36,30 +36,51 @@
     </div>
   </header>
 
-  <main>
-    <h2>Statistique Bayésienne</h2>
-    La statistique bayésienne considère le paramètre $$\theta$$ comme une quantité aléatoire. 
-    On part d'une loi a priori $$\pi(\theta)$$ qui exprime notre connaissance avant les données.
-    On combine cette loi a priori avec la vraisemblance p(x \bar \theta) et on obtient la loi a posteriori p(\theta \bar x) via la formule de Bayes :
+ <main id="main">
+    <article class="card" role="article" aria-labelledby="titre">
+      <h2 id="titre">Statistique bayésienne</h2>
 
-    <div style="padding:8px 0 0">
-      <p style="font-size:18px">
-        \[
-          p(\theta \arrowvert x) \;=\; \frac{p(x \arrowvert \theta)}{\int_{\Theta} p(x\arrowvert \tau)\,\pi(\tau)d\tau}\,\pi(\theta).
-        \]
+      <p class="muted">La statistique bayésienne traite le paramètre inconnu comme une quantité aléatoire et met à jour la croyance sur ce paramètre après observation des données.</p>
+
+      <p>
+        On part d'une <strong>loi a priori</strong> $\pi(\theta)$ qui exprime notre connaissance (ou ignorance) sur $\theta$
+        avant d'observer les données. La <strong>vraisemblance</strong> $p(x\mid\theta)$ est la probabilité (ou densité) d'observer les données $x$
+        si le paramètre valait $\theta$. La <strong>loi a posteriori</strong> $p(\theta\mid x)$ est la mise à jour de la croyance sur $\theta$ après avoir vu $x$.
       </p>
-    </div>
 
-    
+      <div class="math-block" role="figure" aria-label="Formule de Bayes : densité a posteriori">
+        \[
+          p(\theta\mid x)\;=\;\frac{p(x\mid\theta)\,\pi(\theta)}{\displaystyle\int_{\Theta} p(x\mid\tau)\,\pi(\tau)\,d\tau}.
+        \]
+      </div>
 
-    
-    
+      <dl>
+        <dt>\(\theta\)</dt>
+        <dd>Paramètre du modèle (ex. probabilité de succès, moyenne). En bayésien, on le modélise par une variable aléatoire.</dd>
+
+        <dt>\(\pi(\theta)\)</dt>
+        <dd>La loi a priori — exprime notre connaissance (ou ignorance) du paramètre $\theta$ avant d'avoir observé les données. </dd>
+
+        <dt>\(p(x\mid\theta)\)</dt>
+        <dd>La vraisemblance — dla vraisemblance, la probabilité d'observer les données x si le paramètre valait theta. (C'est la fonction qui lie le modèle aux observations.)</dd>
+
+        <dt>\(p(\theta\mid x)\)</dt>
+        <dd>La loi a posteriori — la loi a posteriori (posterior), mise à jour de la croyance sur théta après avoir vu les données x. </dd>
+      </dl>
+
+      
+
+      
+    </article>
   </main>
 
   <footer>
-    © <span id="year"></span> — Blog personnel
+    © <span id="year"></span> — Blog personnel — <span style="color:var(--muted)"></span>
   </footer>
 
-  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+  <script>
+    // année courante
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
