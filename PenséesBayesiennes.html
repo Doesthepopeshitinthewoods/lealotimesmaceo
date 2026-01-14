@@ -20,8 +20,58 @@
     section.project{margin-bottom:24px}
     .meta{color:var(--muted);font-size:13px;margin-bottom:6px}
     footer{border-top:1px solid #e5e7eb;text-align:center;font-size:14px;color:var(--muted);padding:18px 20px}
+    /* Main card */
+    main{max-width:var(--maxw);margin:0 auto}
+    .card{
+      background:var(--card);
+      border-radius:var(--radius);
+      padding:22px;
+      box-shadow:0 6px 18px rgba(15,23,36,0.05);
+      margin-bottom:18px;
+    }
+
+    h2{font-family:Merriweather, serif;margin:0 0 10px;font-size:20px;color:var(--text)}
+    p{margin:0 0 12px;color:var(--text);font-size:16px}
+    .muted{color:var(--muted);font-size:14px}
+
+    /* math block */
+    .math-block{
+      padding:14px;
+      margin:12px 0;
+      border-radius:12px;
+      background:linear-gradient(180deg,#fff,#fbfbfd);
+      border:1px solid #eef2f7;
+      font-size:18px;
+    }
+    .math-caption{font-size:13px;color:var(--muted);margin-top:8px}
+
+    /* definition list */
+    dl{display:grid;grid-template-columns:120px 1fr;gap:8px 18px;align-items:start;margin:10px 0 0}
+    dt{font-weight:600;color:var(--text);font-size:15px}
+    dd{margin:0;color:var(--muted);font-size:15px}
+
+    /* example box */
+    .example{
+      border-left:4px solid var(--accent);
+      background:linear-gradient(180deg,#fff,#fffaf6);
+      padding:12px 14px;
+      border-radius:8px;
+      margin-top:12px;
+    }
+
+    footer{max-width:var(--maxw);margin:22px auto 0;text-align:center;font-size:14px;color:var(--muted)}
+    a.skip-link{position:absolute;left:12px;top:12px;padding:8px 12px;background:#000;color:#fff;border-radius:6px;z-index:100;transform:translateY(-150%);transition:transform .15s ease;text-decoration:none}
+    a.skip-link:focus{transform:translateY(0)}
+
+    /* Responsive tweaks */
+    @media (max-width:640px){
+      dl{grid-template-columns:1fr}
+      header{padding:14px}
+      .card{padding:16px}
+    }
   </style>
 </head>
+  
 <body>
   <header>
     <div class="wrap">
@@ -35,6 +85,7 @@
       </nav>
     </div>
   </header>
+  
 
  <main id="main">
     <article class="card" role="article" aria-labelledby="titre">
