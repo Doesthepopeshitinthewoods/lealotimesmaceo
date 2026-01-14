@@ -1,1 +1,65 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Projets — Libres pensées</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--maxw:760px;--bg:#fff;--text:#111827;--muted:#6b7280;--accent:#1f2937}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.7}
+    header{background:#8b0000;border-bottom:1px solid #7a0000}
+    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between}
+    h1{margin:0;font-family:Merriweather,serif;font-size:20px;font-weight:700;color:#fff}
+    nav{display:flex;gap:12px;align-items:center}
+    nav a{color:#f3f4f6;text-decoration:none;font-size:14px}
+    nav a:hover{text-decoration:underline}
+    main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
+    h2{font-family:Merriweather,serif;font-size:18px;margin:0 0 8px}
+    section.project{margin-bottom:24px}
+    .meta{color:var(--muted);font-size:13px;margin-bottom:6px}
+    footer{border-top:1px solid #e5e7eb;text-align:center;font-size:14px;color:var(--muted);padding:18px 20px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Blog de l'intranquilité</h1>
+      <nav aria-label="Navigation principale">
+        <a href="index.html">Accueil</a>
+        <a href="culture-films.html">Films</a>
+        <a href="culture-livres.html">Livres</a>
+        <a href="culture-musiques.html">Musiques</a>
+        <a href="projets-libres-pensees.html">Projets</a>
+      </nav>
+    </div>
+  </header>
 
+  <main>
+    <h2>Statistique Bayésienne</h2>
+    La statistique bayésienne considère le paramètre $$\theta$$ comme une quantité aléatoire. 
+    On part d'une loi a priori $$\pi(\theta)$$ qui exprime notre connaissance avant les données.
+    On combine cette loi a priori avec la vraisemblance p(x \bar \theta) et on obtient la loi a posteriori p(\theta \bar x) via la formule de Bayes :
+
+    <div style="padding:8px 0 0">
+      <p style="font-size:18px">
+        \[
+          p(\theta \arrowvert x) \;=\; \frac{p(x \arrowvert \theta)}{\int_{\Theta} p(x\arrowvert \tau)\,\pi(\tau)d\tau}\,\pi(\theta).
+        \]
+      </p>
+    </div>
+
+    
+
+    
+    
+  </main>
+
+  <footer>
+    © <span id="year"></span> — Blog personnel
+  </footer>
+
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>
