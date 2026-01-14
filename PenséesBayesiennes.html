@@ -43,20 +43,30 @@
       padding:24px 16px 48px;
     }
 
-    /* Header */
+    /* --- Bandeau : adapté pour ressembler au script "Libres pensées" --- */
     header{
-      background:linear-gradient(180deg,var(--accent),var(--accent-dark));
+      background:#8b0000;
+      border-bottom:1px solid #7a0000;
       color:#fff;
-      border-radius:12px;
-      padding:18px;
-      margin:0 auto 22px;
-      max-width:var(--maxw);
-      box-shadow:0 8px 30px rgba(11,13,19,0.08);
     }
-    .header-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-    h1{font-family:Merriweather, serif;margin:0;font-size:20px;line-height:1}
-    nav a{color:rgba(255,255,255,0.95);text-decoration:none;margin-left:12px;font-size:14px}
-    nav a:focus, nav a:hover{text-decoration:underline;outline:none}
+    .wrap{
+      max-width:var(--maxw);
+      margin:0 auto;
+      padding:18px 20px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    h1{
+      margin:0;
+      font-family:Merriweather,serif;
+      font-size:20px;
+      font-weight:700;
+      color:#fff;
+    }
+    nav{display:flex;gap:12px;align-items:center}
+    nav a{color:#f3f4f6;text-decoration:none;font-size:14px}
+    nav a:hover{text-decoration:underline}
 
     /* Main card */
     main{max-width:var(--maxw);margin:0 auto}
@@ -157,9 +167,6 @@
         <dd>La loi a posteriori — la loi a posteriori (posterior), mise à jour de la croyance sur théta après avoir vu les données x. </dd>
       </dl>
 
-      
-
-      
     </article>
   </main>
 
@@ -173,3 +180,4 @@
   </script>
 </body>
 </html>
+
