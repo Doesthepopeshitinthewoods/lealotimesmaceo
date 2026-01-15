@@ -17,6 +17,9 @@
   </script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" defer></script>
 
+  <!-- Chart.js (pour le visualiseur) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
   <style>
     :root{
       --maxw:900px;
@@ -117,6 +120,27 @@
       header{padding:14px}
       .card{padding:16px}
     }
+
+    /* ========== Styles scoped pour le visualiseur ========== */
+    /* Préfixe .viz pour éviter conflits avec le style du blog */
+    .viz .app{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:380px 1fr;gap:20px}
+    .viz .card{background:linear-gradient(180deg,#0b1220, #071827);border:1px solid rgba(255,255,255,0.04);padding:18px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6);color:#e6eef3}
+    .viz h1{font-size:18px;margin:0 0 12px;color:#e6eef3}
+    .viz label{display:block;font-size:13px;color:#9aa7b2;margin:10px 0 6px}
+    .viz select,.viz input,.viz textarea{width:100%;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit}
+    .viz .params{margin-top:6px}
+    .viz .row{display:flex;gap:8px}
+    .viz .row>div{flex:1}
+    .viz .small{font-size:12px;color:#9aa7b2}
+    .viz .btn{display:inline-block;margin-top:12px;padding:8px 12px;border-radius:8px;background:#0ea5a4;color:#012;cursor:pointer;border:none}
+    .viz canvas{background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));border-radius:12px;display:block;width:100%}
+    .viz footer{margin-top:12px;font-size:12px;color:#9aa7b2}
+    .viz .help{margin-top:10px;font-size:13px;color:#9aa7b2}
+
+    /* small responsive for viz */
+    @media (max-width:900px){
+      .viz .app{grid-template-columns:1fr}
+    }
   </style>
 </head>
 <body>
@@ -168,6 +192,52 @@
       </dl>
 
     </article>
+
+    <!-- ----- Visualiseur incorporé ----- -->
+    <section class="card viz" aria-labelledby="viz-title">
+      <h2 id="viz-title" style="margin-top:0">Lois de probabilité. </h2>
+
+      <div class="app" style="margin-top:12px">
+        <div class="card" style="padding:14px;">
+          <div>
+            <label for="dist">Choisir une loi</label>
+            <select id="dist">
+              <option value="normal">Normale (continue)</option>
+              <option value="cauchy">Cauchy (continue)</option>
+              <option value="student">Student t (continue)</option>
+              <option value="chi2">Chi-2 (χ², continue)</option>
+              <option value="f">Fisher F (continue)</option>
+              <option value="exponential">Exponentielle (continue)</option>
+              <option value="uniform">Uniforme (continue)</option>
+              <option value="gamma">Gamma (continue)</option>
+              <option value="beta">Bêta (continue sur [0,1])</option>
+              <option value="poisson">Poisson (discrète)</option>
+            </select>
+          </div>
+
+          <div id="params" class="params"></div>
+
+          <label for="range">Plage x (min — max)</label>
+          <div class="row">
+            <div><input id="xmin" type="number" step="any" value="-5"></div>
+            <div><input id="xmax" type="number" step="any" value="5"></div>
+          </div>
+
+          <label for="resolution">Résolution </label>
+          <input id="resolution" type="number" min="20" max="2000" value="300" />
+
+          <button id="plotBtn" class="btn">Tracer</button>
+          <button id="autoBtn" class="btn" style="background:#536878;margin-left:8px">Auto-plage</button>
+
+      
+        </div>
+
+        <div class="card" style="padding:10px;">
+          <canvas id="chart" height="380" aria-label="Graphique des densités ou PMF" role="img"></canvas>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <footer>
@@ -177,6 +247,262 @@
   <script>
     // année courante
     document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+
+  <!-- ================== Script du visualiseur (adapté & scoping) ================== -->
+  <script>
+    // --- Utilitaires mathématiques (Gamma de Lanczos pour fonctions Gamma/Beta/factorielle) ---
+    function gamma(z) {
+      const p = [676.5203681218851, -1259.1392167224028, 771.32342877765313,
+        -176.61502916214059, 12.507343278686905, -0.13857109526572012,
+        9.9843695780195716e-6, 1.5056327351493116e-7];
+      if (z < 0.5) {
+        return Math.PI / (Math.sin(Math.PI * z) * gamma(1 - z));
+      }
+      z -= 1;
+      let x = 0.99999999999980993;
+      for (let i = 0; i < p.length; i++) x += p[i] / (z + i + 1);
+      const t = z + p.length - 0.5;
+      return Math.sqrt(2 * Math.PI) * Math.pow(t, z + 0.5) * Math.exp(-t) * x;
+    }
+    function betaFunc(a,b){return gamma(a)*gamma(b)/gamma(a+b);}
+
+    // --- Densités / PMF ---
+    const pdfs = {
+      normal: (x, params) => {
+        const mu = params.mu;
+        const sigma = params.sigma;
+        const z = (x - mu) / sigma;
+        return (1 / (sigma * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * z * z);
+      },
+      cauchy: (x, params) => {
+        const x0 = params.x0, gamma = params.gamma;
+        return (1/Math.PI) * (gamma / (Math.pow(x - x0, 2) + gamma*gamma));
+      },
+      student: (x, params) => {
+        const nu = params.nu;
+        const A = gamma((nu+1)/2) / (Math.sqrt(nu*Math.PI) * gamma(nu/2));
+        return A * Math.pow(1 + x*x/nu, -(nu+1)/2);
+      },
+      chi2: (x, params) => {
+        const k = params.k;
+        if (x < 0) return 0;
+        return Math.pow(x, k/2 - 1) * Math.exp(-x/2) / (Math.pow(2, k/2) * gamma(k/2));
+      },
+      f: (x, params) => {
+        const d1 = params.d1, d2 = params.d2;
+        if (x < 0) return 0;
+        const num = Math.pow(d1/d2, d1/2) * Math.pow(x, d1/2 - 1);
+        const den = betaFunc(d1/2, d2/2) * Math.pow(1 + (d1/d2)*x, (d1 + d2)/2);
+        return num / den;
+      },
+      exponential: (x, params) => {
+        const lambda = params.lambda;
+        return x < 0 ? 0 : lambda * Math.exp(-lambda * x);
+      },
+      uniform: (x, params) => {
+        const a = params.a, b = params.b;
+        if (b <= a) return 0;
+        return x < a || x > b ? 0 : 1 / (b - a);
+      },
+      gamma: (x, params) => {
+        const k = params.k, theta = params.theta;
+        if (x < 0) return 0;
+        return Math.pow(x, k - 1) * Math.exp(-x / theta) / (gamma(k) * Math.pow(theta, k));
+      },
+      beta: (x, params) => {
+        const a = params.alpha, b = params.beta;
+        if (x < 0 || x > 1) return 0;
+        return Math.pow(x, a - 1) * Math.pow(1 - x, b - 1) / betaFunc(a, b);
+      },
+      poisson: (k, params) => {
+        const lambda = params.lambda;
+        if (k < 0 || Math.round(k) !== k) return 0;
+        return Math.pow(lambda, k) * Math.exp(-lambda) / gamma(k + 1);
+      }
+    };
+
+    // --- DOM & UI ---
+    const distSel = document.getElementById('dist');
+    const paramsDiv = document.getElementById('params');
+    const xminInput = document.getElementById('xmin');
+    const xmaxInput = document.getElementById('xmax');
+    const resInput = document.getElementById('resolution');
+    const plotBtn = document.getElementById('plotBtn');
+    const autoBtn = document.getElementById('autoBtn');
+
+    function createParamInput(id, label, type='number', defaultValue=''){
+      const wrapper = document.createElement('div');
+      wrapper.style.marginTop = '8px';
+      const lab = document.createElement('label'); lab.textContent = label; lab.className='small'; lab.htmlFor=id;
+      const inp = document.createElement('input'); inp.type=type; inp.id=id; inp.value = defaultValue; inp.step='any';
+      wrapper.appendChild(lab); wrapper.appendChild(inp);
+      return {wrapper, inp};
+    }
+
+    function renderParams(){
+      paramsDiv.innerHTML='';
+      const d = distSel.value;
+      if (d === 'normal'){
+        const mu = createParamInput('mu','Mu (moyenne)', 'number', '0');
+        const sigma = createParamInput('sigma','Sigma (écart-type)', 'number', '1');
+        paramsDiv.appendChild(mu.wrapper); paramsDiv.appendChild(sigma.wrapper);
+      } else if (d === 'cauchy'){
+        const x0 = createParamInput('x0','x0 (location)', 'number', '0');
+        const gamma = createParamInput('gamma','gamma (échelle, >0)', 'number', '1');
+        paramsDiv.appendChild(x0.wrapper); paramsDiv.appendChild(gamma.wrapper);
+      } else if (d === 'student'){
+        const nu = createParamInput('nu','nu (degrés de liberté, >0)', 'number', '5');
+        paramsDiv.appendChild(nu.wrapper);
+      } else if (d === 'chi2'){
+        const k = createParamInput('k','k (df, >0)', 'number', '4');
+        paramsDiv.appendChild(k.wrapper);
+      } else if (d === 'f'){
+        const d1 = createParamInput('d1','d1 (df num., >0)', 'number', '5');
+        const d2 = createParamInput('d2','d2 (df den., >0)', 'number', '10');
+        paramsDiv.appendChild(d1.wrapper); paramsDiv.appendChild(d2.wrapper);
+      } else if (d === 'exponential'){
+        const lambda = createParamInput('lambda','Lambda (taux, >0)', 'number', '1');
+        paramsDiv.appendChild(lambda.wrapper);
+      } else if (d === 'uniform'){
+        const a = createParamInput('a','a (min)', 'number', '0');
+        const b = createParamInput('b','b (max)', 'number', '1');
+        paramsDiv.appendChild(a.wrapper); paramsDiv.appendChild(b.wrapper);
+      } else if (d === 'gamma'){
+        const k = createParamInput('k','k (forme, >0)', 'number', '2');
+        const theta = createParamInput('theta','θ (échelle, >0)', 'number', '2');
+        paramsDiv.appendChild(k.wrapper); paramsDiv.appendChild(theta.wrapper);
+      } else if (d === 'beta'){
+        const alpha = createParamInput('alpha','α (alpha, >0)', 'number', '2');
+        const beta = createParamInput('beta','β (beta, >0)', 'number', '5');
+        paramsDiv.appendChild(alpha.wrapper); paramsDiv.appendChild(beta.wrapper);
+      } else if (d === 'poisson'){
+        const lambda = createParamInput('lambda_p','Lambda (moyenne, >0)', 'number', '3');
+        paramsDiv.appendChild(lambda.wrapper);
+      }
+    }
+
+    distSel.addEventListener('change', ()=>{ renderParams(); });
+    renderParams();
+
+    // --- Chart.js setup ---
+    const ctx = document.getElementById('chart').getContext('2d');
+    let chart = new Chart(ctx, {
+      type: 'line',
+      data: { labels: [], datasets: [{ label: 'Densité', data: [], fill: true, tension:0.25 }] },
+      options: {
+        responsive:true,
+        plugins: { legend: { color: '#cfeff0' } },
+        scales: {
+          x: { type: 'linear', title:{display:true,text:'x'} },
+          y: { title:{display:true,text:'f(x) / P(k)'} }
+        }
+      }
+    });
+
+    function readParams(){
+      const d = distSel.value;
+      if (d === 'normal') return {mu: parseFloat(document.getElementById('mu').value||0), sigma: Math.abs(parseFloat(document.getElementById('sigma').value||1))||1};
+      if (d === 'cauchy') return {x0: parseFloat(document.getElementById('x0').value||0), gamma: Math.max(1e-9, Math.abs(parseFloat(document.getElementById('gamma').value||1)))};
+      if (d === 'student') return {nu: Math.max(1e-9, parseFloat(document.getElementById('nu').value||1))};
+      if (d === 'chi2') return {k: Math.max(1e-9, parseFloat(document.getElementById('k').value||1))};
+      if (d === 'f') return {d1: Math.max(1e-9, parseFloat(document.getElementById('d1').value||1)), d2: Math.max(1e-9, parseFloat(document.getElementById('d2').value||1))};
+      if (d === 'exponential') return {lambda: Math.max(1e-9, parseFloat(document.getElementById('lambda').value||1))};
+      if (d === 'uniform') return {a: parseFloat(document.getElementById('a').value||0), b: parseFloat(document.getElementById('b').value||1)};
+      if (d === 'gamma') return {k: Math.max(1e-9, parseFloat(document.getElementById('k').value||1)), theta: Math.max(1e-9, parseFloat(document.getElementById('theta').value||1))};
+      if (d === 'beta') return {alpha: Math.max(1e-9, parseFloat(document.getElementById('alpha').value||1)), beta: Math.max(1e-9, parseFloat(document.getElementById('beta').value||1))};
+      if (d === 'poisson') return {lambda: Math.max(1e-9, parseFloat(document.getElementById('lambda_p').value||1))};
+    }
+
+    function autoRange(){
+      const d = distSel.value;
+      const p = readParams();
+      if (d === 'normal'){
+        const mu = p.mu, sigma = p.sigma;
+        xminInput.value = (mu - 4 * sigma).toFixed(4);
+        xmaxInput.value = (mu + 4 * sigma).toFixed(4);
+      } else if (d === 'cauchy'){
+        xminInput.value = (p.x0 - 10*p.gamma).toFixed(4); xmaxInput.value = (p.x0 + 10*p.gamma).toFixed(4);
+      } else if (d === 'student'){
+        xminInput.value = (-6).toFixed(4); xmaxInput.value = (6).toFixed(4);
+      } else if (d === 'chi2'){
+        xminInput.value = 0; xmaxInput.value = Math.max(5, (p.k + 6*Math.sqrt(p.k)).toFixed(4));
+      } else if (d === 'f'){
+        xminInput.value = 0; xmaxInput.value = 10;
+      } else if (d === 'exponential'){
+        xminInput.value = 0; xmaxInput.value = (Math.log(1000)/p.lambda).toFixed(4);
+      } else if (d === 'uniform'){
+        xminInput.value = p.a; xmaxInput.value = p.b;
+      } else if (d === 'gamma'){
+        xminInput.value = 0; xmaxInput.value = (Math.max(5, p.k + 6 * Math.sqrt(p.k) * p.theta)).toFixed(4);
+      } else if (d === 'beta'){
+        xminInput.value = 0; xmaxInput.value = 1;
+      } else if (d === 'poisson'){
+        const lam = p.lambda; xminInput.value = 0; xmaxInput.value = Math.max(10, Math.ceil(lam + 6 * Math.sqrt(lam)));
+      }
+    }
+
+    autoBtn.addEventListener('click', ()=>{ autoRange(); });
+
+    function plot(){
+      const d = distSel.value;
+      const params = readParams();
+      const xmin = parseFloat(xminInput.value);
+      const xmax = parseFloat(xmaxInput.value);
+      const res = Math.min(2000, Math.max(20, parseInt(resInput.value)||300));
+      if (isNaN(xmin) || isNaN(xmax) || xmin >= xmax){ alert('Plage x invalide (min < max requis)'); return; }
+
+      if (d === 'poisson'){
+        const kmin = Math.max(0, Math.ceil(xmin));
+        const kmax = Math.floor(xmax);
+        const labels = [];
+        const data = [];
+        for (let k = kmin; k <= kmax; k++){
+          labels.push(k);
+          data.push(pdfs.poisson(k, params));
+        }
+        chart.destroy();
+        chart = new Chart(ctx, {
+          type: 'bar',
+          data: { labels: labels, datasets: [{ label: 'PMF (Poisson)', data: data }] },
+          options: { responsive:true, scales: { x:{ title:{display:true,text:'k'} }, y:{ title:{display:true,text:'P(k)'} } } }
+        });
+        return;
+      }
+
+      const xs = [];
+      const ys = [];
+      for (let i=0;i<res;i++){
+        const t = i/(res-1);
+        const x = xmin + t*(xmax-xmin);
+        xs.push(x);
+        const y = pdfs[d](x, params);
+        ys.push(y);
+      }
+
+      // Chart.js expects objects if parsing keys used; build dataset accordingly
+      const dataPoints = xs.map((xx, i) => ({x: xx, y: ys[i]}));
+
+      chart.destroy();
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: { datasets: [{ label: 'Densité', data: dataPoints, fill:true, tension:0.2 }] },
+        options: {
+          responsive:true,
+          parsing: { xAxisKey: 'x', yAxisKey: 'y' },
+          plugins: { legend: { display:false } },
+          scales: {
+            x: { type:'linear', title:{display:true,text:'x'} },
+            y: { title:{display:true,text:'f(x)'} }
+          }
+        }
+      });
+    }
+
+    plotBtn.addEventListener('click', ()=>{ try{ plot(); } catch(e){ alert('Erreur: '+e.message); } });
+
+    // initial auto-range & plot
+    autoRange(); plot();
   </script>
 </body>
 </html>
