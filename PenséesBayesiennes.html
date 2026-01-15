@@ -348,7 +348,7 @@
         const sigma = createParamInput('sigma','Sigma (écart-type)', 'number', '1');
         paramsDiv.appendChild(mu.wrapper); paramsDiv.appendChild(sigma.wrapper);
       } else if (d === 'cauchy'){
-        const x0 = createParamInput('x0','x0 (location)', 'number', '0');
+        const x0 = createParamInput('x0','x0', 'number', '0');
         const gamma = createParamInput('gamma','gamma (échelle, >0)', 'number', '1');
         paramsDiv.appendChild(x0.wrapper); paramsDiv.appendChild(gamma.wrapper);
       } else if (d === 'student'){
