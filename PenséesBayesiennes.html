@@ -238,6 +238,34 @@
       </div>
     </section>
 
+    <!-- ========== Deuxième partie du script (statistique fréquentiste / p-value) ========== -->
+
+    <section class="card" aria-labelledby="freq-title">
+      <article>
+        <h1 id="freq-title">Statistique fréquentiste</h1>
+        <h2>Statistique fréquentiste</h2>
+        <p><strong>Définition : </strong>La <em>p-value</em> est la probabilité, supposant que l'hypothèse nulle $H_0$ soit vraie, d'observer une statistique de test $T$ aussi extrême que la valeur observée $t_{obs}$.</p> 
+        <p>Formellement (unilatéral droit) : $$\text{p-value} = P_{H_0}\big(T(X) \ge t_{obs}\big).$$ Pour un test bilatéral on prend généralement : $$\text{p-value}_{bilat.} = 2\,P_{H_0}\big(T(X) \ge |t_{obs}|\big).$$ </p> 
+        <div class="section">
+           <h2>Comment calculer une p-value en pratique — étapes</h2> 
+           <ol> 
+            <li><strong>Spécifier l'hypothèse nulle $H_0$</strong> et la statistique de test $T$.</li>
+            <li><strong>Calculer la statistique observée</strong> $t_{obs}$ à partir des données.</li> 
+            <li><strong>Connaître la loi de $T$ sous $H_0$</strong> </li>
+            <li><strong>Calculer la probabilité d'obtenir une valeur aussi extrême</strong> selon l'alternative choisie : intégrer/sommer les probabilités des queues de la distribution de $T$ sous $H_0$.</li>
+            <li><strong>Interpréter</strong> : si p-value &lt; seuil $\alpha$ (ex. 0.05) on rejette $H_0$.</li> 
+          </ol> </div> <div class="section"> <h2>Exemples</h2> <p><strong>Test z (approx normale) :</strong> si $Z\sim \mathcal{N}(0,1)$ et on observe $z_{obs}$, $$\text{p-value (bilat.)} = 2\big(1-\Phi(|z_{obs}|)\big),$$ où $\Phi$ est la fonction de répartition de la loi normale standard.</p> 
+          </div> 
+          <div class="section"> <h2>Graphe, loi normale standard</h2> 
+            <p>Saisis une valeur z ci-dessous pour visualiser la zone qui donne la p-value, la figure suppose $Z\sim\mathcal{N}(0,1)$ sous $H_0$ .</p> 
+            <div class="controls"> <label for="z">z =</label> <input id="z" type="number" step="0.1" value="1.6"> <label for="alt">Alternative</label> <select id="alt"> <option value="two">bilatéral</option> <option value="greater">unilatéral (&gt;)</option> <option value="less">unilatéral (&lt;)</option> 
+            </select> <button id="draw">Dessiner</button> </div> <canvas id="plot" style="width:100%;height:160px;display:block;margin-top:8px"></canvas>
+             <div id="pval" style="margin-top:8px"></div> 
+          </div>
+        </div>
+      </article>
+    </section>
+
   </main>
 
   <footer>
@@ -265,7 +293,7 @@
       const t = z + p.length - 0.5;
       return Math.sqrt(2 * Math.PI) * Math.pow(t, z + 0.5) * Math.exp(-t) * x;
     }
-    function betaFunc(a,b){return gamma(a)*gamma(b)/gamma(a+b);}
+    function betaFunc(a,b){return gamma(a)*gamma(b)/gamma(a+b);} 
 
     // --- Densités / PMF ---
     const pdfs = {
@@ -504,6 +532,65 @@
     // initial auto-range & plot
     autoRange(); plot();
   </script>
+
+  <!-- ================== Deuxième partie: script p-value (sans déformation) ========== -->
+  <script>
+  // fonctions normales
+  function erf(x){
+    const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+    const sign = x<0?-1:1; const absx=Math.abs(x);
+    const t = 1/(1+p*absx);
+    const y = 1 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*Math.exp(-absx*absx);
+    return sign*y;
+  }
+  function normalCdf(x){ return 0.5*(1+erf(x/Math.sqrt(2))); }
+  function normalPdf(x){ return Math.exp(-0.5*x*x)/Math.sqrt(2*Math.PI); }
+
+  function draw(){
+    const z = Number(document.getElementById('z').value) || 0;
+    const alt = document.getElementById('alt').value;
+    const canvas = document.getElementById('plot');
+    const ctx = canvas.getContext('2d');
+    const DPR = devicePixelRatio || 1;
+    const W = canvas.clientWidth * DPR; const H = 160 * DPR;
+    canvas.width = W; canvas.height = H;
+    ctx.clearRect(0,0,W,H);
+    const xmin=-4,xmax=4,n=400; const xs=[], ys=[]; let ymax=0;
+    for(let i=0;i<n;i++){ const x = xmin + (xmax-xmin)*i/(n-1); const y=normalPdf(x); xs.push(x); ys.push(y); if(y>ymax) ymax=y; }
+    // axes
+    ctx.beginPath(); ctx.moveTo(0,H-20); ctx.lineTo(W,H-20); ctx.strokeStyle='#cbd5e1'; ctx.stroke();
+    // pdf
+    ctx.beginPath(); for(let i=0;i<n;i++){ const x=(xs[i]-xmin)/(xmax-xmin)*W; const y=H-20-(ys[i]/ymax)*(H-40); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+    ctx.lineWidth=2*DPR; ctx.strokeStyle='#0b1220'; ctx.stroke();
+    // shading helper
+    function shade(xstart,xend){ ctx.beginPath(); const i0=Math.max(0,Math.floor((xstart-xmin)/(xmax-xmin)*(n-1))); const i1=Math.min(n-1,Math.ceil((xend-xmin)/(xmax-xmin)*(n-1))); ctx.moveTo((xs[i0]-xmin)/(xmax-xmin)*W, H-20); for(let i=i0;i<=i1;i++){ const x=(xs[i]-xmin)/(xmax-xmin)*W; const y=H-20-(ys[i]/ymax)*(H-40); ctx.lineTo(x,y);} ctx.lineTo((xs[i1]-xmin)/(xmax-xmin)*W, H-20); ctx.closePath(); ctx.fillStyle='rgba(59,130,246,0.2)'; ctx.fill(); }
+    if(alt==='greater'){ shade(z,xmax); const p = 1-normalCdf(z); document.getElementById('pval').innerHTML=`<strong>p-value (unilat. '>') =</strong> ${p.toExponential(3)}`; }
+    else if(alt==='less'){ shade(xmin,z); const p = normalCdf(z); document.getElementById('pval').innerHTML=`<strong>p-value (unilat. '<') =</strong> ${p.toExponential(3)}`; }
+    else{ shade(xmin,-Math.abs(z)); shade(Math.abs(z),xmax); const p = 2*(1-normalCdf(Math.abs(z))); document.getElementById('pval').innerHTML=`<strong>p-value (bilat.) =</strong> ${p.toExponential(3)}`; }
+    // vertical line
+    ctx.beginPath(); const zx=(z-xmin)/(xmax-xmin)*W; ctx.moveTo(zx,5); ctx.lineTo(zx,H-20); ctx.strokeStyle='#ef4444'; ctx.lineWidth=1.5*DPR; ctx.stroke(); ctx.font=`${12*DPR}px sans-serif`; ctx.fillStyle='#0b1220'; ctx.fillText('z = ' + z.toFixed(2), 8*DPR, 14*DPR);
+  }
+  document.getElementById('draw').addEventListener('click', draw);
+  window.addEventListener('load', draw);
+  </script>
+
+  <script>
+  function ensureMathJax(){
+  if(window.MathJax && MathJax.typesetPromise){
+    MathJax.typesetPromise().catch(function(err){ console.warn('MathJax typeset error:', err); });
+  } else {
+    var tries = 0;
+    var id = setInterval(function(){
+      tries++;
+      if(window.MathJax && MathJax.typesetPromise){ MathJax.typesetPromise().catch(function(err){ console.warn('MathJax typeset error:', err); }); clearInterval(id); }
+      if(tries > 15) clearInterval(id);
+    }, 200);
+  }
+  }
+  document.addEventListener('DOMContentLoaded', ensureMathJax);
+  window.addEventListener('load', ensureMathJax);
+  </script>
+
 </body>
 </html>
 
