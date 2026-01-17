@@ -268,13 +268,122 @@
       </article>
     </section>
 
+<section>
+    <article>
+        <div>
+            <section id="emv">
+                <h2>1 — EMV (Estimateur du Maximum de Vraisemblance)</h2>
+                <p>
+                  Définition : l'<strong>EMV</strong> d'un paramètre \(\theta\) est la valeur (ou un ensemble de valeurs) qui maximise la fonction de vraisemblance
+                  \(L(\theta; x) = p_\theta(x)\) (ou son logarithme) pour l'observation \(x\). Concrètement on résout
+                  \(\hat\theta_{EMV}(x)=\arg\max_{\theta\in\Theta} L(\theta; x)\).
+                </p>
+              
+                <div class="importance">
+                  
+                  <p>L'EMV donne souvent un estimateur naturel et facile à calculer à partir du modèle et des données. Sous conditions régulières il est asymptotiquement efficace, ce qui en fait un point de départ standard pour l'inférence et la construction d'intervalles de confiance.</p>
+                </div>
+              
+                
+              
+                <p><strong>Méthode pratique :</strong></p>
+                <ol>
+                  <li>Écrire la densité/pmf \(p_\theta(x)\) (ou log-vraisemblance \(\ell(\theta)=\log p_\theta(x)\)).</li>
+                  <li>Différencier (si possible) et résoudre \(\frac{\partial \ell}{\partial \theta}=0\); vérifier maximum (2ᵉ dérivée).</li>
+                  <li>Si le domaine est borné ou non différentiable, comparer les bords ou utiliser optimisation numérique.</li>
+                </ol>
+              </section>
+              
+              <section id="admissible">
+                <h2>2 — Estimateur admissible</h2>
+                <p>
+                  Un estimateur \(T\) est <strong>admissible</strong> si aucun autre estimateur n'est strictement meilleur : il n'existe pas \(S\) tel que
+                  \(R_S(\theta)\le R_T(\theta)\) pour tout \(\theta\) et strictement \(<\) pour au moins un \(\theta\).
+                </p>
+              
+                <div class="importance">
+                  
+                  <p>L'admissibilité formalise l'idée qu'on ne doit pas pouvoir dominer une règle par une autre. C'est un critère minimal utile pour écarter des estimateurs manifestement sous-optimaux et orienter le choix entre plusieurs règles possibles.</p>
+                </div>
+              
+              </section>
+              
+              <section id="minimax">
+                <h2>3 — Minimaxité</h2>
+                <p>
+                  Pour un estimateur \(T\) et une perte \(\ell\) on définit la fonction de risque
+                  \(R_T(\theta) = \mathbb{E}_\theta[\ell(q(\theta),T(X))]\).
+                  Le risque maximal est \(\overline{R}_T(\Theta)=\sup_{\theta\in\Theta}R_T(\theta)\).
+                  Un estimateur \(T\) est <strong>minimax</strong> si il minimise ce risque maximal :
+                  \[\overline{R}_T(\Theta)=\inf_{S}\sup_{\theta\in\Theta} R_S(\theta).\]
+                </p>
+              
+                <div class="importance">
+                  
+                  <p>La minimaxité fournit une garantie contre le pire cas : elle cherche à minimiser la pire performance possible sur tous les paramètres. C'est utile quand on veut des garanties robustes en présence d'incertitude sur le paramètre réel.</p>
+                </div>
+              
+                
+                <p><strong>Remarque :</strong> admissibilité et minimaxité sont indépendantes : un estimateur peut être minimax sans être admissible (ex. phénomène de Stein).</p>
+              </section>
+              
+              <section id="bayes">
+                <h2>4 — Estimateur de Bayes pour une perte \(\ell\) et calcul du risque de Bayes</h2>
+              
+                <h3>4.1. Cadre et notation</h3>
+                <p>
+                  On choisit une loi a priori \(\pi\) sur \(\Theta\). On suppose le modèle dominé par une mesure \(\mu\) avec densités \(p_\theta(x)\).
+                  La densité marginale de \(X\) est \(q(x)=\int_\Theta p_\theta(x)\,\pi(d\theta)\) et la loi a posteriori vaut
+                  \[
+                    Q_x(d\theta)=\frac{p_\theta(x)\,\pi(d\theta)}{\int_\Theta p_\tau(x)\,\pi(d\tau)}.
+                  \]
+                  (formule de Bayes).
+                </p>
+              
+                <div class="importance">
+                  
+                  <p>Le cadre bayésien permet d'intégrer des connaissances a priori et de produire des décisions optimales au sens de la moyenne a posteriori. Cela fournit souvent des estimateurs plus stables pour de petits échantillons et un cadre cohérent pour quantifier l'incertitude.</p>
+                </div>
+              
+                <h3>4.2. Construction de l'estimateur de Bayes</h3>
+                <p>
+                  Pour chaque observation \(x\), l'estimateur de Bayes \(T_b(x)\) minimise l'espérance a posteriori de la perte :
+                  \[
+                    T_b(x) \in \arg\min_{y} \; \int_\Theta \ell(q(\theta),y)\; Q_x(d\theta).
+                  \]
+                  Autrement dit, on remplace le problème fréquentiste par un problème conditionnel qui minimise la perte moyenne sous la postérieure.
+                </p>
+              
+                <h4>Cas particuliers utiles</h4>
+                <ul>
+                  <li><strong>Perte quadratique \(\ell(y_1,y_2)=\|y_1-y_2\|^2\)</strong> : l'estimateur de Bayes est la moyenne a posteriori
+                    \(\displaystyle T_b(x)=\mathbb{E}(q(\theta)\mid X=x)\).</li>
+                  <li><strong>Perte 0-1</strong> : l'estimateur de Bayes est le mode de la loi a posteriori (règle MAP).</li>
+                </ul>
+              
+                <h3>4.3. Risque de Bayes</h3>
+                <p>
+                  Le <strong>risque bayésien</strong> associé à un estimateur \(T\) et au prior \(\pi\) est la moyenne du risque fréquentiste sous \(\pi\) :
+                  \[
+                    \rho_T(\pi)=\int_\Theta R_T(\theta)\,\pi(d\theta) = \mathbb{E}_{\theta\sim\pi}\big[ \mathbb{E}_\theta \ell(q(\theta),T(X))\big].
+                  \]
+                  Le risque de Bayes minimal (pour un prior donné) est \(\rho(\pi)=\inf_T \rho_T(\pi)\), et tout estimateur qui atteint cette borne est un estimateur de Bayes.
+                </p>
+              
+                <div class="importance">
+                  
+                  <p>Le risque de Bayes évalue la performance moyenne d'un estimateur selon le prior choisi et facilite la comparaison globale des méthodes. La théorie relie aussi risque de Bayes et minimaxité, offrant des liens entre robustesse et information a priori.</p>
+                </div>
+              
+                
+              </section>
 
- <section>
+        </div>
+       
 
-   <div>
-     
-   </div>
- </section>
+    </article>
+</section>
+    
     
 
   </main>
@@ -604,4 +713,3 @@
 
 </body>
 </html>
-
