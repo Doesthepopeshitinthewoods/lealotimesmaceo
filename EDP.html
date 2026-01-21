@@ -3,7 +3,7 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Microlocal & Propagation — Simulations (Fix)</title>
+  <title>Analyse microlocale et propagation — Simulations.</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
   <style>
@@ -68,8 +68,7 @@
             <button id="pause" class="btn ghost">Pause</button>
             <button id="step" class="btn ghost">Step</button>
           </div>
-          <div class="small" style="margin-top:8px">Remarque : la DFT est utilisée (garantit l'exécution sans dépendance extérieure).</div>
-        </div>
+          </div>
 
         <div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -109,14 +108,14 @@
           <label>Paramètres (ex : c=1, a=1, nu=0.01)</label>
           <input id="propParams" value="c=1, a=1, nu=0.01"/>
 
-          <label>Condition initiale (JS en x)</label>
+          <label>Condition initiale</label>
           <input id="propIC" value="Math.exp(-400*(x-0.3)*(x-0.3))*Math.cos(2*Math.PI*30*x)"/>
 
           <div class="controls" style="margin-top:8px">
             <button id="runProp" class="btn">Run</button>
             <button id="pauseProp" class="btn ghost">Pause</button>
             <button id="stepProp" class="btn ghost">Step</button>
-            <button id="exportProp" class="btn ghost">Export CSV</button>
+            
           </div>
         </div>
 
