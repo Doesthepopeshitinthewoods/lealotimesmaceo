@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Théorèmes — Distributions, Transformée de Fourier, Espaces de Sobolev</title>
+
+  <!-- Polices -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
+
+  <!-- MathJax -->
+  <script>
+    window.MathJax = {
+      tex: {inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']]},
+      svg: {fontCache: 'global'}
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" defer></script>
+
+  <style>
+    :root{
+      --maxw:900px;
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --text: #0f1724;
+      --muted: #6b7280;
+      --accent: #8b0000;
+      --accent-dark: #7a0000;
+      --radius:14px;
+      --gap:20px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:linear-gradient(180deg,var(--bg),#ffffff 40%);
+      color:var(--text);
+      font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.6;
+      padding:24px 16px 48px;
+    }
+
+    header{
+      background:var(--accent);
+      border-bottom:1px solid var(--accent-dark);
+      color:#fff;
+    }
+    .wrap{
+      max-width:var(--maxw);
+      margin:0 auto;
+      padding:18px 20px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    h1{
+      margin:0;
+      font-family:Merriweather,serif;
+      font-size:20px;
+      font-weight:700;
+      color:#fff;
+    }
+    nav{display:flex;gap:12px;align-items:center}
+    nav a{color:#f3f4f6;text-decoration:none;font-size:14px}
+    nav a:hover{text-decoration:underline}
+
+    main{max-width:var(--maxw);margin:0 auto}
+    .card{
+      background:var(--card);
+      border-radius:var(--radius);
+      padding:22px;
+      box-shadow:0 6px 18px rgba(15,23,36,0.05);
+      margin-bottom:18px;
+    }
+
+    h2{font-family:Merriweather, serif;margin:0 0 10px;font-size:20px;color:var(--text)}
+    p{margin:0 0 12px;color:var(--text);font-size:16px}
+    .muted{color:var(--muted);font-size:14px}
+
+    .math-block{
+      padding:14px;
+      margin:12px 0;
+      border-radius:12px;
+      background:linear-gradient(180deg,#fff,#fbfbfd);
+      border:1px solid #eef2f7;
+      font-size:18px;
+    }
+    .math-caption{font-size:13px;color:var(--muted);margin-top:8px}
+
+    dl{display:grid;grid-template-columns:160px 1fr;gap:8px 18px;align-items:start;margin:10px 0 0}
+    dt{font-weight:600;color:var(--text);font-size:15px}
+    dd{margin:0;color:var(--muted);font-size:15px}
+
+    .example{
+      border-left:4px solid var(--accent);
+      background:linear-gradient(180deg,#fff,#fffaf6);
+      padding:12px 14px;
+      border-radius:8px;
+      margin-top:12px;
+    }
+
+    footer{max-width:var(--maxw);margin:22px auto 0;text-align:center;font-size:14px;color:var(--muted)}
+    a.skip-link{position:absolute;left:12px;top:12px;padding:8px 12px;background:#000;color:#fff;border-radius:6px;z-index:100;transform:translateY(-150%);transition:transform .15s ease;text-decoration:none}
+    a.skip-link:focus{transform:translateY(0)}
+
+    @media (max-width:640px){
+      dl{grid-template-columns:1fr}
+      header{padding:14px}
+      .card{padding:16px}
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Aller au contenu</a>
+
+  <header>
+    <div class="wrap">
+      <h1>Fiches — Analyse fonctionnelle & PDE</h1>
+      <nav aria-label="Navigation principale">
+        <a href="#">Accueil</a>
+        <a href="#">Analyse</a>
+        <a href="#">EDP</a>
+        <a href="#">Révisions</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ===== Section demandée : définitions ensemblistes détaillées ===== -->
+    <article class="card" role="article" aria-labelledby="ensembles-titre">
+      <h2 id="ensembles-titre">Analyse fonctionnelle</h2>
+
+   
+      <section>
+        <h3>Cadre</h3>
+        <p>Fixons un ouvert $\Omega\subset\mathbb{R}^d$. On note $\mathbb{N}^d$ l'ensemble des multi-indices $\alpha=(\alpha_1,\dots,\alpha_d)$ et $|\alpha|=\sum_i\alpha_i$. Pour une fonction $u$ et un multi-indice $\alpha$ on note $\partial^\alpha u$ la dérivée partielle d'ordre $\alpha$ (au sens classique ou distributionnel selon le contexte).</p>
+      </section>
+
+      <section style="margin-top:10px">
+        <h3>Espaces de fonctions </h3>
+
+        <dl>
+          <dt>$C(\Omega)$</dt>
+          <dd>
+            $$C(\Omega)=\{\,f:\Omega\to\mathbb{C}\mid f\text{ est continue sur }\Omega\,\}.$$
+          </dd>
+
+          <dt>$C^k(\Omega)$</dt>
+          <dd>
+            $$C^k(\Omega)=\{\,f:\Omega\to\mathbb{C}\mid \forall\alpha,\;|\alpha|\le k,\ \partial^\alpha f\text{ existe et est continue}\,\}.$$
+            (Cas $k=\infty$ donne $C^\infty(\Omega)$.)
+          </dd>
+
+          <dt>$C_c^\infty(\Omega)$</dt>
+          <dd>
+            $$C_c^\infty(\Omega)=\{\varphi\in C^\infty(\Omega)\mid \operatorname{supp}\varphi\subset K\subset\Omega\text{ pour un certain compact }K\}.$$
+            (Fonctions $C^\infty$ à support compact dans $\Omega$.)
+          </dd>
+
+          <dt>$C_c(\Omega)$</dt>
+          <dd>
+            $$C_c(\Omega)=\{f\in C(\Omega)\mid \operatorname{supp}f\text{ est compact dans }\Omega\}.$$
+          </dd>
+
+          <dt>$C^\infty(\Omega)$ (noté $\mathcal{E}(\Omega)$)</dt>
+          <dd>
+            $$\mathcal{E}(\Omega)=C^\infty(\Omega)=\{f:\Omega\to\mathbb{C}\mid f \text{ est }C^\infty\text{ sur }\Omega\}.$$
+          </dd>
+
+          <dt>$\mathcal{S}(\mathbb{R}^d)$ (espace de Schwartz)</dt>
+          <dd>
+            $$\mathcal{S}(\mathbb{R}^d)=\Big\{\phi\in C^\infty(\mathbb{R}^d)\ \Big|\ \forall\alpha,\beta\in\mathbb{N}^d,\ 
+            \sup_{x\in\mathbb{R}^d}|x^\alpha\partial^\beta\phi(x)|<\infty\Big\}.$$
+            (Fonctions lisses qui décroissent plus vite que toute puissance et mêmes propriétés pour leurs dérivées.)
+          </dd>
+
+          <dt>$L^p(\Omega)$, $1\le p\le\infty$</dt>
+          <dd>
+            $$L^p(\Omega)=\Big\{[f]\text{ classes d'équivalence de fonctions mesurables }f:\Omega\to\mathbb{C}\ \Big|\ \int_\Omega |f(x)|^p\,dx<\infty\Big\},$$
+            avec la convention d'égalité \(f\sim g\) si \(f=g\) presque partout.
+          </dd>
+
+          <dt>$L^1_{\mathrm{loc}}(\Omega)$</dt>
+          <dd>
+            $$L^1_{\mathrm{loc}}(\Omega)=\{f:\Omega\to\mathbb{C}\text{ mesurable}\mid \forall K\subset\Omega\text{ compact},\ \int_K |f|<\infty\}.$$
+            (Fonctions localement intégrables.)
+          </dd>
+
+          <dt>$\mathcal{M}(\Omega)$ (mesures de Radon)</dt>
+          <dd>
+            $$\mathcal{M}(\Omega)=\{\mu\ \text{mesure de Radon sur }\Omega\},$$
+            i.e. mesures finies sur compacts, régulières. Toute $\mu\in\mathcal{M}(\Omega)$ définit une distribution $\varphi\mapsto\int\varphi\,d\mu$.
+          </dd>
+        </dl>
+      </section>
+
+      <section style="margin-top:10px">
+        <h3>Espaces de distributions et duaux</h3>
+
+        <dl>
+          <dt>$\mathcal{D}(\Omega)$</dt>
+          <dd>
+            $$\mathcal{D}(\Omega):=C_c^\infty(\Omega)\quad\text{(espace des fonctions test).}$$
+          </dd>
+
+          <dt>$\mathcal{D}'(\Omega)$</dt>
+          <dd>
+            $$\mathcal{D}'(\Omega)=\{T:\mathcal{D}(\Omega)\to\mathbb{C}\mid T\text{ linéaire et continue (topologie de }\mathcal{D})\}.$$
+            (Espace des distributions sur $\Omega$.)
+          </dd>
+
+          <dt>$\mathcal{E}(\Omega)'$ (noté $\mathcal{E}'(\Omega)$)</dt>
+          <dd>
+            $$\mathcal{E}'(\Omega)=\{T:\mathcal{E}(\Omega)\to\mathbb{C}\mid T\text{ linéaire, continu et à support compact}\}.$$
+            (Dual de $\mathcal{E}(\Omega)$ — distributions à support compact.)
+          </dd>
+
+          <dt>$\mathcal{S}'(\mathbb{R}^d)$</dt>
+          <dd>
+            $$\mathcal{S}'(\mathbb{R}^d)=\{T:\mathcal{S}(\mathbb{R}^d)\to\mathbb{C}\mid T\text{ linéaire et continu (topologie de }\mathcal{S})\}.$$
+            (Distributions tempérées.)
+          </dd>
+
+          <dt>Identification fonctions ↦ distributions</dt>
+          <dd>
+            Pour $f\in L^1_{\mathrm{loc}}(\Omega)$ on associe la distribution $T_f\in\mathcal{D}'(\Omega)$ définie par
+            $$\langle T_f,\varphi\rangle=\int_\Omega f(x)\varphi(x)\,dx\qquad(\varphi\in\mathcal{D}(\Omega)).$$
+            Pour $\mu\in\mathcal{M}(\Omega)$ on définit $\langle T_\mu,\varphi\rangle=\int\varphi\,d\mu$.
+          </dd>
+        </dl>
+      </section>
+
+      <section style="margin-top:10px">
+        <h3>Espaces de Sobolev</h3>
+
+        <dl>
+          <dt>$W^{k,p}(\Omega)$, $k\in\mathbb{N}$, $1\le p\le\infty$</dt>
+          <dd>
+            $$W^{k,p}(\Omega)=\{\,u\in L^p(\Omega)\mid \forall\alpha\text{ avec }|\alpha|\le k,\ \partial^\alpha u\in L^p(\Omega)\ \text{(au sens des distributions)}\,\}.$$
+            (Ici $\partial^\alpha u$ désigne les dérivées faibles/distributionnelles appartenant à $L^p$.)
+          </dd>
+
+          <dt>$W^{k,p}_0(\Omega)$</dt>
+          <dd>
+            $$W^{k,p}_0(\Omega)=\overline{C_c^\infty(\Omega)}^{\|\cdot\|_{W^{k,p}}}\quad\text{(fermeture dans la norme de Sobolev).}$$
+          </dd>
+
+          <dt>$H^s(\mathbb{R}^d)$, $s\in\mathbb{R}$ (espaces de Bessel / Sobolev fractionnaires)</dt>
+          <dd>
+            $$H^s(\mathbb{R}^d)=\Big\{u\in\mathcal{S}'(\mathbb{R}^d)\ \Big|\ \int_{\mathbb{R}^d}(1+|\xi|^2)^s\,|\widehat u(\xi)|^2\,d\xi<\infty\Big\},$$
+            où $\widehat u$ est la transformée de Fourier (au sens des distributions). (Équivalent à la définition par opérateurs pseudo-différentiels.)
+          </dd>
+        </dl>
+      </section>
+
+      <section style="margin-top:10px">
+        <h3>Inclusions ensemblistes importantes</h3>
+        <p class="muted">Inclusions «purement» ensemblistes (sans préciser topologies) valables dans le cadre standard :</p>
+
+        <div class="math-block">
+          \[
+            C_c^\infty(\mathbb{R}^d)=\mathcal{D}(\mathbb{R}^d)\;\subset\;\mathcal{S}(\mathbb{R}^d)\;\subset\;\mathcal{E}(\mathbb{R}^d)=C^\infty(\mathbb{R}^d).
+          \]
+        </div>
+
+        <p class="muted">En dualisant (ordre inverse) :</p>
+        <div class="math-block">
+          \[
+            \mathcal{E}'(\mathbb{R}^d)\;\subset\;\mathcal{S}'(\mathbb{R}^d)\;\subset\;\mathcal{D}'(\mathbb{R}^d).
+          \]
+        </div>
+
+        <ul>
+          <li><strong>Fonctions locales intégrables :</strong> \(L^1_{\mathrm{loc}}(\Omega)\hookrightarrow\mathcal{D}'(\Omega)\) via \(f\mapsto T_f\).</li>
+          <li><strong>Mesures de Radon :</strong> \(\mathcal{M}(\Omega)\hookrightarrow\mathcal{D}'(\Omega)\) via \(\mu\mapsto T_\mu\).</li>
+          <li><strong>Sobolev ⊂ distributions :</strong> si \(u\in W^{k,p}(\Omega)\) alors \(u\in\mathcal{D}'(\Omega)\) (les dérivées faibles sont des éléments de \(L^p\)).</li>
+          <li><strong>Espaces de Sobolev fractionnaires :</strong> \(H^s(\mathbb{R}^d)\subset\mathcal{S}'(\mathbb{R}^d)\) (par définition de \(H^s\)).</li>
+        </ul>
+
+        </section>
+
+       </article>
+
+    <article class="card" role="article" aria-labelledby="titre-dist">
+      <h2 id="titre-dist">Théorie des distributions</h2>
+
+      <p class="muted">Notations et propriétés de base — définitions essentielles (D, D', opérations, support, convolution).</p>
+
+      <section>
+        <h3>Espaces test et distributions</h3>
+        <p>Pour un ouvert $\Omega\subset\mathbb{R}^d$ on note $ \mathcal{D}(\Omega)$ l'espace des fonctions $C^\infty$ à support compact (topologie inductive) et $\mathcal{D}'(\Omega)$ son dual (distributions sur $\Omega$).</p>
+
+        <dl>
+          <dt>Convergence</dt>
+          <dd>Si $T_n\to T$ dans $\mathcal{D}'(\Omega)$ et $\varphi_n\to\varphi$ dans $\mathcal{D}(\Omega)$ alors $T_n(\varphi_n)\to T(\varphi)$.</dd>
+
+          <dt>Ordre</dt>
+          <dd>Une distribution $T$ est d'ordre $\le m$ si elle se prolonge continûment à $\mathcal{D}^{(m)}$, autrement dit si $|T(\varphi)|\le C\sum_{|\alpha|\le m}\sup|\partial^\alpha\varphi|$ pour tout $\varphi$.</dd>
+
+          <dt>Support</dt>
+          <dd>Le support de $T$ est le plus petit fermé $K$ tel que $T(\varphi)=0$ pour tout $\varphi$ à support dans $\Omega\setminus K$.</dd>
+        </dl>
+      </section>
+
+      <section style="margin-top:12px">
+        <h3>Opérations usuelles</h3>
+
+        <p class="math-block" role="figure" aria-label="Dérivée distributionnelle">
+          $$\langle \partial^\alpha T,\varphi\rangle := (-1)^{|\alpha|}\langle T,\partial^\alpha\varphi\rangle ,\qquad T\in\mathcal{D}'(\Omega),\;\varphi\in\mathcal{D}(\Omega).$$
+        </p>
+
+        <p>Multiplication par une fonction $C^\infty$ : si $\psi\in C^\infty(\Omega)$ alors $\psi T\in\mathcal{D}'(\Omega)$ défini par $\langle \psi T,\varphi\rangle=\langle T,\psi\varphi\rangle$.</p>
+
+        <p>Convolution : si $T\in\mathcal{D}'(\mathbb{R}^d)$ et $S\in\mathcal{E}'(\mathbb{R}^d)$ (support compact) alors $T* S$ est définie par</p>
+        <p class="math-block">$$\langle T* S,\varphi\rangle := \langle T,\, x\mapsto \langle S,\, y\mapsto \varphi(x+y)\rangle\rangle.$$</p>
+
+        <p class="muted">Dérivation et convolution commutent : $\partial^\alpha(T*\phi)=(\partial^\alpha T)*\phi=T*(\partial^\alpha\phi)$ lorsque les opérations sont définies.</p>
+      </section>
+
+      <section style="margin-top:12px">
+        <h3>Espace de Schwartz et distributions tempérées</h3>
+        <p>L'espace de Schwartz $\mathcal{S}(\mathbb{R}^d)$ : fonctions $C^\infty$ rapides à décroissance rapide avec toutes leurs dérivées. Son dual $\mathcal{S}'$ est l'espace des distributions tempérées.</p>
+        <p class="muted">On a $\mathcal{D}(\mathbb{R}^d)\subset\mathcal{S}(\mathbb{R}^d)$ (densité) et les opérations de Fourier agissent naturellement sur $\mathcal{S}$ et s'étendent $\mathcal{S}'\to\mathcal{S}'$.</p>
+      </section>
+
+    </article>
+
+    <article class="card" role="article" aria-labelledby="titre-fourier">
+      <h2 id="titre-fourier">Transformée de Fourier</h2>
+
+      <section>
+        <h3>Définition (pour $f\in L^1(\mathbb{R}^d)$)</h3>
+        <div class="math-block">
+          $$\widehat f(\xi)=\mathcal{F}f(\xi)\;=\;\int_{\mathbb{R}^d} e^{\,i x\cdot \xi}\, f(x)\,dx.$$
+        </div>
+        <p>Si $\widehat f\in L^1$ alors l'inversion s'écrit (presque partout) :</p>
+        <div class="math-block">
+          $$f(x) \;=\; \frac{1}{(2\pi)^d}\int_{\mathbb{R}^d} e^{-i x\cdot \xi}\,\widehat f(\xi)\,d\xi.$$
+        </div>
+      </section>
+
+      <section style="margin-top:12px">
+        <h3>Règles de calcul usuelles</h3>
+        <dl>
+          <dt>Dérivations</dt>
+          <dd>Si $\partial^\alpha f\in L^1$ alors
+            $$\mathcal{F}(\partial^\alpha f)(\xi) = (i\xi)^\alpha \widehat f(\xi).$$
+          </dd>
+
+          <dt>Multiplication par $x^\alpha$</dt>
+          <dd>Si $x^\alpha f\in L^1$ alors
+            $$\mathcal{F}(x^\alpha f)(\xi) = i^{|\alpha|}\partial^\alpha_\xi \widehat f(\xi).$$
+          </dd>
+
+          <dt>Translation / modulation</dt>
+          <dd>Si $T_a f(x)=f(x-a)$ alors $\widehat{T_a f}(\xi)=e^{i a\cdot \xi}\widehat f(\xi)$. Si $M_a f(x)=e^{i a\cdot x}f(x)$ alors $\widehat{M_a f}(\xi)=\widehat f(\xi-a)$.</dd>
+
+          <dt>Changement d'échelle</dt>
+          <dd>Pour $\lambda\neq0$: $\mathcal{F}(f(\lambda\cdot))(\xi)=|\lambda|^{-d}\widehat f(\xi/\lambda)$.</dd>
+        </dl>
+      </section>
+
+      <section style="margin-top:12px">
+        <h3>Isomorphisme et identités</h3>
+        <p class="muted">La transformée de Fourier est un isomorphisme topologique de $\mathcal{S}(\mathbb{R}^d)$ sur lui-même et s'étend par dualité en un isomorphisme de $\mathcal{S}'$ sur lui-même (inverse $(2\pi)^{-d}\mathcal{F}$ pour la convention ci-dessus).</p>
+
+        <p class="math-block">Parseval / Plancherel (pour $f,g\in\mathcal{S}$)</p>
+        <div class="math-block">
+          $$\int_{\mathbb{R}^d} f(x)\,\overline{g(x)}\,dx
+            \;=\;\frac{1}{(2\pi)^d}\int_{\mathbb{R}^d}\widehat f(\xi)\,\overline{\widehat g(\xi)}\,d\xi.$$
+        </div>
+        <p class="muted">En particulier pour $f=g$ on obtient la formule de Plancherel. (Les facteurs $(2\pi)^{\pm d}$ dépendent de la normalisation choisie.)</p>
+      </section>
+    </article>
+
+    <article class="card" role="article" aria-labelledby="titre-sobolev">
+      <h2 id="titre-sobolev">Espaces de Sobolev</h2>
+
+      <section>
+        <h3>Définition (cas $W^{1,p}$)</h3>
+        <p>Soit $1\le p\le\infty$ et $\Omega\subset\mathbb{R}^d$ ouvert. On définit</p>
+        <div class="math-block">
+          $$W^{1,p}(\Omega)=\{u\in L^p(\Omega)\ :\ \exists\,g_i\in L^p(\Omega),\ \forall\varphi\in C_c^\infty(\Omega),\ 
+            \int_\Omega u\,\partial_i\varphi = -\int_\Omega g_i\,\varphi\ \}$$
+        </div>
+        <p>On pose $\partial_i u := g_i$ (dérivées au sens des distributions) et $\|u\|_{W^{1,p}}=\|u\|_{L^p}+\|\nabla u\|_{L^p}$.</p>
+      </section>
+
+      <section style="margin-top:12px">
+        <h3>Représentant continu et injections (dimension 1)</h3>
+        <p>Si $I\subset\mathbb{R}$ est un intervalle et $u\in W^{1,p}(I)$, alors $u$ admet un représentant continu et même $(1-1/p)$-Hölder pour $p>1$ (si $I$ borné). Pour $p>1$, l'injection $W^{1,p}(I)\hookrightarrow C(\overline I)$ est compacte si $I$ est borné.</p>
+      </section>
+
+      <section style="margin-top:12px">
+        <h3>Inégalité de Poincaré</h3>
+        <p>Si $\Omega$ est borné et si $u\in W^{1,p}_0(\Omega)$ alors il existe $C>0$ tel que</p>
+        <div class="math-block">
+          $$\|u\|_{L^p(\Omega)} \le C\,\|\nabla u\|_{L^p(\Omega)}.$$
+        </div>
+      </section>
+
+      <section style="margin-top:12px">
+        <h3>Injections de Sobolev (cas général)</h3>
+        <p>Pour $1\le p<d$ on note $p^*=\frac{dp}{d-p}$. On a l'injection continue</p>
+        <div class="math-block">
+          $$W^{1,p}(\mathbb{R}^d)\hookrightarrow L^q(\mathbb{R}^d)\quad\text{pour }q\in [p,p^*].$$
+        </div>
+        <p>Si $p>d$ alors $W^{1,p}(\mathbb{R}^d)\hookrightarrow C^{0,1-d/p}(\mathbb{R}^d)$ (représentant continu).</p>
+      </section>
+
+      <section style="margin-top:12px">
+        <h3>Rellich–Kondrachov (compacité)</h3>
+        <p>Si $\Omega$ est borné régulier et $1\le p<\infty$, les injections naturelles</p>
+        <div class="math-block">
+          $$W^{1,p}(\Omega)\hookrightarrow L^q(\Omega)\quad\text{sont compactes pour } q\in[1,p^*)$$
+        </div>
+        <p class="muted">(avec adaptations aux cas limites $p=d$ etc.).</p>
+      </section>
+
+    </article>
+
+    
+
+  </main>
+
+  <footer>
+    © <span id="year"></span> 
+  </footer>
+
+  <script>
+    // année courante
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+
+  <script>
+  function ensureMathJax(){
+    if(window.MathJax && MathJax.typesetPromise){
+      MathJax.typesetPromise().catch(function(err){ console.warn('MathJax typeset error:', err); });
+    } else {
+      var tries = 0;
+      var id = setInterval(function(){
+        tries++;
+        if(window.MathJax && MathJax.typesetPromise){ MathJax.typesetPromise().catch(function(err){ console.warn('MathJax typeset error:', err); }); clearInterval(id); }
+        if(tries > 15) clearInterval(id);
+      }, 200);
+    }
+  }
+  document.addEventListener('DOMContentLoaded', ensureMathJax);
+  window.addEventListener('load', ensureMathJax);
+  </script>
+</body>
+</html>
+
