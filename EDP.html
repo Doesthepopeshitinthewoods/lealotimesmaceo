@@ -1,1 +1,453 @@
 
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Microlocal & Propagation — Simulations (Fix)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--maxw:900px;--bg:#fff;--text:#111827;--muted:#6b7280;--accent:#8b0000}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Arial;line-height:1.6}
+    header{background:var(--accent);border-bottom:1px solid:#7a0000}
+    .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between}
+    h1{margin:0;font-family:Merriweather,serif;font-size:20px;font-weight:700;color:#fff}
+    nav{display:flex;gap:12px;align-items:center} nav a{color:#f3f4f6;text-decoration:none;font-size:14px}
+    main{max-width:var(--maxw);margin:36px auto;padding:0 20px}
+    .section{margin-bottom:26px}
+    .card{background:#fff;border-radius:10px;padding:14px;box-shadow:0 6px 20px rgba(16,24,40,0.06)}
+    label{display:block;font-size:13px;margin-top:10px;color:var(--text)} .controls{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
+    .row{display:flex;gap:12px;align-items:center} .btn{background:var(--accent);color:white;padding:8px 10px;border-radius:8px;border:0;cursor:pointer;font-weight:600}
+    .btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,0,0,0.06)}
+    .small{font-size:13px;color:var(--muted)}
+    canvas{width:100%;height:260px;border-radius:8px;background:#071025;display:block}
+    .explain{margin-top:12px;padding:12px;border-radius:8px;background:linear-gradient(180deg,rgba(139,0,0,0.06),rgba(139,0,0,0.02));font-size:14px;color:var(--text)}
+    .eqbox{background:#fff;border:1px solid #eef2ff;padding:10px;border-radius:8px;margin-top:8px}
+    @media (max-width:880px){ canvas{height:200px} }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Microlocal & Propagation — Simulations (Fix)</h1>
+      <nav aria-label="Navigation principale"><a href="#">Accueil</a><a href="#">Cours</a></nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="section card">
+      <h2>Analyse microlocale — simulations</h2>
+      <div class="small">Choisissez une vue ; les explications et les équations s'actualisent dessous.</div>
+
+      <div style="display:grid;grid-template-columns:320px 1fr;gap:12px;margin-top:12px">
+        <div>
+          <label for="mode">Mode</label>
+          <select id="mode">
+            <option value="gaussian">Paquet gaussien (WKB)</option>
+            <option value="wavepacket">Paquet — propagation</option>
+            <option value="stft">STFT / Spectrogramme</option>
+            <option value="wigner">Distribution de Wigner</option>
+            <option value="pdo">Opérateur pseudodifférentiel (PDO)</option>
+          </select>
+
+          <label>Points N (≤512 recommandé)</label>
+          <input id="N" type="number" value="256" min="64" step="64"/>
+
+          <label>Longueur du domaine L</label>
+          <input id="L" type="number" value="1" step="any"/>
+
+          <label>Fréquence centrale k₀ (cycles / unité)</label>
+          <input id="k0" type="number" value="40"/>
+
+          <label>Largeur du paquet σ</label>
+          <input id="sigma" type="number" value="0.03" step="any"/>
+
+          <div class="controls" style="margin-top:10px">
+            <button id="run" class="btn">Run</button>
+            <button id="pause" class="btn ghost">Pause</button>
+            <button id="step" class="btn ghost">Step</button>
+          </div>
+          <div class="small" style="margin-top:8px">Remarque : la DFT est utilisée (garantit l'exécution sans dépendance extérieure).</div>
+        </div>
+
+        <div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="card">
+              <div class="small">Champ u(x,t)</div>
+              <canvas id="canvasU"></canvas>
+            </div>
+            <div class="card">
+              <div class="small">Spectre / Phase-espace</div>
+              <canvas id="canvasPhase"></canvas>
+            </div>
+          </div>
+
+          <div class="explain" id="explainArea" style="margin-top:12px">
+            <div style="font-weight:700">Explication des équations</div>
+            <div id="eqLatex" class="eqbox"></div>
+            <div id="eqText" style="margin-top:8px"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section card">
+      <h2>Équations de propagation</h2>
+      <div class="small">Ondes, transport, Burgers, Schrödinger — simulations.</div>
+
+      <div style="display:grid;grid-template-columns:280px 1fr;gap:12px;margin-top:12px">
+        <div>
+          <label>Équation</label>
+          <select id="propEq">
+            <option value="wave">Onde : u_tt = c^2 u_xx</option>
+            <option value="transport">Transport : u_t + a u_x = 0</option>
+            <option value="burgers">Burgers : u_t + u u_x = ν u_xx</option>
+            <option value="schrod">Schrödinger lin. : i u_t + ½ u_xx = 0</option>
+          </select>
+
+          <label>Paramètres (ex : c=1, a=1, nu=0.01)</label>
+          <input id="propParams" value="c=1, a=1, nu=0.01"/>
+
+          <label>Condition initiale (JS en x)</label>
+          <input id="propIC" value="Math.exp(-400*(x-0.3)*(x-0.3))*Math.cos(2*Math.PI*30*x)"/>
+
+          <div class="controls" style="margin-top:8px">
+            <button id="runProp" class="btn">Run</button>
+            <button id="pauseProp" class="btn ghost">Pause</button>
+            <button id="stepProp" class="btn ghost">Step</button>
+            <button id="exportProp" class="btn ghost">Export CSV</button>
+          </div>
+        </div>
+
+        <div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="card"><div class="small">Champ u(x,t)</div><canvas id="canvasPropU"></canvas></div>
+            <div class="card"><div class="small">Spectre / Énergie</div><canvas id="canvasPropSpec"></canvas></div>
+          </div>
+          <div class="explain" id="propExplain" style="margin-top:10px"></div>
+        </div>
+      </div>
+    </section>
+ 
+
+
+
+  </main>
+
+  <footer style="text-align:center;padding:18px 0;">© <span id="year"></span> — Simulations pédagogiques</footer>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+
+<script>
+/* =========================
+   DFT / IDFT natifs (JS pur)
+   - stable et indépendant de bibliothèques externes
+   - re, im arrays length N
+   ========================= */
+function dftForward_real(real){
+  const N = real.length;
+  const re = new Array(N).fill(0);
+  const im = new Array(N).fill(0);
+  for(let k=0;k<N;k++){
+    let sumRe = 0, sumIm = 0;
+    for(let n=0;n<N;n++){
+      const angle = 2*Math.PI*k*n/N;
+      sumRe += real[n]*Math.cos(angle);
+      sumIm += -real[n]*Math.sin(angle); // negative for forward
+    }
+    re[k] = sumRe;
+    im[k] = sumIm;
+  }
+  return {re, im};
+}
+function dftInverse(reArr, imArr){
+  const N = reArr.length;
+  const out = new Array(N).fill(0);
+  for(let n=0;n<N;n++){
+    let sum = 0;
+    for(let k=0;k<N;k++){
+      const angle = 2*Math.PI*k*n/N;
+      sum += reArr[k]*Math.cos(angle) - imArr[k]*Math.sin(angle);
+    }
+    out[n] = sum / N;
+  }
+  return out;
+}
+
+/* =========================
+   Canvas helpers
+   ========================= */
+function fixCanvas(canvas){
+  const ratio = window.devicePixelRatio || 1;
+  const W = canvas.clientWidth, H = canvas.clientHeight;
+  canvas.width = Math.floor(W*ratio); canvas.height = Math.floor(H*ratio);
+  const ctx = canvas.getContext('2d'); ctx.setTransform(ratio,0,0,ratio,0,0);
+  return ctx;
+}
+const canvasU = document.getElementById('canvasU'), canvasPhase = document.getElementById('canvasPhase');
+const canvasPropU = document.getElementById('canvasPropU'), canvasPropSpec = document.getElementById('canvasPropSpec');
+let ctxU = fixCanvas(canvasU), ctxP = fixCanvas(canvasPhase), ctxPU = fixCanvas(canvasPropU), ctxPS = fixCanvas(canvasPropSpec);
+window.addEventListener('resize', ()=>{ ctxU = fixCanvas(canvasU); ctxP = fixCanvas(canvasPhase); ctxPU = fixCanvas(canvasPropU); ctxPS = fixCanvas(canvasPropSpec); });
+
+function drawSignal(ctx, u){
+  const W = ctx.canvas.clientWidth, H = ctx.canvas.clientHeight;
+  ctx.clearRect(0,0,W,H); ctx.fillStyle='#071025'; ctx.fillRect(0,0,W,H);
+  const min = Math.min(...u), max = Math.max(...u); const lo = (min===max)?min-1:min, hi=(min===max)?max+1:max;
+  ctx.beginPath();
+  for(let i=0;i<u.length;i++){
+    const x = i/(u.length-1)*W;
+    const y = H - ((u[i]-lo)/(hi-lo))*H;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.strokeStyle='#ffd166'; ctx.lineWidth=2; ctx.stroke();
+  ctx.fillStyle='#9fb6cf'; ctx.font='12px monospace';
+  ctx.fillText('min:'+min.toFixed(3)+' max:'+max.toFixed(3), 8, 14);
+}
+function drawSpectrum(ctx, u){
+  const N = u.length;
+  const F = dftForward_real(u);
+  const mag = F.re.map((r,i)=>Math.hypot(F.re[i], F.im[i]));
+  const W = ctx.canvas.clientWidth, H = ctx.canvas.clientHeight;
+  ctx.clearRect(0,0,W,H); ctx.fillStyle='#071025'; ctx.fillRect(0,0,W,H);
+  const maxv = Math.max(...mag); const bins = Math.floor(W/2);
+  for(let i=0;i<bins;i++){
+    const val = mag[i] / (maxv||1);
+    const x = i/bins*W; const h = val*H;
+    ctx.fillStyle = `rgb(${Math.floor(200*val)},${Math.floor(160*val)},${Math.floor(255*(1-val))})`;
+    ctx.fillRect(x, H-h, W/bins*0.9, h);
+  }
+}
+
+/* =========================
+   Grid & signals
+   ========================= */
+function makeGrid(N,L){
+  const xs = new Array(N); for(let i=0;i<N;i++) xs[i]=i*(L/N);
+  const ks = new Array(N); for(let i=0;i<N;i++) ks[i] = (i<=N/2) ? (2*Math.PI*i/L) : (2*Math.PI*(i-N)/L);
+  return {xs, ks};
+}
+function gaussianPacket(N,L,k0,sigma,x0){
+  const {xs} = makeGrid(N,L);
+  return xs.map(x => Math.exp(-((x-x0)*(x-x0))/(2*sigma*sigma)) * Math.cos(2*Math.PI*k0*x));
+}
+
+/* =========================
+   STFT & Wigner (uses DFT)
+   ========================= */
+function computeSTFT(u, M, hop){
+  const N = u.length;
+  function win(i,M){ return 0.5*(1 - Math.cos(2*Math.PI*i/(M-1))); }
+  const frames = [];
+  for(let start=0; start+M<=N; start+=hop){
+    const frame = new Array(M);
+    for(let m=0;m<M;m++) frame[m]=u[start+m]*win(m,M);
+    const F = dftForward_real(frame);
+    frames.push(F.re.map((r,i)=>Math.hypot(F.re[i], F.im[i])));
+  }
+  return frames;
+}
+
+function computeWigner(u){
+  const N = u.length;
+  const W = Array.from({length:N}, ()=> new Array(N).fill(0));
+  // For each x compute g[tau] = u[x+tau/2]*u[x-tau/2], then DFT over tau
+  for(let x=0;x<N;x++){
+    const g = new Array(N).fill(0);
+    for(let tau=0;tau<N;tau++){
+      const tauSigned = tau <= N/2 ? tau : tau - N;
+      const i1 = (x + Math.floor(tauSigned/2) + N) % N;
+      const i2 = (x - Math.floor(tauSigned/2) + N) % N;
+      g[tau] = u[i1]*u[i2];
+    }
+    const G = dftForward_real(g);
+    for(let k=0;k<N;k++) W[x][k] = G.re[k];
+  }
+  return W;
+}
+
+function drawMatrix(ctx, mat){
+  const rows = mat.length, cols = mat[0].length;
+  const Wc = ctx.canvas.clientWidth, Hc = ctx.canvas.clientHeight;
+  ctx.clearRect(0,0,Wc,Hc); ctx.fillStyle='#071025'; ctx.fillRect(0,0,Wc,Hc);
+  let min=Infinity, max=-Infinity;
+  for(let i=0;i<rows;i++) for(let j=0;j<cols;j++){ if(mat[i][j]<min) min=mat[i][j]; if(mat[i][j]>max) max=mat[i][j]; }
+  min = Math.max(min,1e-12);
+  const cellW = Wc/cols, cellH = Hc/rows;
+  for(let i=0;i<rows;i++){
+    for(let j=0;j<cols;j++){
+      const v = Math.log(1 + Math.abs(mat[i][j]));
+      const vmin = Math.log(1+Math.abs(min)), vmax = Math.log(1+Math.abs(max));
+      const norm = (v - vmin) / (vmax - vmin + 1e-12);
+      const col = Math.floor(255*norm);
+      ctx.fillStyle = `rgb(${col}, ${Math.floor(col*0.75)}, ${255-col})`;
+      ctx.fillRect(j*cellW, i*cellH, cellW, cellH);
+    }
+  }
+}
+
+/* =========================
+   Dynamic explanation (LaTeX + texte)
+   ========================= */
+const eqLatex = document.getElementById('eqLatex'), eqText = document.getElementById('eqText');
+function setExplanation(mode){
+  if(mode==='gaussian'){
+    eqLatex.innerHTML = `$$u(x)=e^{-\\frac{(x-x_0)^2}{2\\sigma^2}}\\cos(2\\pi k_0 x)$$`;
+    eqText.innerHTML = `<strong>Paquet gaussien</strong> : localisé en position (écart-type σ) et concentré en fréquence autour de k₀ — montre la micro-localisation.`;
+  } else if(mode==='wavepacket'){
+    eqLatex.innerHTML = `$$u_{tt}=c^2 u_{xx},\\qquad u(x,t)\\approx A(x-ct)\\cos(k_0 x - \\omega t)$$`;
+    eqText.innerHTML = `<strong>Paquet en propagation</strong> : la vitesse de groupe contrôle le déplacement ; les singularités se propagent le long des caractéristiques.`;
+  } else if(mode==='stft'){
+    eqLatex.innerHTML = `$$\\mathcal{S}_g u(x,\\omega)=\\int u(y)g(y-x)e^{-i\\omega y}dy$$`;
+    eqText.innerHTML = `<strong>STFT</strong> : spectrogramme — compromis temps/fréquence par la taille de la fenêtre.`;
+  } else if(mode==='wigner'){
+    eqLatex.innerHTML = `$$W_u(x,\\xi)=\\int u(x+\\tfrac y2)\\overline{u(x-\\tfrac y2)}e^{-i\\xi y}dy$$`;
+    eqText.innerHTML = `<strong>Wigner</strong> : densité en phase-espace (x,ξ) ; haute résolution mais termes croisés/interférences.`;
+  } else {
+    eqLatex.innerHTML = `$$(Pu)(x)=\\int e^{ix\\xi}p(x,\\xi)\\widehat u(\\xi)d\\xi$$`;
+    eqText.innerHTML = `<strong>PDO</strong> : agit différemment selon la fréquence ξ. Exemple : multiplicateur spectral qui filtre certaines bandes.`;
+  }
+  if(window.MathJax) MathJax.typesetPromise([eqLatex]).catch(()=>{});
+}
+
+/* =========================
+   Microlocal UI loop
+   ========================= */
+const modeEl = document.getElementById('mode'), runBtn=document.getElementById('run'),
+      pauseBtn=document.getElementById('pause'), stepBtn=document.getElementById('step');
+let anim=null, t=0;
+function microlocalStep(){
+  const N = Math.min(512, parseInt(document.getElementById('N').value,10)||256);
+  const L = parseFloat(document.getElementById('L').value)||1;
+  const k0 = parseFloat(document.getElementById('k0').value)||40;
+  const sigma = parseFloat(document.getElementById('sigma').value)||0.03;
+  const mode = modeEl.value;
+  const x0 = 0.25*L + 0.2*(t%10);
+  const u = gaussianPacket(N,L,k0,sigma,x0);
+  drawSignal(ctxU,u);
+  if(mode==='stft'){
+    const M = Math.min(128, Math.max(32, Math.floor(N/4)));
+    const hop = Math.max(4, Math.floor(M/4));
+    const frames = computeSTFT(u,M,hop);
+    drawMatrix(ctxP, frames);
+  } else if(mode==='wigner'){
+    const small = Math.min(N, 256);
+    const W = computeWigner(u.slice(0,small));
+    drawMatrix(ctxP, W);
+  } else if(mode==='pdo'){
+    const {ks} = makeGrid(N,L);
+    const F = dftForward_real(u);
+    const s = Math.max(0.1, sigma);
+    const reF = new Array(N).fill(0), imF = new Array(N).fill(0);
+    for(let i=0;i<N;i++){ const sym = 1/Math.pow(1 + ks[i]*ks[i], s/2); reF[i] = F.re[i]*sym; }
+    const inv = dftInverse(reF, imF);
+    drawSignal(ctxP, inv);
+  } else {
+    drawSpectrum(ctxP, u);
+  }
+  setExplanation(mode);
+  t += 0.02;
+}
+runBtn.addEventListener('click', ()=>{ if(anim) cancelAnimationFrame(anim); (function loop(){ microlocalStep(); anim = requestAnimationFrame(loop); })(); });
+pauseBtn.addEventListener('click', ()=>{ if(anim){ cancelAnimationFrame(anim); anim=null; } else runBtn.click(); });
+stepBtn.addEventListener('click', ()=>{ if(anim){ cancelAnimationFrame(anim); anim=null; } microlocalStep(); });
+
+/* =========================
+   Propagation solvers & UI
+   ========================= */
+const propEq = document.getElementById('propEq'), runProp=document.getElementById('runProp'),
+      pauseProp=document.getElementById('pauseProp'), stepProp=document.getElementById('stepProp'),
+      exportProp=document.getElementById('exportProp'), propExplain=document.getElementById('propExplain');
+
+let propAnim=null, propSolver=null, propN=256, propL=1;
+
+function parseParams(s){
+  const out={}; if(!s) return out;
+  s.split(',').map(p=>p.trim()).filter(Boolean).forEach(part=>{ const [k,v]=part.split('=').map(x=>x.trim()); if(k) out[k]=parseFloat(v); });
+  return out;
+}
+
+function makeGridN(N,L){ const xs=new Array(N); for(let i=0;i<N;i++) xs[i]=i*(L/N); return xs; }
+
+function WaveSolver(N,L,c,u0,v0,dt){
+  const F0 = dftForward_real(u0);
+  const F1 = dftForward_real(v0);
+  const ks = new Array(N); for(let i=0;i<N;i++) ks[i] = (i<=N/2)?(2*Math.PI*i/L):(2*Math.PI*(i-N)/L);
+  const omeg = ks.map(k=>Math.abs(c*k));
+  let t0=0;
+  return {
+    step: function(){ t0+=dt; const reHat=new Array(N).fill(0), imHat=new Array(N).fill(0);
+      for(let k=0;k<N;k++){ const w=omeg[k]; reHat[k] = (w===0)? F0.re[k] + F1.re[k]*t0 : F0.re[k]*Math.cos(w*t0) + (F1.re[k]/w)*Math.sin(w*t0); }
+      return dftInverse(reHat, imHat);
+    },
+    get: ()=> dftInverse(F0.re, new Array(N).fill(0))
+  };
+}
+
+function TransportSolver(N,L,a,u0,dt){
+  const dx = L/N; let u = u0.slice();
+  return {
+    step: function(){ const un = u.slice(); const cfl = a*dt/dx;
+      if(a>=0){ for(let i=1;i<N;i++) un[i]=u[i]-cfl*(u[i]-u[i-1]); un[0]=un[1]; }
+      else { for(let i=0;i<N-1;i++) un[i]=u[i]-cfl*(u[i+1]-u[i]); un[N-1]=un[N-2]; }
+      u=un; return u;
+    },
+    get: ()=>u
+  };
+}
+
+function BurgersSolver(N,L,nu,u0,dt){
+  const dx = L/N; let u = u0.slice();
+  return {
+    step: function(){ const un = u.slice();
+      for(let i=1;i<N-1;i++){
+        const fluxp=0.5*u[i+1]*u[i+1], fluxm=0.5*u[i-1]*u[i-1];
+        un[i] = 0.5*(u[i+1]+u[i-1]) - dt/(2*dx)*(fluxp-fluxm) + nu*dt/(dx*dx)*(u[i+1]-2*u[i]+u[i-1]);
+      }
+      un[0]=un[1]; un[N-1]=un[N-2]; u=un; return u;
+    },
+    get: ()=>u
+  };
+}
+
+function SchrodingerSolver(N,L,u0,dt){
+  const ks = new Array(N); for(let i=0;i<N;i++) ks[i] = (i<=N/2)?(2*Math.PI*i/L):(2*Math.PI*(i-N)/L);
+  let re = u0.slice(), im = new Array(N).fill(0);
+  return {
+    step: function(){ const F = dftForward_real(re); let reF = F.re, imF = F.im;
+      for(let k=0;k<N;k++){
+        const phiRe = Math.cos(-0.5*ks[k]*ks[k]*dt), phiIm = Math.sin(-0.5*ks[k]*ks[k]*dt);
+        const nr = reF[k]*phiRe - imF[k]*phiIm; const ni = reF[k]*phiIm + imF[k]*phiRe;
+        reF[k]=nr; imF[k]=ni;
+      }
+      const inv = dftInverse(reF, imF); re = inv; return re;
+    }, get: ()=>re
+  };
+}
+
+function buildPropModel(){
+  propN = Math.min(512, parseInt(document.getElementById('N').value,10)||256);
+  propL = parseFloat(document.getElementById('L').value)||1;
+  const eq = propEq.value; const params = parseParams(document.getElementById('propParams').value);
+  const xs = makeGridN(propN,propL);
+  const expr = document.getElementById('propIC').value || '0';
+  const u0 = xs.map(x=>{ try{ return (new Function('x','return '+expr))(x);}catch(e){return 0;} });
+  if(eq==='wave'){ const c = params.c || 1; propSolver = WaveSolver(propN,propL,c,u0,new Array(propN).fill(0), 0.002); propExplain.innerHTML = '<strong>Onde :</strong> propagation le long des caractéristiques ±c.'; }
+  else if(eq==='transport'){ const a = params.a||1; propSolver = TransportSolver(propN,propL,a,u0, Math.min(0.002,0.2*(propL/propN))); propExplain.innerHTML = '<strong>Transport :</strong> upwind ; la forme initiale est transportée.'; }
+  else if(eq==='burgers'){ const nu = params.nu||0.0; propSolver = BurgersSolver(propN,propL,nu,u0, Math.min(0.001,0.1*(propL/propN))); propExplain.innerHTML = '<strong>Burgers :</strong> formation possible de chocs si ν petit.'; }
+  else { propSolver = SchrodingerSolver(propN,propL,u0,0.002); propExplain.innerHTML = '<strong>Schrödinger :</strong> évolution dispersive.'; }
+  drawSignal(ctxPU, propSolver.get()); drawSpectrum(ctxPS, propSolver.get());
+}
+
+runProp.addEventListener('click', ()=>{ buildPropModel(); if(propAnim) cancelAnimationFrame(propAnim); (function loop(){ const u = propSolver.step(); drawSignal(ctxPU,u); drawSpectrum(ctxPS,u); propAnim = requestAnimationFrame(loop); })(); });
+pauseProp.addEventListener('click', ()=>{ if(propAnim){ cancelAnimationFrame(propAnim); propAnim=null;} else runProp.click(); });
+stepProp.addEventListener('click', ()=>{ if(!propSolver) buildPropModel(); const u = propSolver.step(); drawSignal(ctxPU,u); drawSpectrum(ctxPS,u); });
+exportProp.addEventListener('click', ()=>{ if(!propSolver) return alert('Lancez la simulation d\'abord'); const u = propSolver.get(); const xs = makeGridN(propN,propL); let csv='x,u\n'; for(let i=0;i<xs.length;i++) csv+=xs[i]+','+u[i]+'\n'; const blob=new Blob([csv],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='prop_solution.csv'; a.click(); URL.revokeObjectURL(a.href); });
+
+/* Init */
+setExplanation(modeEl.value);
+microlocalStep();
+buildPropModel();
+
+</script>
+</body>
+</html>
