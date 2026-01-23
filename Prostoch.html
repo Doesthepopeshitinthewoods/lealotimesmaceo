@@ -369,97 +369,108 @@
             </details>
           </div>
         </div>
+        <section class="project card">
+          <div class="body">
+          Une mesure $\pi$ sur $E$ est <em>invariante</em> si $\pi P=\pi$, i.e. pour tout $y$,
+          <div class="math">\[\pi(y)=\sum_{x\in E}\pi(x)P(x,y).\]</div>
+          Si $\pi$ est une probabilité et la chaîne irréductible et apériodique, alors $P^n(x,\cdot)\to\pi$ en loi lorsque $n\to\infty$ (théorème ergodique).
+          </div>
+          </div>
+          
+          
+          
+          
+          <div class="entry" id="periode">
+          <span class="title">Période</span>
+          <div class="body">
+          La période d'un état $x$ est $d(x)=\gcd\{n\ge1: P^{(n)}(x,x)>0\}$. Si $d(x)=1$ on dit que $x$ est <em>apériodique</em>. Dans une classe communiquante, la période est constante.
+          </div>
+          </div>
+          
+          
+          
+          
+          <div class="entry" id="chaines-fonctions">
+          <span class="title">Martingales et fonctions harmoniques</span>
+          <div class="body">
+          Une fonction $h:E\to\mathbb{R}$ est <em>harmonique</em> si $Ph=h$. Pour une chaîne irréductible, $h(X_n)$ est une martingale locale si et seulement si $h$ est harmonique.
+          </div>
+          </div>
+          
+          
+          
+          
+          <div class="entry" id="couplage">
+          <span class="title">Couplage et temps d'atteinte</span>
+          <div class="body">
+          Méthodes de couplage : construire deux chaînes sur le même espace de probabilité pour étudier la rencontre/temps de couplage et obtenir des bornes sur la distance totale.
+          </div>
+          </div>
+          
+          
+          
+          
+          <div class="entry" id="poisson-def">
+          <span class="title">Définition — Processus de Poisson simple (PPS)</span>
+          <div class="body">
+          Un processus $(N_t)_{t\ge0}$ est un <strong>processus de Poisson simple</strong> d'intensité $\lambda>0$ s'il vérifie :
+          <ol>
+          <li>$N_0=0$ presque sûrement,</li>
+          <li>accroissements indépendants : pour $0\le s<t$, $N_t-N_s$ est indépendant de la filtration jusqu'à $s$,</li>
+          <li>accroissements stationnaires : $N_t-N_s$ a la loi de Poisson de paramètre $\lambda (t-s)$,</li>
+          <li>trajectoires à sauts de taille $1$ (simple) et càdlàg.</li>
+          </ol>
+          </div>
+          </div>
+          
+          
+          <!-- Nouvelle section demandée : propriété de Markov faible / forte -->
+          <div class="entry" id="markov-proprietes">
+          <span class="title">Propriété de Markov — faible (classique) et forte</span>
+          <div class="body">
+          <strong>Filtration naturelle.</strong> Pour un processus discret $(X_n)_{n\ge0}$ on note la filtration naturelle $\mathcal{F}_n=\sigma(X_0,\dots,X_n)$. Pour un processus en temps continu on considère la filtration adaptée $\mathcal{F}_t$.
+          
+          
+          <br><br>
+          <strong>Propriété de Markov (faible / classique).</strong> Le processus $(X_t)$ (discret ou continu) satisfait la propriété de Markov si, pour tout temps déterministe $s,t\ge0$ et pour toute fonction mesurable bornée $f$,
+          <div class="math">\[\mathbb{E}\big[f(X_{t+s})\mid\mathcal{F}_t\big]=\mathbb{E}\big[f(X_{t+s})\mid X_t\big].\]</div>
+          En notation de noyau, cela s'écrit (temps discret) :
+          <div class="math">\[\mathbb{P}(X_{t+s}=y\mid\mathcal{F}_t)=P^{(s)}(X_t,y),\]</div>
+          ou (temps continu, semigroupe $(P_s)_{s\ge0}$) :
+          <div class="math">\[\mathbb{E}\big[f(X_{t+s})\mid\mathcal{F}_t\big]=P_s f(X_t).\]</div>
+          Cette propriété ne fait intervenir que des temps déterministes $t$ (ou des durées fixes après un temps donné) — d'où l'appellation parfois « faible » dans certaines sources.
+          
+          
+          <br><br>
+          <strong>Propriété de Markov forte.</strong> La propriété de Markov est dite <em>forte</em> lorsque l'égalité précédente reste vraie lorsque le temps déterministe $t$ est remplacé par un <em>temps d'arrêt</em> $T$ relatif à la filtration naturelle (i.e. $\{T\le t\}\in\mathcal{F}_t$ pour tout $t$). Formellement : pour tout temps d'arrêt $T$ (presque sûrement fini), tout $s\ge0$ et toute fonction mesurable bornée $f$,
+          <div class="math">\[\mathbb{E}\big[f(X_{T+s})\mid\mathcal{F}_T\big]=\mathbb{E}_{X_T}\big[f(X_s)\big]=P_s f(X_T)\quad\text{p.s.}\]</div>
+          Autrement dit, conditionnellement à $\mathcal{F}_T$, l'avenir après $T$ dépend seulement de la valeur $X_T$ et a la même loi que le processus démarrant en $X_T$. Cette propriété permet de « reprendre » le processus à un temps aléatoire.
+          
+          
+          <br><br>
+          <strong>Remarques et conséquences.</strong>
+          <ul>
+          <li>La propriété de Markov forte implique la propriété de Markov classique (prendre $T\equiv t$ déterministe). L'inverse n'est pas automatique : il existe des processus où la propriété tient pour tous les temps déterministes mais échoue pour certains temps d'arrêt. Toutefois, pour les chaînes de Markov homogènes en temps discret (arrivant sur un ensemble dénombrable) et pour beaucoup de processus usuels (processus de Poisson, mouvements browniens, chaînes de Markov de saut), la propriété forte tient.</li>
+          <li>Un corollaire utile : si $T$ est un temps d'arrêt et $A$ un événement de $\sigma(X_T)$, alors la loi conditionnelle de $(X_{T+s})_{s\ge0}$ sachant $\{X_T\in A\}$ est celle d'un processus démarrant dans la loi $\mathcal{L}(X_T\mid X_T\in A)$ et indépendant du passé conditionnellement à $X_T$. Ceci est souvent utilisé pour la décomposition en cycles à la suite d'un temps de sortie/entrée (technique de réinitialisation).</li>
+          <li>La propriété forte permet l'étude des temps d'arrêt comme temps de coupure : par exemple, pour un temps d'arrêt $T$ égal au temps d'atteinte d'un ensemble (temps de hitting), on peut appliquer la propriété forte pour calculer probabilités d'atteinte conditionnelles et résoudre des équations harmoniques (fonctions harmoniques pour le noyau $P$).</li>
+          <li>Exemples : les chaînes de Markov homogènes en temps discret satisfont la propriété de Markov forte pour tout temps d'arrêt prenant des valeurs dans $\{0,1,2,\dots\}$ (preuve par approximation par temps d'arrêt simples). Le processus de Poisson simple et le mouvement brownien (et plus généralement les processus de Feller) possèdent la propriété de Markov forte en temps continu.</li>
+          </ul>
+          
+          
+          <br>
+          <strong>Formulation pratique (fonction test).</strong> Pour toute fonction mesurable bornée $f$ et tout temps d'arrêt $T$ (fini p.s.) on a la formule pratique :
+          <div class="math">\[\mathbb{E}\big[f(X_{T+s})\mathbf{1}_{\{T<\infty\}}\mid\mathcal{F}_T\big]=P_s f(X_T)\mathbf{1}_{\{T<\infty\}}\quad\text{p.s.}\]</div>
+          
+          
+          </div>
+          </div>
+          
+          
+          </section>
 
       
 
-      <section class="project card">
-La période d'un état $x$ est $d(x)=\gcd\{n\ge1: P^{(n)}(x,x)>0\}$. Si $d(x)=1$ on dit que $x$ est <em>apériodique</em>. Dans une classe communiquante, la période est constante.
-</div>
-</div>
-
-
-<div class="entry" id="chaines-fonctions">
-<span class="title">Martingales et fonctions harmoniques</span>
-<div class="body">
-Une fonction $h:E\to\mathbb{R}$ est <em>harmonique</em> si $Ph=h$. Pour une chaîne irréductible, $h(X_n)$ est une martingale locale si et seulement si $h$ est harmonique.
-</div>
-</div>
-
-
-<div class="entry" id="couplage">
-<span class="title">Couplage et temps d'atteinte</span>
-<div class="body">
-Méthodes de couplage : construire deux chaînes sur le même espace de probabilité pour étudier la rencontre/temps de couplage et obtenir des bornes sur la distance totale.
-</div>
-</div>
-
-
-<div class="entry" id="poisson-def">
-<span class="title">Définition — Processus de Poisson simple (PPS)</span>
-<div class="body">
-Un processus $(N_t)_{t\ge0}$ est un <strong>processus de Poisson simple</strong> d'intensité $\lambda>0$ s'il vérifie :
-<ol>
-<li>$N_0=0$;</li>
-<li>accroissements indépendants et stationnaires;</li>
-<li>pour $s<t$, $N_t-N_s\sim\text{Poisson}(\lambda (t-s))$.</li>
-</ol>
-Les temps inter-arrivées sont iid de loi exponentielle $\mathrm{Exp}(\lambda)$ et il y a absence de mémoire.
-</div>
-</div>
-
-
-<div class="entry" id="poisson-proprietes">
-<span class="title">Propriétés clés du processus de Poisson</span>
-<div class="body">
-<ul>
-<li>Stationnarité des accroissements : $N_{t+s}-N_t\sim\text{Poi}(\lambda s)$.</li>
-<li>Indépendance des accroissements sur intervalles disjoints.</li>
-<li>Propriété de Markov forte : conditionnellement à une tribu d'arrêt $\mathcal{F}_T$, le processus post-$T$ est un PPS indépendant de $\mathcal{F}_T$ (si $T$ fini). </li>
-<li>Représentation par sommes d'exponentielles : $T_n=E_1+\dots+E_n$ avec $E_i\sim\mathrm{Exp}(\lambda)$. </li>
-</ul>
-</div>
-</div>
-
-
-<div class="entry" id="poisson-limite-bernoulli">
-<span class="title">Processus de Poisson comme limite de Bernoulli</span>
-<div class="body">
-Si l'on contracte le temps d'un processus de Bernoulli (pas de pile) de paramètre $p_k$ sur une grille de pas $1/k$ et $k p_k\to\lambda$, alors le processus discret converge en loi vers un PPS(0,$\lambda$). (Théorème de poissonisation.)
-</div>
-</div>
-
-
-<div class="entry" id="poissonisation">
-<span class="title">Poissonisation d'une chaîne de Markov à temps discret</span>
-<div class="body">
-Soit $(Z_n)_{n\ge0}$ une chaîne de Markov discrète d'espace $E$ et $N_t$ un PPS indépendant d'intensité $\lambda$. Le processus d'échantillonnage composé
-$$Z_{N_t}$$
-est une chaîne de Markov à temps continu par saut (processus de Poisson composé). Sa loi de transition s'écrit, pour $x,y\in E$ :
-$$\mathbb{P}(Z_{N_t}=y\mid Z_{N_0}=x)=\sum_{n=0}^\infty e^{-\lambda t}\frac{(\lambda t)^n}{n!}P^{(n)}(x,y).$$
-Ce procédé "poissonise" la temporisation et fournit une construction usuelle des chaînes de Markov à temps continu.
-</div>
-</div>
-
-
-<div class="entry" id="generateur">
-<span class="title">Générateur infinitésimal (aperçu)</span>
-<div class="body">
-Pour une chaîne à temps continu sur $E$ de taux (intensité) $\lambda(x)$ et noyau de saut $P(x,\cdot)$, le générateur $L$ s'exprime formellement par
-$$L f(x)=\sum_{y\in E}(f(y)-f(x))q(x,y),$$
-où $q(x,y)$ est la vitesse de saut de $x$ vers $y$ (et $q(x,x)=-\sum_{y\ne x}q(x,y)$). Les équations de Kolmogorov avant et arrière relient $P_t$ et $L$.
-</div>
-</div>
-
-
-<div class="entry" id="exemples">
-<span class="title">Exemples classiques</span>
-<div class="body">
-Liste non exhaustive : marches aléatoires sur $\mathbb{Z}^d$, processus de naissance-mort (queues), urne d'Ehrenfest, processus de Galton–Watson (branching), files M/M/s, etc. Ces exemples illustrent classification, mesures invariantes, et comportement à long terme.
-</div>
-</div>
-
-
-</section>
+      </section>
     </main>
 
     <footer>
