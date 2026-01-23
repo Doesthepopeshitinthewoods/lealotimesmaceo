@@ -8,19 +8,20 @@
   <!-- Polices -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
 
-  <!-- Styles homogènes -->
+  <!-- Styles améliorés -->
   <style>
     :root{
-      --maxw:900px;
-      --bg:#fbfbfb;
+      --maxw:1100px;
+      --bg:#f6f7fb;
       --paper:#ffffff;
-      --text:#111827;
+      --text:#0f1724;
       --muted:#6b7280;
-      --accent:#1f2937;
+      --accent:#0f1724;
       --brand:#8b0000;
-      --card-border:#e6e6e6;
-      --radius:8px;
-      --gap:16px;
+      --card-border:#e7e9ee;
+      --radius:12px;
+      --gap:20px;
+      --glass: rgba(255,255,255,0.6);
     }
 
     *{box-sizing:border-box}
@@ -30,21 +31,25 @@
       font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
       -webkit-font-smoothing:antialiased;
       -moz-osx-font-smoothing:grayscale;
-      background:var(--bg);
+      background:linear-gradient(180deg,var(--bg),#ffffff 60%);
       color:var(--text);
       line-height:1.65;
+      font-size:16px;
+      -webkit-font-feature-settings: "liga" 1;
     }
 
     .site{min-height:100vh;display:flex;flex-direction:column}
 
     header{
-      background:var(--brand);
-      border-bottom:4px solid rgba(0,0,0,0.06);
+      background:linear-gradient(90deg,var(--brand),#3b0b0b);
+      color:#fff;
+      box-shadow:0 6px 24px rgba(11,15,30,0.12);
+      border-bottom:1px solid rgba(255,255,255,0.03);
     }
     .wrap{
       max-width:var(--maxw);
       margin:0 auto;
-      padding:18px 20px;
+      padding:20px;
       display:flex;
       align-items:center;
       justify-content:space-between;
@@ -56,32 +61,42 @@
       font-size:20px;
       font-weight:700;
       color:#fff;
+      letter-spacing:0.2px;
     }
-    nav{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-    nav a{color:rgba(243,244,246,0.95);text-decoration:none;font-size:14px;padding:6px 8px;border-radius:6px}
+    nav{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    nav a{color:rgba(243,244,246,0.95);text-decoration:none;font-size:14px;padding:8px 10px;border-radius:8px}
     nav a:hover{background:rgba(255,255,255,0.06)}
 
     main{
       max-width:var(--maxw);
       margin:34px auto;
-      padding:0 20px 36px;
+      padding:24px;
       width:100%;
       flex:1;
+      display:grid;
+      grid-template-columns: 1fr 320px;
+      gap:28px;
     }
+
+    .content{
+      background:transparent;
+    }
+
     h2{
       font-family:Merriweather,serif;
-      font-size:20px;
-      margin:0 0 14px;
+      font-size:26px;
+      margin:0 0 16px;
       color:var(--accent);
+      letter-spacing:0.1px;
     }
 
     /* Card contenant la fiche */
     .project.card{
       background:var(--paper);
       border:1px solid var(--card-border);
-      padding:18px;
+      padding:22px;
       border-radius:var(--radius);
-      box-shadow:0 8px 20px rgba(16,24,40,0.03);
+      box-shadow:0 12px 30px rgba(16,24,40,0.04);
       margin-bottom:22px;
     }
 
@@ -90,12 +105,12 @@
     /* ENTRIES: style homogène pour tous les énoncés */
     .entry{
       margin:14px 0;
-      background:#fff;
-      border:1px solid #f0f0f0;
+      background:linear-gradient(180deg,#fff,#fbfbfb);
+      border:1px solid #f1f3f7;
       border-left:6px solid var(--accent);
-      border-radius:8px;
-      padding:12px 14px;
-      box-shadow:0 2px 8px rgba(16,24,40,0.02);
+      border-radius:10px;
+      padding:14px 16px;
+      box-shadow:0 6px 20px rgba(16,24,40,0.03);
       font-size:15px;
     }
     .entry .title{
@@ -104,23 +119,57 @@
       margin-bottom:8px;
       color:var(--brand);
       font-family:Merriweather,serif;
+      font-size:15px;
     }
     .entry .body{color:var(--text)}
     .entry details{margin-top:10px}
     details summary{cursor:pointer;font-weight:600;color:var(--accent);outline:none}
     details[open] summary{color:var(--brand)}
 
-    code{background:#f3f4f6;padding:2px 6px;border-radius:4px;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace}
+    code{background:#f3f4f6;padding:2px 6px;border-radius:6px;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace}
     ol,ul{padding-left:20px;margin:8px 0}
     .muted{color:var(--muted);font-size:13px}
 
-    .toc{margin:8px 0 16px;padding:10px;background:#fafafa;border:1px dashed #eee;border-radius:6px;font-size:14px}
+    /* Table of contents */
+    .toc{
+      position:sticky;
+      top:24px;
+      margin:0 0 16px;
+      padding:14px;
+      background:linear-gradient(180deg,#ffffff,#fafafa);
+      border:1px solid #eee;
+      border-radius:10px;
+      font-size:14px;
+      box-shadow:0 6px 24px rgba(16,24,40,0.03);
+      line-height:1.5;
+    }
+    .toc h3{margin:0 0 8px;font-size:14px;color:var(--accent);font-weight:700}
+    .toc a{display:block;text-decoration:none;color:var(--accent);padding:6px 4px;border-radius:6px}
+    .toc a:hover{background:#fff6f6;color:var(--brand)}
 
+    footer{
+      margin-top:24px;padding:20px;text-align:center;color:var(--muted);font-size:14px
+    }
+
+    /* Responsive */
+    @media (max-width:980px){
+      main{grid-template-columns:1fr 280px;padding:18px;gap:18px}
+    }
+    @media (max-width:820px){
+      main{grid-template-columns:1fr;padding:18px}
+      .toc{position:relative;top:auto}
+    }
     @media (max-width:640px){
       .wrap{padding:14px 16px}
-      main{margin:20px auto;padding:0 16px 28px}
+      main{margin:20px auto;padding:12px}
       .entry{padding:10px}
+      h2{font-size:20px}
     }
+
+    /* Small helpers */
+    .kicker{font-size:13px;color:var(--muted);margin-bottom:8px}
+    .search-input{width:100%;padding:8px 10px;border-radius:8px;border:1px solid #e8e8ef;font-size:14px}
+
   </style>
 
   <!-- MathJax v3 -->
@@ -144,7 +193,10 @@
   <div class="site">
     <header>
       <div class="wrap">
-        <h1>Blog de l'intranquilité</h1>
+        <div style="display:flex;gap:14px;align-items:center">
+          <h1>Blog de l'intranquilité</h1>
+          <div class="kicker">Projets — Notes et fiches</div>
+        </div>
         <nav aria-label="Navigation principale">
           <a href="index.html">Accueil</a>
           <a href="culture-films.html">Films</a>
@@ -156,321 +208,325 @@
     </header>
 
     <main>
-      <h2>Fiche — Théorèmes de convergence des martingales</h2>
+      <div class="content">
+        <h2>Fiche — Théorèmes de convergence des martingales</h2>
 
-      <section class="project card">
-        
-        
-        <div class="entry" id="doob-max-decomp">
-          <span class="title">Inégalité maximale de Doob — Décomposition</span>
-          <div class="body">
-            <strong>Inégalité de Doob (p &gt; 1).</strong><br>
-            Si $(M_n)_{n\ge0}$ est une martingale et $p>1$, alors pour tout $n$ :
-            $$\mathbb{E}\big[(M_n^*)^p\big] \le \left(\frac{p}{p-1}\right)^p \mathbb{E}\big[|M_n|^p\big],\qquad
-            M_n^*=\sup_{0\le k\le n}|M_k|.$$
-            <details><summary>Idée de preuve</summary>
-              Utiliser la convexité $x\mapsto|x|^p$, la transformée de Doob et Hölder pour relier $M_n^*$ et $M_n$. Cette inégalité permet un contrôle des queues et est utilisée pour déduire l'uniforme intégrabilité.
-            </details>
-          </div>
-        </div>
-
-        <div class="entry" id="l2">
-          <span class="title">Martingales bornées dans $L^2$ </span>
-          <div class="body">
-            <strong>Énoncé.</strong><br>
-            Si $(M_n)$ est une martingale telle que $\sup_n\mathbb{E}[M_n^2]<\infty$, alors il existe $M_\infty\in L^2$ avec
-            $$M_n \to M_\infty\quad\text{presque sûrement et dans }L^2.$$
-            <details><summary>Croquis</summary>
-              L'orthogonalité des accroissements entraîne $\sum \mathbb{E}[(\Delta M_k)^2]<\infty$, ce qui implique que $(M_n)$ est de Cauchy en $L^2$ et converge. La convergence presque sûre découle ensuite d'arguments standards (sous-suites, contrôle de la variation quadratique).
-            </details>
-          </div>
-        </div>
-
-        <div class="entry" id="surmartingales-pos">
-          <span class="title">Surmartingales positives </span>
-          <div class="body">
-            <strong>Énoncé.</strong><br>
-            Si $(X_n)$ est une surmartingale avec $X_n\ge0$ et $\sup_n\mathbb{E}[X_n]<\infty$, alors $X_n$ converge presque sûrement vers $X_\infty$ et
-            $$\mathbb{E}[X_\infty]\le\liminf_{n\to\infty}\mathbb{E}[X_n].$$
-            <details><summary>Idée</summary>
-              On utilise la troncature et la décomposition de Doob ; l'hypothèse de positivité empêche les trajectoires de diverger positivement de manière incontrôlable.
-            </details>
-          </div>
-        </div>
-
-        <div class="entry" id="submart-l1">
-          <span class="title">Sous-martingales bornées dans $L^1$ </span>
-          <div class="body">
-            <strong>Énoncé.</strong><br>
-            Une sous-martingale $(X_n)$ telle que $\sup_n\mathbb{E}[X_n^+]<\infty$ converge presque sûrement vers une limite finie $X_\infty$ (et $X_\infty\in L^1$).
-            <details><summary>Preuve courte</summary>
-              Méthode des montées-descents (comptage des traversées d'intervalles) : montrer que le nombre de traversées d'un intervalle $[a,b]$ est presque sûrement fini, ce qui force la convergence des trajectoires.
-            </details>
-          </div>
-        </div>
-
-        <div class="entry" id="closed-ui">
-          <span class="title">Martingales fermées ⇔ uniformément intégrables </span>
-          <div class="body">
-            <strong>Énoncé.</strong><br>
-            Pour une martingale $(M_n)$, les assertions suivantes sont équivalentes :
-            <ol>
-              <li>$M_n \to M_\infty$ presque sûrement et dans $L^1$ ;</li>
-              <li>il existe $X\in L^1$ tel que $M_n=\mathbb{E}[X\mid\mathcal{F}_n]$ pour tout $n$ (martingale fermée) ;</li>
-              <li>la famille $(M_n)$ est uniformément intégrable (u.i.).</li>
-            </ol>
-            <details><summary>Remarques</summary>
-              En pratique, montrer la u.i. (par ex. via La Vallée-Poussin) donne la convergence en $L^1$ et la représentation comme espérance conditionnelle.
-            </details>
-          </div>
-        </div>
-
-        <div class="entry" id="clt-martingale">
-          <span class="title">Théorème limite central pour martingales </span>
-          <div class="body">
-            <strong>Énoncé (forme usuelle).</strong><br>
-            Soit $(M_n)$ une martingale de carré intégrable et $(\sigma_n)$ une suite croissante telle que
-            <ol>
-              <li>$\langle M\rangle_n/\sigma_n^2 \to 1$ en probabilité (variation quadratique prévisible normalisée),</li>
-              <li>condition de Lindeberg conditionnelle : les gros incréments sont négligeables.</li>
-            </ol>
-            Alors
-            $$\frac{M_n}{\sigma_n} \xrightarrow{d} \mathcal{N}(0,1).$$
-            <details><summary>Commentaire</summary>
-              C'est l'analogue du TLC classique : la variance empirique est remplacée par $\langle M\rangle_n$ et la condition de Lindeberg s'exprime en termes d'espérances conditionnelles.
-            </details>
-          </div>
-        </div>
-
-        <!-- Full enoncés copied from poly — now with same .entry styling -->
-
-        <div class="entry" id="lemme-4-2-1">
-          <span class="title">Lemme 4.2.1 — Déformations convexes</span>
-          <div class="body">
-            <strong>Énoncé (Lemme 4.2.1).</strong><br>
-             <br>
-            <em>Déformations convexes.</em> Si $U:\mathbb{R}\to\mathbb{R}$ est convexe et décroissante, et $(X_n)$ est une sous-martingale (resp. martingale) telle que $U(X_n)\in L^1$ pour tout $n$, alors $(U(X_n))$ est une sous-martingale (resp. martingale).
-            <details><summary>Remarque</summary>
-              Cette observation est utilisée pour contrôler des transformations non linéaires de martingales et apparaît naturellement dans les preuves d'inégalités \(L^p\) et dans l'étude des maxima.
-            </details>
-          </div>
-        </div>
-
-        <div class="entry" id="doob-stopping">
-          <span class="title">Théorème d'arrêt de Doob </span>
-          <div class="body">
-            <strong>Énoncé (Théorème d'arrêt de Doob).</strong><br>
-             <br>
-            Soit $(M_n)$ une martingale intégrable et $T$ un temps d'arrêt. Si $T$ est borné p.s. (ou si $M_{n\wedge T}$ est uniformément intégrable / vérifie les hypothèses de convergence dominée adaptées), alors $M_T$ est intégrable et
-            $$\mathbb{E}[M_T] = \mathbb{E}[M_0].$$
-            Plus généralement, pour deux temps d'arrêt $S\le T$ (sous les mêmes hypothèses), on a $\mathbb{E}[M_T\mid\mathcal{F}_S]=M_S$ et donc $\mathbb{E}[M_T]=\mathbb{E}[M_S]$.
-            <details><summary>Remarque</summary>
-              Des versions plus fines existent pour des temps d'arrêt non bornés sous conditions d'uniforme intégrabilité ou de convergence.
-            </details>
-          </div>
-        </div>
-
-        <div class="entry" id="reciproque-doob">
-          <span class="title">Caractérisation (réciproque du théorème d'arrêt) </span>
-          <div class="body">
-            <strong>Énoncé (Théorème 4.4.7).</strong><br>
-             <br>
-            Soit $(X_n)$ un processus adapté et intégrable. Les assertions suivantes sont équivalentes :
-            <ol>
-              <li>pour tout temps d'arrêt borné $T$, $\mathbb{E}[X_T]=\mathbb{E}[X_0]$ ;</li>
-              <li>pour tout temps d'arrêt borné $T$, $\mathbb{E}[X_T\mid\mathcal{F}_0]=X_0$ (i.e. la propriété d'arrêt) ;</li>
-              <li>$(X_n)$ est une martingale.
-            </ol>
-            <details><summary>Remarque</summary>
-              Cette réciproque est utile pour reconnaître des martingales à partir de propriétés d'arrêt et pour établir l'unicité de certaines solutions d'équations stochastiques.
-            </details>
-          </div>
-        </div>
-
-        <div class="entry" id="snell">
-          <span class="title">Enveloppe de Snell </span>
-          <div class="body">
-            <strong>Énoncé (Enveloppe de Snell).</strong><br>
-             <br>
-            Soit $(X_n)_{0\le n\le N}$ un processus adapté, intégrable. On définit par récurrence :
-            $$Y_N = X_N,\qquad Y_n = \max\big(X_n,\; \mathbb{E}[Y_{n+1}\mid\mathcal{F}_n]\big),\quad 0\le n\le N-1.$$
-            Alors :
-            <ul>
-              <li>$(Y_n)_{0\le n\le N}$ est une surmartingale qui majore $X$ ;</li>
-              <li>$Y$ est la plus petite surmartingale majorant $X$ (enveloppe de Snell) ;</li>
-              <li>le temps d'arrêt $T^*=\min\{0\le n\le N: Y_n=X_n\}$ est un temps d'arrêt optimal et $Y_{T^*}=X_{T^*}$ ;</li>
-              <li>en particulier $\mathbb{E}[Y_0]=\sup_{T\le N}\mathbb{E}[X_T]=\mathbb{E}[X_{T^*}]$.</li>
-            </ul>
-            <details><summary>Remarque</summary>
-              L'enveloppe de Snell fournit la valeur optimale d'un problème d'arrêt et se calcule par rétrogression.
-            </details>
-          </div>
-        </div>
-
-        <div class="entry" id="doob-decomposition">
-          <span class="title">Décomposition de Doob / Compensateur </span>
-          <div class="body">
-            <strong>Énoncé (Décomposition de Doob).</strong><br>
-             <br>
-            Soit $(X_n)$ adapté et intégrable. Posons $A_0=M_0=0$ et, pour $n\ge1$ :
-            $$A_n=\sum_{k=1}^n \mathbb{E}[X_k-X_{k-1}\mid\mathcal{F}_{k-1}],\qquad M_n = X_n - X_0 - A_n.$$
-            Alors $(M_n)$ est une martingale, $(A_n)$ est un processus prévisible intégrable, et la décomposition
-            $$X_n - X_0 = M_n + A_n$$
-            est unique. Le processus $A$ est appelé le compensateur de $X$ ; si $X$ est une sous-martingale alors $A$ est croissant et $A_n\uparrow A_\infty$ p.s.  
-            De plus, si $M$ est de carré intégrable, le crochet prévisible $\langle M\rangle$ est donné par
-            $$\langle M\rangle_n=\sum_{k=1}^n \mathbb{E}[(M_k-M_{k-1})^2\mid\mathcal{F}_{k-1}],$$
-            et $M$ est bornée dans $L^2$ ssi $\langle M\rangle_\infty\in L^1$.
-            <details><summary>Remarque</summary>
-              Dans le cadre continu, le résultat s'étend au théorème de Doob–Meyer.
-            </details>
-          </div>
-        </div>
-
-        <div class="entry" id="doob-max-formulation">
-          <span class="title">Inégalité maximale de Doob — formulation</span>
-          <div class="body">
-            <strong>Énoncé (Inégalité maximale de Doob).</strong><br>
-             <br>
-            Pour toute sous-martingale positive (ou martingale) $(X_n)$ et tout $r>0$ et tout $n$,
-            $$r\,\mathbb{P}\big(\max_{0\le k\le n} X_k \ge r\big) \le \mathbb{E}[X_n\mathbf{1}_{\{\max_{0\le k\le n} X_k \ge r\}}].$$
-            En particulier, pour $p>1$ et toute martingale $(X_n)$,
-            $$\mathbb{E}\Big(\sup_{0\le k\le n}|X_k|^p\Big) \le \Big(\frac{p}{p-1}\Big)^p \mathbb{E}[|X_n|^p].$$
-            La constante $(p/(p-1))^p$ est optimale.
-          </div>
-        </div>
-
-        <div class="entry" id="wald">
-          <span class="title">Théorème de Wald </span>
-          <div class="body">
-            <strong>Énoncé (extrait).</strong><br>
-            Si $M$ est une martingale de carré intégrable et $T$ un temps d'arrêt fini p.s. tel que $\langle M\rangle_T\in L^1$, alors
-            $$M_T\in L^2,\quad \mathbb{E}[M_T]=\mathbb{E}[M_0],\quad \mathbb{E}[M_T^2]=\mathbb{E}[M_0^2]+\mathbb{E}[\langle M\rangle_T].$$
-          </div>
-        </div>
-
-        <div class="entry" id="lp-p-greater-1">
-          <span class="title">Martingales bornées dans $L^p$, $p>1$</span>
-          <div class="body">
-            <strong>Énoncé.</strong><br>
-            Si $(M_n)$ est bornée dans $L^p$ pour un $p>1$, alors $M_n$ converge presque sûrement et dans $L^p$ vers une limite $M_\infty$ (en particulier dans $L^1$).
-            <details><summary>Remarque</summary>
-              L'inégalité maximale de Doob et des critères d'uniforme intégrabilité (La Vallée-Poussin) sont les outils classiques pour obtenir ce résultat.
-            </details>
-          </div>
-        </div>
-
-        <div class="entry" id="lp1">
-          <span class="title">Martingales bornées dans $L^1$</span>
-          <div class="body">
-            <strong>Énoncé (remarque).</strong><br>
-            Un contrôle uniforme de l'espérance absolue (ou de la partie positive) nécessite généralement des arguments supplémentaires pour obtenir la convergence en $L^1$ ; la notion d'uniforme intégrabilité est centrale.
-            <details><summary>Remarque</summary>
-              Être borné en $L^1$ seul n'implique pas la convergence en $L^1$ sans hypothèses supplémentaires d'uniforme intégrabilité.
-            </details>
-          </div>
-        </div>
         <section class="project card">
+
+          <!-- GARDER LE CONTENU TEL QUEL (texte inchangé) -->
+
+          <div class="entry" id="doob-max-decomp">
+            <span class="title">Inégalité maximale de Doob — Décomposition</span>
+            <div class="body">
+              <strong>Inégalité de Doob (p &gt; 1).</strong><br>
+              Si $(M_n)_{n\ge0}$ est une martingale et $p>1$, alors pour tout $n$ :
+              $$\mathbb{E}\big[(M_n^*)^p\big] \le \left(\frac{p}{p-1}\right)^p \mathbb{E}\big[|M_n|^p\big],\qquad
+              M_n^*=\sup_{0\le k\le n}|M_k|.$$ 
+              <details><summary>Idée de preuve</summary>
+                Utiliser la convexité $x\mapsto|x|^p$, la transformée de Doob et Hölder pour relier $M_n^*$ et $M_n$. Cette inégalité permet un contrôle des queues et est utilisée pour déduire l'uniforme intégrabilité.
+              </details>
+            </div>
+          </div>
+
+          <div class="entry" id="l2">
+            <span class="title">Martingales bornées dans $L^2$ </span>
+            <div class="body">
+              <strong>Énoncé.</strong><br>
+              Si $(M_n)$ est une martingale telle que $\sup_n\mathbb{E}[M_n^2]<\infty$, alors il existe $M_\infty\in L^2$ avec
+              $$M_n \to M_\infty\quad\text{presque sûrement et dans }L^2.$$ 
+              <details><summary>Croquis</summary>
+                L'orthogonalité des accroissements entraîne $\sum \mathbb{E}[(\Delta M_k)^2]<\infty$, ce qui implique que $(M_n)$ est de Cauchy en $L^2$ et converge. La convergence presque sûre découle ensuite d'arguments standards (sous-suites, contrôle de la variation quadratique).
+              </details>
+            </div>
+          </div>
+
+          <div class="entry" id="surmartingales-pos">
+            <span class="title">Surmartingales positives </span>
+            <div class="body">
+              <strong>Énoncé.</strong><br>
+              Si $(X_n)$ est une surmartingale avec $X_n\ge0$ et $\sup_n\mathbb{E}[X_n]<\infty$, alors $X_n$ converge presque sûrement vers $X_\infty$ et
+              $$\mathbb{E}[X_\infty]\le\liminf_{n\to\infty}\mathbb{E}[X_n].$$
+              <details><summary>Idée</summary>
+                On utilise la troncature et la décomposition de Doob ; l'hypothèse de positivité empêche les trajectoires de diverger positivement de manière incontrôlable.
+              </details>
+            </div>
+          </div>
+
+          <div class="entry" id="submart-l1">
+            <span class="title">Sous-martingales bornées dans $L^1$ </span>
+            <div class="body">
+              <strong>Énoncé.</strong><br>
+              Une sous-martingale $(X_n)$ telle que $\sup_n\mathbb{E}[X_n^+]<\infty$ converge presque sûrement vers une limite finie $X_\infty$ (et $X_\infty\in L^1$).
+              <details><summary>Preuve courte</summary>
+                Méthode des montées-descents (comptage des traversées d'intervalles) : montrer que le nombre de traversées d'un intervalle $[a,b]$ est presque sûrement fini, ce qui force la convergence des trajectoires.
+              </details>
+            </div>
+          </div>
+
+          <div class="entry" id="closed-ui">
+            <span class="title">Martingales fermées ⇔ uniformément intégrables </span>
+            <div class="body">
+              <strong>Énoncé.</strong><br>
+              Pour une martingale $(M_n)$, les assertions suivantes sont équivalentes :
+              <ol>
+                <li>$M_n \to M_\infty$ presque sûrement et dans $L^1$ ;</li>
+                <li>il existe $X\in L^1$ tel que $M_n=\mathbb{E}[X\mid\mathcal{F}_n]$ pour tout $n$ (martingale fermée) ;</li>
+                <li>la famille $(M_n)$ est uniformément intégrable (u.i.).</li>
+              </ol>
+              <details><summary>Remarques</summary>
+                En pratique, montrer la u.i. (par ex. via La Vallée-Poussin) donne la convergence en $L^1$ et la représentation comme espérance conditionnelle.
+              </details>
+            </div>
+          </div>
+
+          <div class="entry" id="clt-martingale">
+            <span class="title">Théorème limite central pour martingales </span>
+            <div class="body">
+              <strong>Énoncé (forme usuelle).</strong><br>
+              Soit $(M_n)$ une martingale de carré intégrable et $(\sigma_n)$ une suite croissante telle que
+              <ol>
+                <li>$\langle M\rangle_n/\sigma_n^2 \to 1$ en probabilité (variation quadratique prévisible normalisée),</li>
+                <li>condition de Lindeberg conditionnelle : les gros incréments sont négligeables.</li>
+              </ol>
+              Alors
+              $$\frac{M_n}{\sigma_n} \xrightarrow{d} \mathcal{N}(0,1).$$
+              <details><summary>Commentaire</summary>
+                C'est l'analogue du TLC classique : la variance empirique est remplacée par $\langle M\rangle_n$ et la condition de Lindeberg s'exprime en termes d'espérances conditionnelles.
+              </details>
+            </div>
+          </div>
+
+          <div class="entry" id="lemme-4-2-1">
+            <span class="title">Lemme 4.2.1 — Déformations convexes</span>
+            <div class="body">
+              <strong>Énoncé (Lemme 4.2.1).</strong><br>
+               <br>
+              <em>Déformations convexes.</em> Si $U:\mathbb{R}\to\mathbb{R}$ est convexe et décroissante, et $(X_n)$ est une sous-martingale (resp. martingale) telle que $U(X_n)\in L^1$ pour tout $n$, alors $(U(X_n))$ est une sous-martingale (resp. martingale).
+              <details><summary>Remarque</summary>
+                Cette observation est utilisée pour contrôler des transformations non linéaires de martingales et apparaît naturellement dans les preuves d'inégalités \\(L^p\\) et dans l'étude des maxima.
+              </details>
+            </div>
+          </div>
+
+          <div class="entry" id="doob-stopping">
+            <span class="title">Théorème d'arrêt de Doob </span>
+            <div class="body">
+              <strong>Énoncé (Théorème d'arrêt de Doob).</strong><br>
+               <br>
+              Soit $(M_n)$ une martingale intégrable et $T$ un temps d'arrêt. Si $T$ est borné p.s. (ou si $M_{n\wedge T}$ est uniformément intégrable / vérifie les hypothèses de convergence dominée adaptées), alors $M_T$ est intégrable et
+              $$\mathbb{E}[M_T] = \mathbb{E}[M_0].$$
+              Plus généralement, pour deux temps d'arrêt $S\le T$ (sous les mêmes hypothèses), on a $\mathbb{E}[M_T\mid\mathcal{F}_S]=M_S$ et donc $\mathbb{E}[M_T]=\mathbb{E}[M_S]$.
+              <details><summary>Remarque</summary>
+                Des versions plus fines existent pour des temps d'arrêt non bornés sous conditions d'uniforme intégrabilité ou de convergence.
+              </details>
+            </div>
+          </div>
+
+          <div class="entry" id="reciproque-doob">
+            <span class="title">Caractérisation (réciproque du théorème d'arrêt) </span>
+            <div class="body">
+              <strong>Énoncé (Théorème 4.4.7).</strong><br>
+               <br>
+              Soit $(X_n)$ un processus adapté et intégrable. Les assertions suivantes sont équivalentes :
+              <ol>
+                <li>pour tout temps d'arrêt borné $T$, $\mathbb{E}[X_T]=\mathbb{E}[X_0]$ ;</li>
+                <li>pour tout temps d'arrêt borné $T$, $\mathbb{E}[X_T\mid\mathcal{F}_0]=X_0$ (i.e. la propriété d'arrêt) ;</li>
+                <li>$(X_n)$ est une martingale.
+              </ol>
+              <details><summary>Remarque</summary>
+                Cette réciproque est utile pour reconnaître des martingales à partir de propriétés d'arrêt et pour établir l'unicité de certaines solutions d'équations stochastiques.
+              </details>
+            </div>
+          </div>
+
+          <div class="entry" id="snell">
+            <span class="title">Enveloppe de Snell </span>
+            <div class="body">
+              <strong>Énoncé (Enveloppe de Snell).</strong><br>
+               <br>
+              Soit $(X_n)_{0\le n\le N}$ un processus adapté, intégrable. On définit par récurrence :
+              $$Y_N = X_N,\qquad Y_n = \max\big(X_n,\; \mathbb{E}[Y_{n+1}\mid\mathcal{F}_n]\big),\quad 0\le n\le N-1.$$ 
+              Alors :
+              <ul>
+                <li>$(Y_n)_{0\le n\le N}$ est une surmartingale qui majore $X$ ;</li>
+                <li>$Y$ est la plus petite surmartingale majorant $X$ (enveloppe de Snell) ;</li>
+                <li>le temps d'arrêt $T^*=\min\{0\le n\le N: Y_n=X_n\}$ est un temps d'arrêt optimal et $Y_{T^*}=X_{T^*}$ ;</li>
+                <li>en particulier $\mathbb{E}[Y_0]=\sup_{T\le N}\mathbb{E}[X_T]=\mathbb{E}[X_{T^*}]$.</li>
+              </ul>
+              <details><summary>Remarque</summary>
+                L'enveloppe de Snell fournit la valeur optimale d'un problème d'arrêt et se calcule par rétrogression.
+              </details>
+            </div>
+          </div>
+
+          <div class="entry" id="doob-decomposition">
+            <span class="title">Décomposition de Doob / Compensateur </span>
+            <div class="body">
+              <strong>Énoncé (Décomposition de Doob).</strong><br>
+               <br>
+              Soit $(X_n)$ adapté et intégrable. Posons $A_0=M_0=0$ et, pour $n\ge1$ :
+              $$A_n=\sum_{k=1}^n \mathbb{E}[X_k-X_{k-1}\mid\mathcal{F}_{k-1}],\qquad M_n = X_n - X_0 - A_n.$$ 
+              Alors $(M_n)$ est une martingale, $(A_n)$ est un processus prévisible intégrable, et la décomposition
+              $$X_n - X_0 = M_n + A_n$$
+              est unique. Le processus $A$ est appelé le compensateur de $X$ ; si $X$ est une sous-martingale alors $A$ est croissant et $A_n\uparrow A_\infty$ p.s.  
+              De plus, si $M$ est de carré intégrable, le crochet prévisible $\langle M\rangle$ est donné par
+              $$\langle M\rangle_n=\sum_{k=1}^n \mathbb{E}[(M_k-M_{k-1})^2\mid\mathcal{F}_{k-1}],$$
+              et $M$ est bornée dans $L^2$ ssi $\langle M\rangle_\infty\in L^1$.
+              <details><summary>Remarque</summary>
+                Dans le cadre continu, le résultat s'étend au théorème de Doob–Meyer.
+              </details>
+            </div>
+          </div>
+
+          <div class="entry" id="doob-max-formulation">
+            <span class="title">Inégalité maximale de Doob — formulation</span>
+            <div class="body">
+              <strong>Énoncé (Inégalité maximale de Doob).</strong><br>
+               <br>
+              Pour toute sous-martingale positive (ou martingale) $(X_n)$ et tout $r>0$ et tout $n$,
+              $$r\,\mathbb{P}\big(\max_{0\le k\le n} X_k \ge r\big) \le \mathbb{E}[X_n\mathbf{1}_{\{\max_{0\le k\le n} X_k \ge r\}}].$$
+              En particulier, pour $p>1$ et toute martingale $(X_n)$,
+              $$\mathbb{E}\Big(\sup_{0\le k\le n}|X_k|^p\Big) \le \Big(\frac{p}{p-1}\Big)^p \mathbb{E}[|X_n|^p].$$
+              La constante $(p/(p-1))^p$ est optimale.
+            </div>
+          </div>
+
+          <div class="entry" id="wald">
+            <span class="title">Théorème de Wald </span>
+            <div class="body">
+              <strong>Énoncé (extrait).</strong><br>
+              Si $M$ est une martingale de carré intégrable et $T$ un temps d'arrêt fini p.s. tel que $\langle M\rangle_T\in L^1$, alors
+              $$M_T\in L^2,\quad \mathbb{E}[M_T]=\mathbb{E}[M_0],\quad \mathbb{E}[M_T^2]=\mathbb{E}[M_0^2]+\mathbb{E}[\langle M\rangle_T].$$
+            </div>
+          </div>
+
+          <div class="entry" id="lp-p-greater-1">
+            <span class="title">Martingales bornées dans $L^p$, $p>1$</span>
+            <div class="body">
+              <strong>Énoncé.</strong><br>
+              Si $(M_n)$ est bornée dans $L^p$ pour un $p>1$, alors $M_n$ converge presque sûrement et dans $L^p$ vers une limite $M_\infty$ (en particulier dans $L^1$).
+              <details><summary>Remarque</summary>
+                L'inégalité maximale de Doob et des critères d'uniforme intégrabilité (La Vallée-Poussin) sont les outils classiques pour obtenir ce résultat.
+              </details>
+            </div>
+          </div>
+
+          <div class="entry" id="lp1">
+            <span class="title">Martingales bornées dans $L^1$</span>
+            <div class="body">
+              <strong>Énoncé (remarque).</strong><br>
+              Un contrôle uniforme de l'espérance absolue (ou de la partie positive) nécessite généralement des arguments supplémentaires pour obtenir la convergence en $L^1$ ; la notion d'uniforme intégrabilité est centrale.
+              <details><summary>Remarque</summary>
+                Être borné en $L^1$ seul n'implique pas la convergence en $L^1$ sans hypothèses supplémentaires d'uniforme intégrabilité.
+              </details>
+            </div>
+          </div>
+
           <div class="body">
-          Une mesure $\pi$ sur $E$ est <em>invariante</em> si $\pi P=\pi$, i.e. pour tout $y$,
-          <div class="math">\[\pi(y)=\sum_{x\in E}\pi(x)P(x,y).\]</div>
-          Si $\pi$ est une probabilité et la chaîne irréductible et apériodique, alors $P^n(x,\cdot)\to\pi$ en loi lorsque $n\to\infty$ (théorème ergodique).
+            Une mesure $\pi$ sur $E$ est <em>invariante</em> si $\pi P=\pi$, i.e. pour tout $y$,
+            <div class="math">\[\pi(y)=\sum_{x\in E}\pi(x)P(x,y).\]</div>
+            Si $\pi$ est une probabilité et la chaîne irréductible et apériodique, alors $P^n(x,\cdot)\to\pi$ en loi lorsque $n\to\infty$ (théorème ergodique).
           </div>
-          </div>
-          
-          
-          
-          
+
           <div class="entry" id="periode">
-          <span class="title">Période</span>
-          <div class="body">
-          La période d'un état $x$ est $d(x)=\gcd\{n\ge1: P^{(n)}(x,x)>0\}$. Si $d(x)=1$ on dit que $x$ est <em>apériodique</em>. Dans une classe communiquante, la période est constante.
+            <span class="title">Période</span>
+            <div class="body">
+              La période d'un état $x$ est $d(x)=\gcd\{n\ge1: P^{(n)}(x,x)>0\}$. Si $d(x)=1$ on dit que $x$ est <em>apériodique</em>. Dans une classe communiquante, la période est constante.
+            </div>
           </div>
-          </div>
-          
-          
-          
-          
+
           <div class="entry" id="chaines-fonctions">
-          <span class="title">Martingales et fonctions harmoniques</span>
-          <div class="body">
-          Une fonction $h:E\to\mathbb{R}$ est <em>harmonique</em> si $Ph=h$. Pour une chaîne irréductible, $h(X_n)$ est une martingale locale si et seulement si $h$ est harmonique.
+            <span class="title">Martingales et fonctions harmoniques</span>
+            <div class="body">
+              Une fonction $h:E\to\mathbb{R}$ est <em>harmonique</em> si $Ph=h$. Pour une chaîne irréductible, $h(X_n)$ est une martingale locale si et seulement si $h$ est harmonique.
+            </div>
           </div>
-          </div>
-          
-          
-          
-          
+
           <div class="entry" id="couplage">
-          <span class="title">Couplage et temps d'atteinte</span>
-          <div class="body">
-          Méthodes de couplage : construire deux chaînes sur le même espace de probabilité pour étudier la rencontre/temps de couplage et obtenir des bornes sur la distance totale.
+            <span class="title">Couplage et temps d'atteinte</span>
+            <div class="body">
+              Méthodes de couplage : construire deux chaînes sur le même espace de probabilité pour étudier la rencontre/temps de couplage et obtenir des bornes sur la distance totale.
+            </div>
           </div>
-          </div>
-          
-          
-          
-          
+
           <div class="entry" id="poisson-def">
-          <span class="title">Définition — Processus de Poisson simple (PPS)</span>
-          <div class="body">
-          Un processus $(N_t)_{t\ge0}$ est un <strong>processus de Poisson simple</strong> d'intensité $\lambda>0$ s'il vérifie :
-          <ol>
-          <li>$N_0=0$ presque sûrement,</li>
-          <li>accroissements indépendants : pour $0\le s<t$, $N_t-N_s$ est indépendant de la filtration jusqu'à $s$,</li>
-          <li>accroissements stationnaires : $N_t-N_s$ a la loi de Poisson de paramètre $\lambda (t-s)$,</li>
-          <li>trajectoires à sauts de taille $1$ (simple) et càdlàg.</li>
-          </ol>
+            <span class="title">Définition — Processus de Poisson simple (PPS)</span>
+            <div class="body">
+              Un processus $(N_t)_{t\ge0}$ est un <strong>processus de Poisson simple</strong> d'intensité $\lambda>0$ s'il vérifie :
+              <ol>
+                <li>$N_0=0$ presque sûrement,</li>
+                <li>accroissements indépendants : pour $0\le s<t$, $N_t-N_s$ est indépendant de la filtration jusqu'à $s$,</li>
+                <li>accroissements stationnaires : $N_t-N_s$ a la loi de Poisson de paramètre $\lambda (t-s)$,</li>
+                <li>trajectoires à sauts de taille $1$ (simple) et càdlàg.</li>
+              </ol>
+            </div>
           </div>
-          </div>
-          
-          
-          <!-- Nouvelle section demandée : propriété de Markov faible / forte -->
+
           <div class="entry" id="markov-proprietes">
-          <span class="title">Propriété de Markov — faible (classique) et forte</span>
-          <div class="body">
-          <strong>Filtration naturelle.</strong> Pour un processus discret $(X_n)_{n\ge0}$ on note la filtration naturelle $\mathcal{F}_n=\sigma(X_0,\dots,X_n)$. Pour un processus en temps continu on considère la filtration adaptée $\mathcal{F}_t$.
-          
-          
-          <br><br>
-          <strong>Propriété de Markov (faible / classique).</strong> Le processus $(X_t)$ (discret ou continu) satisfait la propriété de Markov si, pour tout temps déterministe $s,t\ge0$ et pour toute fonction mesurable bornée $f$,
-          <div class="math">\[\mathbb{E}\big[f(X_{t+s})\mid\mathcal{F}_t\big]=\mathbb{E}\big[f(X_{t+s})\mid X_t\big].\]</div>
-          En notation de noyau, cela s'écrit (temps discret) :
-          <div class="math">\[\mathbb{P}(X_{t+s}=y\mid\mathcal{F}_t)=P^{(s)}(X_t,y),\]</div>
-          ou (temps continu, semigroupe $(P_s)_{s\ge0}$) :
-          <div class="math">\[\mathbb{E}\big[f(X_{t+s})\mid\mathcal{F}_t\big]=P_s f(X_t).\]</div>
-          Cette propriété ne fait intervenir que des temps déterministes $t$ (ou des durées fixes après un temps donné) — d'où l'appellation parfois « faible » dans certaines sources.
-          
-          
-          <br><br>
-          <strong>Propriété de Markov forte.</strong> La propriété de Markov est dite <em>forte</em> lorsque l'égalité précédente reste vraie lorsque le temps déterministe $t$ est remplacé par un <em>temps d'arrêt</em> $T$ relatif à la filtration naturelle (i.e. $\{T\le t\}\in\mathcal{F}_t$ pour tout $t$). Formellement : pour tout temps d'arrêt $T$ (presque sûrement fini), tout $s\ge0$ et toute fonction mesurable bornée $f$,
-          <div class="math">\[\mathbb{E}\big[f(X_{T+s})\mid\mathcal{F}_T\big]=\mathbb{E}_{X_T}\big[f(X_s)\big]=P_s f(X_T)\quad\text{p.s.}\]</div>
-          Autrement dit, conditionnellement à $\mathcal{F}_T$, l'avenir après $T$ dépend seulement de la valeur $X_T$ et a la même loi que le processus démarrant en $X_T$. Cette propriété permet de « reprendre » le processus à un temps aléatoire.
-          
-          
-          <br><br>
-          <strong>Remarques et conséquences.</strong>
-          <ul>
-          <li>La propriété de Markov forte implique la propriété de Markov classique (prendre $T\equiv t$ déterministe). L'inverse n'est pas automatique : il existe des processus où la propriété tient pour tous les temps déterministes mais échoue pour certains temps d'arrêt. Toutefois, pour les chaînes de Markov homogènes en temps discret (arrivant sur un ensemble dénombrable) et pour beaucoup de processus usuels (processus de Poisson, mouvements browniens, chaînes de Markov de saut), la propriété forte tient.</li>
-          <li>Un corollaire utile : si $T$ est un temps d'arrêt et $A$ un événement de $\sigma(X_T)$, alors la loi conditionnelle de $(X_{T+s})_{s\ge0}$ sachant $\{X_T\in A\}$ est celle d'un processus démarrant dans la loi $\mathcal{L}(X_T\mid X_T\in A)$ et indépendant du passé conditionnellement à $X_T$. Ceci est souvent utilisé pour la décomposition en cycles à la suite d'un temps de sortie/entrée (technique de réinitialisation).</li>
-          <li>La propriété forte permet l'étude des temps d'arrêt comme temps de coupure : par exemple, pour un temps d'arrêt $T$ égal au temps d'atteinte d'un ensemble (temps de hitting), on peut appliquer la propriété forte pour calculer probabilités d'atteinte conditionnelles et résoudre des équations harmoniques (fonctions harmoniques pour le noyau $P$).</li>
-          <li>Exemples : les chaînes de Markov homogènes en temps discret satisfont la propriété de Markov forte pour tout temps d'arrêt prenant des valeurs dans $\{0,1,2,\dots\}$ (preuve par approximation par temps d'arrêt simples). Le processus de Poisson simple et le mouvement brownien (et plus généralement les processus de Feller) possèdent la propriété de Markov forte en temps continu.</li>
-          </ul>
-          
-          
-          <br>
-          <strong>Formulation pratique (fonction test).</strong> Pour toute fonction mesurable bornée $f$ et tout temps d'arrêt $T$ (fini p.s.) on a la formule pratique :
-          <div class="math">\[\mathbb{E}\big[f(X_{T+s})\mathbf{1}_{\{T<\infty\}}\mid\mathcal{F}_T\big]=P_s f(X_T)\mathbf{1}_{\{T<\infty\}}\quad\text{p.s.}\]</div>
-          
-          
-          </div>
-          </div>
-          
-          
-          </section>
+            <span class="title">Propriété de Markov — faible (classique) et forte</span>
+            <div class="body">
+              <strong>Filtration naturelle.</strong> Pour un processus discret $(X_n)_{n\ge0}$ on note la filtration naturelle $\mathcal{F}_n=\sigma(X_0,\dots,X_n)$. Pour un processus en temps continu on considère la filtration adaptée $\mathcal{F}_t$.
+              
+              
+              <br><br>
+              <strong>Propriété de Markov (faible / classique).</strong> Le processus $(X_t)$ (discret ou continu) satisfait la propriété de Markov si, pour tout temps déterministe $s,t\ge0$ et pour toute fonction mesurable bornée $f$,
+              <div class="math">\[\mathbb{E}\big[f(X_{t+s})\mid\mathcal{F}_t\big]=\mathbb{E}\big[f(X_{t+s})\mid X_t\big].\]</div>
+              En notation de noyau, cela s'écrit (temps discret) :
+              <div class="math">\[\mathbb{P}(X_{t+s}=y\mid\mathcal{F}_t)=P^{(s)}(X_t,y),\]</div>
+              ou (temps continu, semigroupe $(P_s)_{s\ge0}$) :
+              <div class="math">\[\mathbb{E}\big[f(X_{t+s})\mid\mathcal{F}_t\big]=P_s f(X_t).\]</div>
+              Cette propriété ne fait intervenir que des temps déterministes $t$ (ou des durées fixes après un temps donné) — d'où l'appellation parfois « faible » dans certaines sources.
+              
+              
+              <br><br>
+              <strong>Propriété de Markov forte.</strong> La propriété de Markov est dite <em>forte</em> lorsque l'égalité précédente reste vraie lorsque le temps déterministe $t$ est remplacé par un <em>temps d'arrêt</em> $T$ relatif à la filtration naturelle (i.e. $\{T\le t\}\in\mathcal{F}_t$ pour tout $t$). Formellement : pour tout temps d'arrêt $T$ (presque sûrement fini), tout $s\ge0$ et toute fonction mesurable bornée $f$,
+              <div class="math">\[\mathbb{E}\big[f(X_{T+s})\mid\mathcal{F}_T\big]=\mathbb{E}_{X_T}\big[f(X_s)\big]=P_s f(X_T)\quad\text{p.s.}\]</div>
+              Autrement dit, conditionnellement à $\mathcal{F}_T$, l'avenir après $T$ dépend seulement de la valeur $X_T$ et a la même loi que le processus démarrant en $X_T$. Cette propriété permet de « reprendre » le processus à un temps aléatoire.
+              
+              
+              <br><br>
+              <strong>Remarques et conséquences.</strong>
+              <ul>
+                <li>La propriété de Markov forte implique la propriété de Markov classique (prendre $T\equiv t$ déterministe). L'inverse n'est pas automatique : il existe des processus où la propriété tient pour tous les temps déterministes mais échoue pour certains temps d'arrêt. Toutefois, pour les chaînes de Markov homogènes en temps discret (arrivant sur un ensemble dénombrable) et pour beaucoup de processus usuels (processus de Poisson, mouvements browniens, chaînes de Markov de saut), la propriété forte tient.</li>
+                <li>Un corollaire utile : si $T$ est un temps d'arrêt et $A$ un événement de $\sigma(X_T)$, alors la loi conditionnelle de $(X_{T+s})_{s\ge0}$ sachant $\{X_T\in A\}$ est celle d'un processus démarrant dans la loi $\mathcal{L}(X_T\mid X_T\in A)$ et indépendant du passé conditionnellement à $X_T$. Ceci est souvent utilisé pour la décomposition en cycles à la suite d'un temps de sortie/entrée (technique de réinitialisation).</li>
+                <li>La propriété forte permet l'étude des temps d'arrêt comme temps de coupure : par exemple, pour un temps d'arrêt $T$ égal au temps d'atteinte d'un ensemble (temps de hitting), on peut appliquer la propriété forte pour calculer probabilités d'atteinte conditionnelles et résoudre des équations harmoniques (fonctions harmoniques pour le noyau $P$).</li>
+                <li>Exemples : les chaînes de Markov homogènes en temps discret satisfont la propriété de Markov forte pour tout temps d'arrêt prenant des valeurs dans $\{0,1,2,\dots\}$ (preuve par approximation par temps d'arrêt simples). Le processus de Poisson simple et le mouvement brownien (et plus généralement les processus de Feller) possèdent la propriété de Markov forte en temps continu.</li>
+              </ul>
 
-      
+              <br>
+              <strong>Formulation pratique (fonction test).</strong> Pour toute fonction mesurable bornée $f$ et tout temps d'arrêt $T$ (fini p.s.) on a la formule pratique :
+              <div class="math">\[\mathbb{E}\big[f(X_{T+s})\mathbf{1}_{\{T<\infty\}}\mid\mathcal{F}_T\big]=P_s f(X_T)\mathbf{1}_{\{T<\infty\}}\quad\text{p.s.}\]</div>
 
-      </section>
+          </div>
+
+        </section>
+
+      </div>
+
+      <!-- Colonne de droite : TOC et utilitaires -->
+      <aside>
+        <div class="toc" aria-label="Table des matières">
+          <h3>Sur cette page</h3>
+          <nav>
+            <a href="#doob-max-decomp">Doob — Décomposition</a>
+            <a href="#l2">Martingales en $L^2$</a>
+            <a href="#surmartingales-pos">Surmartingales positives</a>
+            <a href="#submart-l1">Sous-martingales en $L^1$</a>
+            <a href="#closed-ui">Fermées ⇔ UI</a>
+            <a href="#clt-martingale">TLC pour martingales</a>
+            <a href="#doob-stopping">Théorème d'arrêt</a>
+            <a href="#doob-decomposition">Décomposition de Doob</a>
+            <a href="#snell">Enveloppe de Snell</a>
+            <a href="#markov-proprietes">Propriété de Markov</a>
+          </nav>
+        </div>
+
+        <div style="margin-top:14px;padding:14px;background:var(--paper);border-radius:10px;border:1px solid #eee;box-shadow:0 6px 18px rgba(16,24,40,0.02)">
+          <div class="muted" style="margin-bottom:8px">Rechercher sur la page</div>
+          <input class="search-input" id="search" placeholder="Mot-clé, ex. Doob" />
+        </div>
+      </aside>
+
     </main>
 
     <footer>
@@ -484,6 +540,40 @@
     if (window.MathJax && MathJax.typesetPromise) {
       MathJax.typesetPromise().catch(function(){});
     }
+
+    // Petit script de recherche basique pour la table des matières
+    (function(){
+      var input = document.getElementById('search');
+      if(!input) return;
+      input.addEventListener('input', function(){
+        var q = this.value.trim().toLowerCase();
+        document.querySelectorAll('.entry').forEach(function(el){
+          var text = el.textContent.toLowerCase();
+          el.style.display = q === '' || text.indexOf(q) !== -1 ? '' : 'none';
+        });
+      });
+    })();
+
+    // Assurer le rendu MathJax si nécessaire
+    (function(){
+      function tryTypeset() {
+        if (window.MathJax) {
+          if (typeof MathJax.typesetPromise === 'function') {
+            MathJax.typesetPromise().catch(function(err){console.warn(err);});
+          } else if (MathJax.startup && MathJax.startup.promise && typeof MathJax.startup.promise.then === 'function') {
+            MathJax.startup.promise.then(function(){ if (typeof MathJax.typesetPromise === 'function') MathJax.typesetPromise().catch(function(){}); }).catch(function(){});
+          } else if (window.MathJax && MathJax.Hub && typeof MathJax.Hub.Queue === 'function') {
+            MathJax.Hub.Queue(['Typeset', MathJax.Hub]);
+          }
+          return true;
+        }
+        return false;
+      }
+      if (!tryTypeset()) {
+        var start = Date.now();
+        var poll = setInterval(function(){ if (tryTypeset() || Date.now()-start>5000) clearInterval(poll); }, 120);
+      }
+    })();
   </script>
 </body>
 </html>
