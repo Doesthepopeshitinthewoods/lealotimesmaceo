@@ -1,13 +1,14 @@
 <!DOCTYPE html>
+
 <html lang="fr">
- <head>
-  <meta charset="utf-8"/>
-  <meta content="width=device-width,initial-scale=1" name="viewport"/>
-  <title>
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>
    Blog de l'intranquilité
   </title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&amp;family=Merriweather:wght@300;700&amp;display=swap" rel="stylesheet"/>
-  <style>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&amp;family=Merriweather:wght@300;700&amp;display=swap" rel="stylesheet"/>
+<style>
    :root {
       --bg: #ffffff;
       --surface: #f8fafc;
@@ -39,6 +40,8 @@
     a:hover { text-decoration: underline; }
 
     header {
+      position: relative;
+      z-index: 100;
       background: var(--accent);
       border-bottom: 1px solid var(--accent-dark);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -90,20 +93,20 @@
       cursor: pointer;
     }
 
+
     .menu-projets,
     .menu-culture,
     .menu-CG {
       position: relative;
-      padding-bottom: 8px;
-      margin-bottom: -8px;
+      display: inline-flex;
+      align-items: center;
     }
 
     .projets-dropdown,
     .culture-dropdown,
     .CG-dropdown {
-      display: none;
       position: absolute;
-      top: 100%;
+      top: calc(100% - 2px);
       left: 0;
       min-width: 210px;
       padding: 8px 6px 6px;
@@ -111,8 +114,29 @@
       color: var(--text);
       border: 1px solid var(--border);
       border-radius: 10px;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.14);
-      z-index: 20;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.16);
+      z-index: 1000;
+
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(3px);
+      transition:
+        opacity .12s ease,
+        transform .12s ease,
+        visibility 0s linear .12s;
+    }
+
+    /* Zone invisible qui relie réellement le bouton au menu. */
+    .projets-dropdown::before,
+    .culture-dropdown::before,
+    .CG-dropdown::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: -10px;
+      height: 12px;
     }
 
     .projets-dropdown a,
@@ -122,6 +146,7 @@
       padding: 9px 10px;
       border-radius: 6px;
       font-size: 14px;
+      white-space: nowrap;
     }
 
     .projets-dropdown a:hover,
@@ -131,19 +156,21 @@
       text-decoration: none;
     }
 
+    /* Fonctionne au survol, au clavier, et avec la classe ajoutée par JS. */
     .menu-projets:hover .projets-dropdown,
     .menu-projets:focus-within .projets-dropdown,
+    .menu-projets.is-open .projets-dropdown,
     .menu-culture:hover .culture-dropdown,
     .menu-culture:focus-within .culture-dropdown,
+    .menu-culture.is-open .culture-dropdown,
     .menu-CG:hover .CG-dropdown,
-    .menu-CG:focus-within .CG-dropdown {
-      display: block;
-    }
-
-    .projets-dropdown:hover,
-    .culture-dropdown:hover,
-    .CG-dropdown:hover {
-      display: block;
+    .menu-CG:focus-within .CG-dropdown,
+    .menu-CG.is-open .CG-dropdown {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0);
+      transition-delay: 0s;
     }
 
     .langs {
@@ -347,179 +374,178 @@
       .projets-dropdown,
       .culture-dropdown,
       .CG-dropdown {
-        position: fixed;
-        left: 18px;
-        right: 18px;
-        top: auto;
-        min-width: auto;
+        left: 0;
+        right: auto;
+        min-width: 210px;
+        max-width: calc(100vw - 36px);
       }
     }
   </style>
- </head>
- <body>
-  <header>
-   <div class="wrap top">
-    <h1>
+</head>
+<body>
+<header>
+<div class="wrap top">
+<h1>
      Blog de l'intranquilité
     </h1>
-    <div class="header-right">
-     <nav>
-      <a href="#" onclick="showHome()">
+<div class="header-right">
+<nav>
+<a href="#" onclick="showHome()">
        Accueil
       </a>
-      <a href="articles.html">
+<a href="articles.html">
        Articles
       </a>
-      <div class="menu-projets">
-       <a class="projets-btn" href="#">
+<div class="menu-projets">
+<a class="projets-btn" href="#">
         Projets ▾
        </a>
-       <div class="projets-dropdown">
-        <a href="projets-libres-pensees.html">
+<div class="projets-dropdown">
+<a href="projets-libres-pensees.html">
          Libres Pensées
         </a>
-        <a href="#">
+<a href="#">
          Bref
         </a>
-        <a href="droit-UE.html">
+<a href="droit-UE.html">
          Droit de l'UE
         </a>
-        <a href="Stage.html">
+<a href="Stage.html">
          Stage
         </a>
-        <a href="Boltzmann.html">
+<a href="Boltzmann.html">
          Modèle de Boltzmann
         </a>
-        <a href="Prostoch.html">
+<a href="Prostoch.html">
          Martingales
         </a>
-        <a href="PenséesBayesiennes.html">
+<a href="PenséesBayesiennes.html">
          Pensées Bayesiennes
         </a>
-        <a href="Distributions.html">
+<a href="Distributions.html">
          Distributions
         </a>
-        <a href="EDP.html">
+<a href="EDP.html">
          EDP
         </a>
-       </div>
-      </div>
-      <div class="menu-CG">
-       <a class="CG-btn" href="#">
+</div>
+</div>
+<div class="menu-CG">
+<a class="CG-btn" href="#">
         Culture générale ▾
        </a>
-       <div class="CG-dropdown">
-        <a href="CG-morse.html">
+<div class="CG-dropdown">
+<a href="CG-morse.html">
          Morse
         </a>
-       </div>
-      </div>
-      <div class="menu-culture">
-       <a class="culture-btn" href="#">
+</div>
+</div>
+<div class="menu-culture">
+<a class="culture-btn" href="#">
         Culture ▾
        </a>
-       <div class="culture-dropdown">
-        <a href="culture-films.html">
+<div class="culture-dropdown">
+<a href="culture-films.html">
          Films
         </a>
-        <a href="culture-livres.html">
+<a href="culture-livres.html">
          Livres
         </a>
-        <a href="culture-musiques.html">
+<a href="culture-musiques.html">
          Musiques
         </a>
-       </div>
-      </div>
-     </nav>
-     <div aria-label="Choix de la langue" class="langs" role="navigation">
-      <img alt="Français" class="flag" data-lang="fr" role="button" src="https://flagcdn.com/w20/fr.png" tabindex="0"/>
-      <img alt="English" class="flag" data-lang="en" role="button" src="https://flagcdn.com/w20/gb.png" tabindex="0"/>
-      <img alt="Português" class="flag" data-lang="pt" role="button" src="https://flagcdn.com/w20/pt.png" tabindex="0"/>
-     </div>
-    </div>
-   </div>
-  </header>
-  <main>
-   <!-- HOME CONTENT ONLY -->
-   <section id="home">
-    <div class="lang-block" data-lang="fr">
-     <h2>
+</div>
+</div>
+</nav>
+<div aria-label="Choix de la langue" class="langs" role="navigation">
+<img alt="Français" class="flag" data-lang="fr" role="button" src="https://flagcdn.com/w20/fr.png" tabindex="0"/>
+<img alt="English" class="flag" data-lang="en" role="button" src="https://flagcdn.com/w20/gb.png" tabindex="0"/>
+<img alt="Português" class="flag" data-lang="pt" role="button" src="https://flagcdn.com/w20/pt.png" tabindex="0"/>
+</div>
+</div>
+</div>
+</header>
+<main>
+<!-- HOME CONTENT ONLY -->
+<section id="home">
+<div class="lang-block" data-lang="fr">
+<h2>
       Présentation
      </h2>
-     <p>
+<p>
       Vous êtes prêts pour le voyage vers le pays des réflexions et discussions futures de Maceo Leal, vêtu d'une chemise hawaïenne déboutonnée, par une température de trente degrés et une humidité relative de soixante-dix pour cent.
      </p>
-     <h2>
+<h2>
       Contributions
      </h2>
-     <p class="muted">
+<p class="muted">
       Les lecteurs peuvent proposer des articles, des projets ou des suggestions culturelles via le formulaire ci-dessous.
      </p>
-    </div>
-    <div class="lang-block hidden" data-lang="en">
-     <h2>
+</div>
+<div class="lang-block hidden" data-lang="en">
+<h2>
       About
      </h2>
-     <p>
+<p>
       You are on board for a journey into the land of future reflections and discussions
 by Maceo Leal, wearing an unbuttoned Hawaiian shirt, in temperatures of
 thirty degrees and relative humidity of seventy per cent.
      </p>
-     <h2>
+<h2>
       Contributions
      </h2>
-     <p class="muted">
+<p class="muted">
       Readers are welcome to submit articles, projects, or cultural suggestions using the form below.
      </p>
-    </div>
-    <div class="lang-block hidden" data-lang="pt">
-     <h2>
+</div>
+<div class="lang-block hidden" data-lang="pt">
+<h2>
       Apresentação
      </h2>
-     <p>
+<p>
       Você está a bordo para a viagem ao país das reflexões e discussões futuras
 de Maceo Leal, com uma camisa havaiana desabotoada, sob uma temperatura de
 trinta graus e uma humidade relativa de setenta por cento.
      </p>
-     <h2>
+<h2>
       Contribuições
      </h2>
-     <p class="muted">
+<p class="muted">
       Os leitores podem enviar artigos, projetos ou sugestões culturais através do formulário abaixo.
      </p>
-    </div>
-    <form aria-label="Formulaire de contact" class="proposal-form" id="contact-form">
-     <input name="section" type="hidden" value="contacts"/>
-     <label class="hidden" for="cf-name">
+</div>
+<form aria-label="Formulaire de contact" class="proposal-form" id="contact-form">
+<input name="section" type="hidden" value="contacts"/>
+<label class="hidden" for="cf-name">
       Nom/Pseudo
      </label>
-     <input aria-required="true" id="cf-name" name="pseudo" placeholder="Nom ou pseudo" required=""/>
-     <label class="hidden" for="cf-email">
+<input aria-required="true" id="cf-name" name="pseudo" placeholder="Nom ou pseudo" required=""/>
+<label class="hidden" for="cf-email">
       Email
      </label>
-     <input aria-required="true" id="cf-email" name="email" placeholder="Email" required="" type="email"/>
-     <label class="hidden" for="cf-message">
+<input aria-required="true" id="cf-email" name="email" placeholder="Email" required="" type="email"/>
+<label class="hidden" for="cf-message">
       Message
      </label>
-     <textarea aria-required="true" id="cf-message" name="message" placeholder="Votre message" required="" rows="5"></textarea>
-     <div class="controls">
-      <!-- Bouton principal : envoi / sauvegarde -->
-      <button aria-live="polite" class="btn btn-primary" id="cf-submit" type="submit">
+<textarea aria-required="true" id="cf-message" name="message" placeholder="Votre message" required="" rows="5"></textarea>
+<div class="controls">
+<!-- Bouton principal : envoi / sauvegarde -->
+<button aria-live="polite" class="btn btn-primary" id="cf-submit" type="submit">
        Envoyer
       </button>
-     </div>
-     <p aria-live="polite" class="meta" id="cf-result" role="status">
-     </p>
-    </form>
-   </section>
-  </main>
-  <footer>
+</div>
+<p aria-live="polite" class="meta" id="cf-result" role="status">
+</p>
+</form>
+</section>
+</main>
+<footer>
    ©
    <span id="year">
-   </span>
+</span>
    — Blog personnel
   </footer>
-  <script>
+<script>
    // Met à jour l'année dans le footer
   document.getElementById('year').textContent = new Date().getFullYear();
 
@@ -563,7 +589,7 @@ trinta graus e uma humidade relativa de setenta por cento.
     });
   })();
   </script>
-  <script>
+<script>
    /* === Configuration ===
    Remplacez ces valeurs par les vôtres :
    - WORKER_URL : endpoint Cloudflare Worker (ex: "https://mon-worker.example.workers.dev")
@@ -748,5 +774,64 @@ function buildMailtoLink(email, subject, body) {
   });
 })();
   </script>
- </body>
+<script>
+  // Menus déroulants robustes :
+  // - restent ouverts pendant le passage du bouton au sous-menu
+  // - s'ouvrent aussi au clic
+  // - se ferment avec un léger délai pour éviter les fermetures accidentelles
+  document.addEventListener("DOMContentLoaded", () => {
+    const menus = document.querySelectorAll(".menu-projets, .menu-culture, .menu-CG");
+    let closeTimer = null;
+
+    function closeAll(except = null) {
+      menus.forEach(menu => {
+        if (menu !== except) menu.classList.remove("is-open");
+      });
+    }
+
+    menus.forEach(menu => {
+      const button = menu.querySelector(":scope > a");
+
+      const openMenu = () => {
+        clearTimeout(closeTimer);
+        closeAll(menu);
+        menu.classList.add("is-open");
+      };
+
+      const scheduleClose = () => {
+        clearTimeout(closeTimer);
+        closeTimer = setTimeout(() => {
+          menu.classList.remove("is-open");
+        }, 300);
+      };
+
+      menu.addEventListener("mouseenter", openMenu);
+      menu.addEventListener("mouseleave", scheduleClose);
+
+      menu.addEventListener("focusin", openMenu);
+      menu.addEventListener("focusout", () => {
+        setTimeout(() => {
+          if (!menu.contains(document.activeElement)) {
+            menu.classList.remove("is-open");
+          }
+        }, 0);
+      });
+
+      if (button) {
+        button.addEventListener("click", (event) => {
+          event.preventDefault();
+          const willOpen = !menu.classList.contains("is-open");
+          closeAll();
+          menu.classList.toggle("is-open", willOpen);
+        });
+      }
+    });
+
+    document.addEventListener("click", (event) => {
+      if (![...menus].some(menu => menu.contains(event.target))) {
+        closeAll();
+      }
+    });
+  });
+</script></body>
 </html>
