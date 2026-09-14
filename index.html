@@ -94,6 +94,8 @@
     .menu-culture,
     .menu-CG {
       position: relative;
+      padding-bottom: 8px;
+      margin-bottom: -8px;
     }
 
     .projets-dropdown,
@@ -101,10 +103,10 @@
     .CG-dropdown {
       display: none;
       position: absolute;
-      top: calc(100% + 8px);
+      top: 100%;
       left: 0;
       min-width: 210px;
-      padding: 6px;
+      padding: 8px 6px 6px;
       background: #fff;
       color: var(--text);
       border: 1px solid var(--border);
@@ -130,8 +132,17 @@
     }
 
     .menu-projets:hover .projets-dropdown,
+    .menu-projets:focus-within .projets-dropdown,
     .menu-culture:hover .culture-dropdown,
-    .menu-CG:hover .CG-dropdown {
+    .menu-culture:focus-within .culture-dropdown,
+    .menu-CG:hover .CG-dropdown,
+    .menu-CG:focus-within .CG-dropdown {
+      display: block;
+    }
+
+    .projets-dropdown:hover,
+    .culture-dropdown:hover,
+    .CG-dropdown:hover {
       display: block;
     }
 
