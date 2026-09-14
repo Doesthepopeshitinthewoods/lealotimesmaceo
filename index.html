@@ -1,225 +1,515 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Blog de l'intranquilité</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
-
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width,initial-scale=1" name="viewport"/>
+  <title>
+   Blog de l'intranquilité
+  </title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&amp;family=Merriweather:wght@300;700&amp;display=swap" rel="stylesheet"/>
   <style>
-    :root{
-      --bg:#ffffff;
-      --text:#111827;
-      --muted:#6b7280;
-      --accent:#1f2937;
-      --maxw:760px;
-      --accent-cta:#8b0000;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;line-height:1.7}
-    a{color:var(--accent);text-decoration:none}
-    a:hover{text-decoration:underline}
-
-    header{
-      background:var(--accent-cta); /* bandeau rouge sobre */
-      border-bottom:1px solid #7a0000;
-    }
-    .wrap{max-width:var(--maxw);margin:0 auto;padding:24px 20px}
-    .top{display:flex;align-items:center;justify-content:space-between;gap:16px}
-    h1{
-      margin:0;
-      font-family:Merriweather,serif;
-      font-size:22px;
-      font-weight:700;
-      color:#ffffff;
+   :root {
+      --bg: #ffffff;
+      --surface: #f8fafc;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --accent: #8b0000;
+      --accent-dark: #6f0000;
+      --maxw: 920px;
     }
 
-    nav{
-      display:flex;
-      gap:14px;
-      align-items:center;
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      line-height: 1.7;
     }
-    nav>a,
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    a:hover { text-decoration: underline; }
+
+    header {
+      background: var(--accent);
+      border-bottom: 1px solid var(--accent-dark);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .wrap {
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: 18px 24px;
+    }
+
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+    }
+
+    h1 {
+      margin: 0;
+      color: #fff;
+      font-family: Merriweather, serif;
+      font-size: 24px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      min-width: 0;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    nav > a,
+    nav .projets-btn,
     nav .culture-btn,
-    nav .projets-btn{
-      font-size:14px;
-      color:#f3f4f6;
+    nav .CG-btn {
+      color: #f9fafb;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
     }
-    nav>a:hover,
-    nav .culture-btn:hover,
-    nav .projets-btn:hover{
-      text-decoration:underline;
+
+    .menu-projets,
+    .menu-culture,
+    .menu-CG {
+      position: relative;
     }
-    nav>a{font-size:14px;color:var(--muted)}
 
-    /* Dropdown menus */
-    .menu-culture,.menu-projets{position:relative}
-    .culture-dropdown,.projets-dropdown{
-      display:none;
-      position:absolute;
-      top:100%;
-      left:0;
-      background:#ffffff;
-      border:1px solid #e5e7eb;
-      border-radius:6px;
-      min-width:160px;
-      z-index:10;
+    .projets-dropdown,
+    .culture-dropdown,
+    .CG-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      min-width: 210px;
+      padding: 6px;
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.14);
+      z-index: 20;
     }
-    .culture-dropdown a,.projets-dropdown a{display:block;padding:8px 12px;font-size:14px;color:var(--text)}
-    .culture-dropdown a:hover,.projets-dropdown a:hover{background:#f9fafb}
-    .menu-culture:hover .culture-dropdown,.menu-projets:hover .projets-dropdown{display:block}
 
-    /* Language flags — affichage pour mobile & desktop */
-    .langs { display:flex; gap:6px; align-items:center; }
-    .langs img.flag { width:22px; height:14px; cursor:pointer; display:inline-block; border-radius:2px; border:1px solid transparent; }
-    .langs img.flag:focus { outline:2px solid #fff; outline-offset:2px; }
-    .langs img.flag.active { outline:2px solid rgba(255,255,255,0.85); box-shadow:0 0 0 2px rgba(0,0,0,0.06) inset; border-color:rgba(0,0,0,0.06); }
+    .projets-dropdown a,
+    .culture-dropdown a,
+    .CG-dropdown a {
+      display: block;
+      padding: 9px 10px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
 
-    main{max-width:var(--maxw);margin:40px auto;padding:0 20px}
-    section{margin-bottom:36px}
-    h2{font-family:Merriweather,serif;font-size:20px;margin-bottom:12px}
-    p{margin:0 0 14px 0}
-    .muted{color:var(--muted)}
+    .projets-dropdown a:hover,
+    .culture-dropdown a:hover,
+    .CG-dropdown a:hover {
+      background: var(--surface);
+      text-decoration: none;
+    }
 
-    form{margin-top:20px}
-    label{display:block;font-size:14px;margin-bottom:4px}
-    input,textarea{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:4px;margin-bottom:12px;font-family:inherit}
-    .controls{display:flex;gap:8px;align-items:center}
+    .menu-projets:hover .projets-dropdown,
+    .menu-culture:hover .culture-dropdown,
+    .menu-CG:hover .CG-dropdown {
+      display: block;
+    }
+
+    .langs {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-shrink: 0;
+    }
+
+    .langs img.flag {
+      width: 23px;
+      height: 15px;
+      display: block;
+      object-fit: cover;
+      cursor: pointer;
+      border-radius: 2px;
+      border: 1px solid rgba(255,255,255,.18);
+      opacity: .82;
+      transition: transform .15s ease, opacity .15s ease;
+    }
+
+    .langs img.flag:hover,
+    .langs img.flag.active {
+      opacity: 1;
+      transform: translateY(-1px);
+    }
+
+    .langs img.flag:focus {
+      outline: 2px solid #fff;
+      outline-offset: 2px;
+    }
+
+    main {
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: 54px 24px 64px;
+    }
+
+    section {
+      margin-bottom: 38px;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-family: Merriweather, serif;
+      font-size: 22px;
+      line-height: 1.35;
+    }
+
+    p {
+      margin: 0 0 18px;
+      max-width: 760px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .proposal-form {
+      margin-top: 28px;
+      max-width: 680px;
+      padding: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      margin-bottom: 14px;
+      padding: 12px 14px;
+      background: #fff;
+      color: var(--text);
+      border: 1px solid #cfd5df;
+      border-radius: 8px;
+      font: inherit;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.10);
+    }
+
+    textarea {
+      min-height: 140px;
+      resize: vertical;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
     .btn {
-      display:inline-flex;align-items:center;gap:8px;
-      padding:10px 16px;border-radius:6px;border:none;
-      cursor:pointer;font-weight:600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 18px;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
     }
-    .btn-primary{background:var(--accent-cta);color:#fff}
-    .btn-secondary{background:#f3f4f6;color:#111;border:1px solid #e5e7eb}
-    .btn[disabled]{opacity:0.6;cursor:default}
 
-    .meta{margin-top:8px;color:var(--muted);font-size:14px}
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
 
-    footer{border-top:1px solid #e5e7eb;text-align:center;font-size:14px;color:var(--muted);padding:24px 20px}
-    .hidden{display:none}
-    @media (max-width:520px){
-      .controls{flex-direction:column;align-items:stretch}
+    .btn-primary:hover {
+      background: var(--accent-dark);
+    }
+
+    .btn[disabled] {
+      opacity: .6;
+      cursor: default;
+    }
+
+    .meta {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    footer {
+      padding: 28px 20px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 820px) {
+      .top {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .header-right {
+        width: 100%;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+
+      nav {
+        gap: 10px 14px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .wrap,
+      main {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
+      h1 {
+        font-size: 21px;
+        white-space: normal;
+      }
+
+      .header-right {
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      nav {
+        width: 100%;
+      }
+
+      .proposal-form {
+        padding: 18px;
+      }
+
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .projets-dropdown,
+      .culture-dropdown,
+      .CG-dropdown {
+        position: fixed;
+        left: 18px;
+        right: 18px;
+        top: auto;
+        min-width: auto;
+      }
     }
   </style>
-</head>
-<body>
-
-<header>
-  <div class="wrap top">
-    <h1>Blog de l'intranquilité</h1>
-
-    <!-- conteneur droit : nav + langues -->
-    <div style="display:flex;align-items:center;gap:16px">
-
-      <nav>
-        <a href="#" onclick="showHome()">Accueil</a>
-        <a href="articles.html">Articles</a>
-
-        <!-- PROJETS -->
-        <div class="menu-projets">
-          <a href="#" class="projets-btn">Projets ▾</a>
-          <div class="projets-dropdown">
-            <a href="projets-libres-pensees.html">Libres Pensées</a>
-            <a href="#">Bref</a>
-            <a href="droit-UE.html">Droit de l'UE</a>
-            <a href="Stage.html">Stage</a>
-            <a href="Boltzmann.html"> Modèle de Boltzmann</a>
-            <a href="Prostoch.html"> Martingales</a>
-            <a href="PenséesBayesiennes.html"> Pensées Bayesiennes</a>
-            <a href="Distributions.html"> Distributions</a>
-            <a href="EDP.html"> EDP</a>
-          </div>
-        </div>
-        <div class="menu-CG">
-          <a href="#" class="CG-btn">Culture Générale </a>
-          <div class="CG-dropdown">
-            <a href="CG-morse.html"> Morse </a>
-          </div>
-        </div>
-      </nav>
-              
-    
-
-        <!-- CULTURE -->
-        <div class="menu-culture">
-          <a href="#" class="culture-btn">Culture ▾</a>
-          <div class="culture-dropdown">
-            <a href="culture-films.html">Films</a>
-            <a href="culture-livres.html">Livres</a>
-            <a href="culture-musiques.html">Musiques</a>
-          </div>
-        </div>
-      </nav>
-
-      <div class="langs" role="navigation" aria-label="Choix de la langue">
-        <img src="https://flagcdn.com/w20/fr.png" data-lang="fr" alt="Français" class="flag" role="button" tabindex="0">
-        <img src="https://flagcdn.com/w20/gb.png" data-lang="en" alt="English" class="flag" role="button" tabindex="0">
-        <img src="https://flagcdn.com/w20/pt.png" data-lang="pt" alt="Português" class="flag" role="button" tabindex="0">
+ </head>
+ <body>
+  <header>
+   <div class="wrap top">
+    <h1>
+     Blog de l'intranquilité
+    </h1>
+    <div class="header-right">
+     <nav>
+      <a href="#" onclick="showHome()">
+       Accueil
+      </a>
+      <a href="articles.html">
+       Articles
+      </a>
+      <div class="menu-projets">
+       <a class="projets-btn" href="#">
+        Projets ▾
+       </a>
+       <div class="projets-dropdown">
+        <a href="projets-libres-pensees.html">
+         Libres Pensées
+        </a>
+        <a href="#">
+         Bref
+        </a>
+        <a href="droit-UE.html">
+         Droit de l'UE
+        </a>
+        <a href="Stage.html">
+         Stage
+        </a>
+        <a href="Boltzmann.html">
+         Modèle de Boltzmann
+        </a>
+        <a href="Prostoch.html">
+         Martingales
+        </a>
+        <a href="PenséesBayesiennes.html">
+         Pensées Bayesiennes
+        </a>
+        <a href="Distributions.html">
+         Distributions
+        </a>
+        <a href="EDP.html">
+         EDP
+        </a>
+       </div>
       </div>
+      <div class="menu-CG">
+       <a class="CG-btn" href="#">
+        Culture générale ▾
+       </a>
+       <div class="CG-dropdown">
+        <a href="CG-morse.html">
+         Morse
+        </a>
+       </div>
+      </div>
+      <div class="menu-culture">
+       <a class="culture-btn" href="#">
+        Culture ▾
+       </a>
+       <div class="culture-dropdown">
+        <a href="culture-films.html">
+         Films
+        </a>
+        <a href="culture-livres.html">
+         Livres
+        </a>
+        <a href="culture-musiques.html">
+         Musiques
+        </a>
+       </div>
+      </div>
+     </nav>
+     <div aria-label="Choix de la langue" class="langs" role="navigation">
+      <img alt="Français" class="flag" data-lang="fr" role="button" src="https://flagcdn.com/w20/fr.png" tabindex="0"/>
+      <img alt="English" class="flag" data-lang="en" role="button" src="https://flagcdn.com/w20/gb.png" tabindex="0"/>
+      <img alt="Português" class="flag" data-lang="pt" role="button" src="https://flagcdn.com/w20/pt.png" tabindex="0"/>
+     </div>
     </div>
-  </div>
-</header>
-
-<main>
-  <!-- HOME CONTENT ONLY -->
-  <section id="home">
-
-    <div data-lang="fr" class="lang-block">
-      <h2>Présentation</h2>
-      <p>Vous êtes prêts pour le voyage vers le pays des réflexions et discussions futures de Maceo Leal, vêtu d'une chemise hawaïenne déboutonnée, par une température de trente degrés et une humidité relative de soixante-dix pour cent.</p>
-      <h2>Contributions</h2>
-      <p class="muted">Les lecteurs peuvent proposer des articles, des projets ou des suggestions culturelles via le formulaire ci-dessous.</p>
+   </div>
+  </header>
+  <main>
+   <!-- HOME CONTENT ONLY -->
+   <section id="home">
+    <div class="lang-block" data-lang="fr">
+     <h2>
+      Présentation
+     </h2>
+     <p>
+      Vous êtes prêts pour le voyage vers le pays des réflexions et discussions futures de Maceo Leal, vêtu d'une chemise hawaïenne déboutonnée, par une température de trente degrés et une humidité relative de soixante-dix pour cent.
+     </p>
+     <h2>
+      Contributions
+     </h2>
+     <p class="muted">
+      Les lecteurs peuvent proposer des articles, des projets ou des suggestions culturelles via le formulaire ci-dessous.
+     </p>
     </div>
-
-    <div data-lang="en" class="lang-block hidden">
-      <h2>About</h2>
-      <p>You are on board for a journey into the land of future reflections and discussions
+    <div class="lang-block hidden" data-lang="en">
+     <h2>
+      About
+     </h2>
+     <p>
+      You are on board for a journey into the land of future reflections and discussions
 by Maceo Leal, wearing an unbuttoned Hawaiian shirt, in temperatures of
-thirty degrees and relative humidity of seventy per cent.</p>
-      
-      <h2>Contributions</h2>
-      <p class="muted">Readers are welcome to submit articles, projects, or cultural suggestions using the form below.</p>
+thirty degrees and relative humidity of seventy per cent.
+     </p>
+     <h2>
+      Contributions
+     </h2>
+     <p class="muted">
+      Readers are welcome to submit articles, projects, or cultural suggestions using the form below.
+     </p>
     </div>
-
-    <div data-lang="pt" class="lang-block hidden">
-      <h2>Apresentação</h2>
-      <p>Você está a bordo para a viagem ao país das reflexões e discussões futuras
+    <div class="lang-block hidden" data-lang="pt">
+     <h2>
+      Apresentação
+     </h2>
+     <p>
+      Você está a bordo para a viagem ao país das reflexões e discussões futuras
 de Maceo Leal, com uma camisa havaiana desabotoada, sob uma temperatura de
-trinta graus e uma humidade relativa de setenta por cento.</p>
-      <h2>Contribuições</h2>
-      <p class="muted">Os leitores podem enviar artigos, projetos ou sugestões culturais através do formulário abaixo.</p>
+trinta graus e uma humidade relativa de setenta por cento.
+     </p>
+     <h2>
+      Contribuições
+     </h2>
+     <p class="muted">
+      Os leitores podem enviar artigos, projetos ou sugestões culturais através do formulário abaixo.
+     </p>
     </div>
-
-    <form id="contact-form" class="proposal-form" aria-label="Formulaire de contact">
-      <input type="hidden" name="section" value="contacts">
-      <label for="cf-name" class="hidden">Nom/Pseudo</label>
-      <input name="pseudo" id="cf-name" placeholder="Nom" required aria-required="true">
-
-
-      <label for="cf-message" class="hidden">Message</label>
-      <textarea name="message" id="cf-message" rows="5" placeholder="Message" required aria-required="true"></textarea>
-
-      <div class="controls">
-        <!-- Bouton principal : envoi / sauvegarde -->
-        <button type="submit" id="cf-submit" class="btn btn-primary" aria-live="polite">
-          Envoyer
-        </button>
-      </div>
-
-      <p id="cf-result" class="meta" role="status" aria-live="polite"></p>
+    <form aria-label="Formulaire de contact" class="proposal-form" id="contact-form">
+     <input name="section" type="hidden" value="contacts"/>
+     <label class="hidden" for="cf-name">
+      Nom/Pseudo
+     </label>
+     <input aria-required="true" id="cf-name" name="pseudo" placeholder="Nom ou pseudo" required=""/>
+     <label class="hidden" for="cf-email">
+      Email
+     </label>
+     <input aria-required="true" id="cf-email" name="email" placeholder="Email" required="" type="email"/>
+     <label class="hidden" for="cf-message">
+      Message
+     </label>
+     <textarea aria-required="true" id="cf-message" name="message" placeholder="Votre message" required="" rows="5"></textarea>
+     <div class="controls">
+      <!-- Bouton principal : envoi / sauvegarde -->
+      <button aria-live="polite" class="btn btn-primary" id="cf-submit" type="submit">
+       Envoyer
+      </button>
+     </div>
+     <p aria-live="polite" class="meta" id="cf-result" role="status">
+     </p>
     </form>
-
-  </section>
-</main>
-
-<footer>
-  © <span id="year"></span> — Blog personnel
-</footer>
-
-<script>
-  // Met à jour l'année dans le footer
+   </section>
+  </main>
+  <footer>
+   ©
+   <span id="year">
+   </span>
+   — Blog personnel
+  </footer>
+  <script>
+   // Met à jour l'année dans le footer
   document.getElementById('year').textContent = new Date().getFullYear();
 
   // Fonction pour scroller en haut
@@ -261,10 +551,9 @@ trinta graus e uma humidade relativa de setenta por cento.</p>
       setLang(initial);
     });
   })();
-</script>
-
-<script>
-/* === Configuration ===
+  </script>
+  <script>
+   /* === Configuration ===
    Remplacez ces valeurs par les vôtres :
    - WORKER_URL : endpoint Cloudflare Worker (ex: "https://mon-worker.example.workers.dev")
    - OWNER_EMAIL : adresse email du propriétaire pour le bouton "Me contacter"
@@ -447,9 +736,6 @@ function buildMailtoLink(email, subject, body) {
     submitBtn.textContent = prevSubmitText;
   });
 })();
-</script>
-
-
-</body>
+  </script>
+ </body>
 </html>
-
