@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Code Morse — Blog de l'intranquilité</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&amp;family=Merriweather:wght@300;700&amp;display=swap" rel="stylesheet"/>
+<style>
+    :root{
+      --maxw:1180px;
+      --toc-w:250px;
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --text:#172033;
+      --muted:#667085;
+      --line:#e5e9f0;
+      --accent:#8b0000;
+      --accent-dark:#6f0000;
+      --accent-soft:#f8eeee;
+      --shadow:0 10px 30px rgba(15,23,42,.07);
+      --radius:14px;
+    }
+
+    *{box-sizing:border-box}
+
+    html{
+      scroll-behavior:smooth;
+      scroll-padding-top:94px;
+    }
+
+    body{
+      margin:0;
+      color:var(--text);
+      background:var(--bg);
+      font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+      line-height:1.7;
+      -webkit-font-smoothing:antialiased;
+    }
+
+    a{color:var(--accent);text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    header{
+      position:sticky;
+      top:0;
+      z-index:100;
+      background:linear-gradient(90deg,var(--accent),var(--accent-dark));
+      color:#fff;
+      box-shadow:0 4px 18px rgba(0,0,0,.10);
+    }
+
+    .wrap{
+      max-width:var(--maxw);
+      margin:0 auto;
+      padding:16px 24px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:24px;
+    }
+
+    .site-title{
+      margin:0;
+      font-family:Merriweather,Georgia,serif;
+      font-size:21px;
+      white-space:nowrap;
+    }
+
+    nav{
+      display:flex;
+      gap:14px;
+      align-items:center;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    nav a{
+      color:rgba(255,255,255,.94);
+      font-size:13px;
+      font-weight:500;
+    }
+
+    main{
+      max-width:var(--maxw);
+      margin:0 auto;
+      padding:40px 24px 72px;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns:var(--toc-w) minmax(0,1fr);
+      gap:34px;
+      align-items:start;
+    }
+
+    .toc{
+      position:sticky;
+      top:92px;
+    }
+
+    .toc-box{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:0 6px 22px rgba(15,23,42,.05);
+      padding:14px;
+      max-height:calc(100vh - 116px);
+      overflow:auto;
+    }
+
+    .toc-box strong{
+      display:block;
+      margin-bottom:8px;
+      font-family:Merriweather,Georgia,serif;
+    }
+
+    .toc-box a{
+      display:block;
+      padding:8px 10px;
+      border-radius:8px;
+      color:#344054;
+      font-size:13px;
+      line-height:1.35;
+    }
+
+    .toc-box a:hover,
+    .toc-box a.active{
+      background:var(--accent-soft);
+      color:var(--accent);
+      text-decoration:none;
+    }
+
+    .content{min-width:0}
+
+    .hero,
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:28px;
+      margin-bottom:22px;
+    }
+
+    .hero{
+      padding:34px 32px;
+    }
+
+    h1,h2,h3,h4{
+      font-family:Merriweather,Georgia,serif;
+      line-height:1.35;
+      color:#101828;
+    }
+
+    h1{
+      margin:0 0 10px;
+      font-size:2rem;
+    }
+
+    h2{
+      margin:0 0 14px;
+      font-size:1.42rem;
+    }
+
+    h3{
+      margin:1.4em 0 .55em;
+      font-size:1.12rem;
+    }
+
+    p{margin:0 0 1em}
+
+    .lead{
+      color:#475467;
+      font-size:1.05rem;
+      max-width:780px;
+    }
+
+    .meta,
+    .muted{
+      color:var(--muted);
+      font-size:.9rem;
+    }
+
+    .callout{
+      margin:16px 0;
+      padding:14px 16px;
+      border-left:4px solid var(--accent);
+      border-radius:9px;
+      background:var(--accent-soft);
+    }
+
+    .rule-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:12px;
+      margin-top:18px;
+    }
+
+    .rule{
+      padding:14px;
+      border:1px solid var(--line);
+      border-radius:10px;
+      background:#fafbfc;
+      text-align:center;
+    }
+
+    .rule strong{
+      display:block;
+      font-size:1.05rem;
+      margin-bottom:5px;
+    }
+
+    .morse{
+      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
+      letter-spacing:.08em;
+      font-weight:600;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin:14px 0 4px;
+      background:#fff;
+    }
+
+    th,td{
+      padding:10px 12px;
+      border-bottom:1px solid var(--line);
+      text-align:left;
+      vertical-align:top;
+    }
+
+    th{
+      color:#344054;
+      font-size:.86rem;
+      background:#fafbfc;
+    }
+
+    td:first-child{
+      font-weight:700;
+      width:70px;
+    }
+
+    .alphabet-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .morse-card{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 14px;
+      border:1px solid var(--line);
+      border-radius:10px;
+      background:#fafbfc;
+    }
+
+    .morse-card .letter{
+      font-family:Merriweather,Georgia,serif;
+      font-weight:700;
+      font-size:1.1rem;
+    }
+
+    .practice{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:16px;
+      margin-top:16px;
+    }
+
+    .exercise{
+      padding:16px;
+      border:1px solid var(--line);
+      border-radius:10px;
+      background:#fafbfc;
+    }
+
+    .exercise h3{
+      margin:0 0 8px;
+      font-size:1rem;
+    }
+
+    .trainer{
+      display:grid;
+      gap:14px;
+    }
+
+    .trainer-box{
+      padding:22px;
+      text-align:center;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#fafbfc;
+    }
+
+    #trainer-display{
+      min-height:68px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:2rem;
+      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+      letter-spacing:.12em;
+      font-weight:700;
+    }
+
+    .controls{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      justify-content:center;
+    }
+
+    button{
+      border:0;
+      border-radius:9px;
+      padding:10px 14px;
+      cursor:pointer;
+      font:inherit;
+      font-weight:600;
+    }
+
+    .btn-primary{
+      background:var(--accent);
+      color:#fff;
+    }
+
+    .btn-primary:hover{background:var(--accent-dark)}
+
+    .btn-secondary{
+      background:#fff;
+      color:#344054;
+      border:1px solid #d0d5dd;
+    }
+
+    .answer{
+      min-height:30px;
+      text-align:center;
+      font-weight:600;
+    }
+
+    input[type="text"]{
+      width:100%;
+      max-width:340px;
+      padding:11px 12px;
+      border:1px solid #d5dae3;
+      border-radius:9px;
+      font:inherit;
+    }
+
+    input[type="text"]:focus{
+      outline:none;
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px rgba(139,0,0,.08);
+    }
+
+    .speed-row{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    footer{
+      border-top:1px solid var(--line);
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+      padding:26px 20px;
+      background:#fff;
+    }
+
+    ul,ol{padding-left:1.4rem}
+    li{margin:.35em 0}
+
+    code{
+      background:#f2f4f7;
+      padding:2px 5px;
+      border-radius:5px;
+    }
+
+    @media(max-width:980px){
+      .wrap{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:10px;
+      }
+
+      nav{justify-content:flex-start}
+      .site-title{white-space:normal}
+      .layout{grid-template-columns:1fr}
+      .toc{position:static}
+      .toc-box{max-height:none}
+      .toc-box nav{
+        display:grid;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+      .rule-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .alphabet-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+    }
+
+    @media(max-width:620px){
+      main,.wrap{
+        padding-left:16px;
+        padding-right:16px;
+      }
+
+      main{padding-top:24px}
+
+      .hero,.card{
+        padding:20px 18px;
+      }
+
+      h1{font-size:1.55rem}
+      h2{font-size:1.25rem}
+
+      .alphabet-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+
+      .practice{grid-template-columns:1fr}
+      .toc-box nav{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+<header>
+<div class="wrap">
+<h1 class="site-title">Blog de l'intranquilité</h1>
+<nav aria-label="Navigation principale">
+<a href="index.html">Accueil</a>
+<a href="articles.html">Articles</a>
+<a href="droit-UE.html">Droit de l'UE</a>
+<a href="CG-morse.html" style="font-weight:700;text-decoration:underline">Morse</a>
+</nav>
+</div>
+</header>
+<main>
+<div class="layout">
+<aside class="toc">
+<div class="toc-box">
+<strong>Sommaire</strong>
+<nav id="toc-nav">
+<a href="#intro">Introduction</a>
+<a href="#alphabet">Alphabet</a>
+<a href="#chiffres">Chiffres</a>
+<a href="#ponctuation">Ponctuation</a>
+<a href="#prosigns">SOS et prosigns</a>
+<a href="#phrases">Prosigns &amp; codes CW</a><a href="#entraineur">Entraîneur interactif</a>
+<a href="#radio">Usage radio</a>
+</nav>
+</div>
+</aside>
+<section class="content">
+<section class="hero" id="intro">
+<h1>Cours complet de code Morse</h1>
+
+
+</section>
+<section class="card" id="alphabet">
+<h2>1. Alphabet international</h2>
+<div class="alphabet-grid">
+<div class="morse-card"><span class="letter">A</span><span class="morse">·−</span></div>
+<div class="morse-card"><span class="letter">B</span><span class="morse">−···</span></div>
+<div class="morse-card"><span class="letter">C</span><span class="morse">−·−·</span></div>
+<div class="morse-card"><span class="letter">D</span><span class="morse">−··</span></div>
+<div class="morse-card"><span class="letter">E</span><span class="morse">·</span></div>
+<div class="morse-card"><span class="letter">F</span><span class="morse">··−·</span></div>
+<div class="morse-card"><span class="letter">G</span><span class="morse">−−·</span></div>
+<div class="morse-card"><span class="letter">H</span><span class="morse">····</span></div>
+<div class="morse-card"><span class="letter">I</span><span class="morse">··</span></div>
+<div class="morse-card"><span class="letter">J</span><span class="morse">·−−−</span></div>
+<div class="morse-card"><span class="letter">K</span><span class="morse">−·−</span></div>
+<div class="morse-card"><span class="letter">L</span><span class="morse">·−··</span></div>
+<div class="morse-card"><span class="letter">M</span><span class="morse">−−</span></div>
+<div class="morse-card"><span class="letter">N</span><span class="morse">−·</span></div>
+<div class="morse-card"><span class="letter">O</span><span class="morse">−−−</span></div>
+<div class="morse-card"><span class="letter">P</span><span class="morse">·−−·</span></div>
+<div class="morse-card"><span class="letter">Q</span><span class="morse">−−·−</span></div>
+<div class="morse-card"><span class="letter">R</span><span class="morse">·−·</span></div>
+<div class="morse-card"><span class="letter">S</span><span class="morse">···</span></div>
+<div class="morse-card"><span class="letter">T</span><span class="morse">−</span></div>
+<div class="morse-card"><span class="letter">U</span><span class="morse">··−</span></div>
+<div class="morse-card"><span class="letter">V</span><span class="morse">···−</span></div>
+<div class="morse-card"><span class="letter">W</span><span class="morse">·−−</span></div>
+<div class="morse-card"><span class="letter">X</span><span class="morse">−··−</span></div>
+<div class="morse-card"><span class="letter">Y</span><span class="morse">−·−−</span></div>
+<div class="morse-card"><span class="letter">Z</span><span class="morse">−−··</span></div>
+</div>
+</section>
+<section class="card" id="chiffres">
+<h2>2. Chiffres</h2>
+<table>
+<thead>
+<tr><th>Chiffre</th><th>Morse</th><th>Logique</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td class="morse">·−−−−</td><td>1 point puis 4 traits</td></tr>
+<tr><td>2</td><td class="morse">··−−−</td><td>2 points puis 3 traits</td></tr>
+<tr><td>3</td><td class="morse">···−−</td><td>3 points puis 2 traits</td></tr>
+<tr><td>4</td><td class="morse">····−</td><td>4 points puis 1 trait</td></tr>
+<tr><td>5</td><td class="morse">·····</td><td>5 points</td></tr>
+<tr><td>6</td><td class="morse">−····</td><td>1 trait puis 4 points</td></tr>
+<tr><td>7</td><td class="morse">−−···</td><td>2 traits puis 3 points</td></tr>
+<tr><td>8</td><td class="morse">−−−··</td><td>3 traits puis 2 points</td></tr>
+<tr><td>9</td><td class="morse">−−−−·</td><td>4 traits puis 1 point</td></tr>
+<tr><td>0</td><td class="morse">−−−−−</td><td>5 traits</td></tr>
+</tbody>
+</table>
+</section>
+<section class="card" id="ponctuation">
+<h2>3. Ponctuation courante</h2>
+<table>
+<thead>
+<tr><th>Signe</th><th>Morse</th><th>Usage</th></tr>
+</thead>
+<tbody>
+<tr><td>.</td><td class="morse">·−·−·−</td><td>Point</td></tr>
+<tr><td>,</td><td class="morse">−−··−−</td><td>Virgule</td></tr>
+<tr><td>?</td><td class="morse">··−−··</td><td>Point d'interrogation</td></tr>
+<tr><td>/</td><td class="morse">−··−·</td><td>Barre oblique</td></tr>
+<tr><td>=</td><td class="morse">−···−</td><td>Égal</td></tr>
+<tr><td>+</td><td class="morse">·−·−·</td><td>Plus</td></tr>
+<tr><td>-</td><td class="morse">−····−</td><td>Tiret</td></tr>
+<tr><td>@</td><td class="morse">·−−·−·</td><td>Arobase</td></tr>
+</tbody>
+</table>
+</section>
+<section class="card" id="prosigns">
+<h2>4. SOS et prosigns</h2>
+<h3>SOS</h3>
+<p>
+          Le signal de détresse <strong>SOS</strong> est transmis comme une suite continue :
+          <span class="morse">···−−−···</span>.
+        </p>
+<p>
+          Il ne faut pas chercher une signification littérale particulière aux lettres S-O-S :
+          le signal a surtout été retenu pour sa structure simple et très reconnaissable.
+        </p>
+<h3>Quelques prosigns utiles</h3>
+<table>
+<thead>
+<tr><th>Prosign</th><th>Morse</th><th>Sens général</th></tr>
+</thead>
+<tbody>
+<tr><td>AR</td><td class="morse">·−·−·</td><td>Fin de message</td></tr>
+<tr><td>SK</td><td class="morse">···−·−</td><td>Fin de contact / fin de transmission</td></tr>
+<tr><td>BT</td><td class="morse">−···−</td><td>Séparation entre parties d'un message</td></tr>
+<tr><td>KN</td><td class="morse">−·−−·</td><td>Invitation à une station précise à transmettre</td></tr>
+</tbody>
+</table>
+<p class="muted">
+          Dans un prosign, les lettres sont généralement envoyées sans la pause normale entre deux lettres.
+        </p>
+</section>
+<section class="card" id="phrases">
+<h2>5. Prosigns et codes utiles en CW</h2>
+<p>
+    Voici les signaux réellement utiles à connaître pour suivre un échange Morse radio.
+    Les prosigns sont envoyés comme un seul caractère, sans espace entre les lettres qui composent leur nom.
+  </p>
+<h3>Prosigns / signaux de procédure essentiels</h3>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>Morse</th>
+<th>Signification pratique</th>
+<th>Quand l'utiliser</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>AR</strong></td>
+<td class="morse">·−·−·</td>
+<td>Fin de message / transmission</td>
+<td>Quand le message est terminé</td>
+</tr>
+<tr>
+<td><strong>AS</strong></td>
+<td class="morse">·−···</td>
+<td>Attendez</td>
+<td>Pour demander à l'autre station de patienter</td>
+</tr>
+<tr>
+<td><strong>SK</strong></td>
+<td class="morse">···−·−</td>
+<td>Fin du contact</td>
+<td>À la fin définitive du QSO</td>
+</tr>
+<tr>
+<td><strong>HH</strong></td>
+<td class="morse">········</td>
+<td>Erreur</td>
+<td>Après une erreur d'émission, puis on reprend correctement</td>
+</tr>
+<tr>
+<td><strong>SOS</strong></td>
+<td class="morse">···−−−···</td>
+<td>Détresse</td>
+<td>Signal international historique de détresse</td>
+</tr>
+</tbody>
+</table>
+<h3>Signaux de procédure très courants en radioamateur</h3>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Signification</th>
+<th>Exemple</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>K</strong></td>
+<td>À vous ; n'importe quelle station peut répondre</td>
+<td><code>CQ CQ DE F4ABC K</code></td>
+</tr>
+<tr>
+<td><strong>KN</strong></td>
+<td>À vous, mais uniquement la station appelée</td>
+<td><code>F1XYZ DE F4ABC KN</code></td>
+</tr>
+<tr>
+<td><strong>BK</strong></td>
+<td>Break / retour immédiat à l'autre station</td>
+<td><code>OK BK</code></td>
+</tr>
+<tr>
+<td><strong>R</strong></td>
+<td>Reçu correctement</td>
+<td><code>R R TNX</code></td>
+</tr>
+<tr>
+<td><strong>CL</strong></td>
+<td>Je ferme la station / je quitte l'antenne</td>
+<td><code>F4ABC SK CL</code></td>
+</tr>
+</tbody>
+</table>
+<p class="muted">
+    Dans l'usage radioamateur, K, KN, BK, R et CL sont souvent regroupés avec les
+    prosigns ou « signaux de procédure », même si les classifications strictes peuvent varier.
+  </p>
+<h3>Q-codes à connaître en priorité</h3>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Sans ?</th>
+<th>Avec ?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>QRL</strong></td>
+<td>Je suis occupé / fréquence occupée</td>
+<td><code>QRL?</code> — La fréquence est-elle occupée ?</td>
+</tr>
+<tr>
+<td><strong>QRM</strong></td>
+<td>Je subis des interférences</td>
+<td><code>QRM?</code> — Subissez-vous des interférences ?</td>
+</tr>
+<tr>
+<td><strong>QRN</strong></td>
+<td>Je subis des parasites atmosphériques</td>
+<td><code>QRN?</code> — Avez-vous des parasites ?</td>
+</tr>
+<tr>
+<td><strong>QRS</strong></td>
+<td>Transmettez plus lentement</td>
+<td><code>QRS?</code> — Dois-je transmettre plus lentement ?</td>
+</tr>
+<tr>
+<td><strong>QRQ</strong></td>
+<td>Transmettez plus vite</td>
+<td><code>QRQ?</code> — Dois-je transmettre plus vite ?</td>
+</tr>
+<tr>
+<td><strong>QRZ</strong></td>
+<td>Vous êtes appelé par…</td>
+<td><code>QRZ?</code> — Qui m'appelle ?</td>
+</tr>
+<tr>
+<td><strong>QSL</strong></td>
+<td>Je confirme la réception</td>
+<td><code>QSL?</code> — Confirmez-vous la réception ?</td>
+</tr>
+<tr>
+<td><strong>QSY</strong></td>
+<td>Changez de fréquence</td>
+<td><code>QSY?</code> — Dois-je changer de fréquence ?</td>
+</tr>
+<tr>
+<td><strong>QTH</strong></td>
+<td>Ma position est…</td>
+<td><code>QTH?</code> — Quelle est votre position ?</td>
+</tr>
+</tbody>
+</table>
+<h3>Abréviations CW indispensables</h3>
+<table>
+<thead>
+<tr>
+<th>Abréviation</th>
+<th>Signification</th>
+</tr>
+</thead>
+<tbody>
+<tr><td><strong>CQ</strong></td><td>Appel général à toutes les stations</td></tr>
+<tr><td><strong>DE</strong></td><td>De / ici — précède généralement l'indicatif de l'émetteur</td></tr>
+<tr><td><strong>PSE</strong></td><td>Please — s'il vous plaît</td></tr>
+<tr><td><strong>AGN</strong></td><td>Again — répétez</td></tr>
+<tr><td><strong>TNX / TKS</strong></td><td>Thanks — merci</td></tr>
+<tr><td><strong>TU</strong></td><td>Thank you — merci</td></tr>
+<tr><td><strong>UR</strong></td><td>Your / you're — votre / vous êtes</td></tr>
+<tr><td><strong>RST</strong></td><td>Rapport Readability / Strength / Tone</td></tr>
+<tr><td><strong>WX</strong></td><td>Weather — météo</td></tr>
+<tr><td><strong>ES</strong></td><td>And — et</td></tr>
+<tr><td><strong>FER</strong></td><td>For — pour</td></tr>
+<tr><td><strong>CUL</strong></td><td>See you later — à plus tard</td></tr>
+<tr><td><strong>73</strong></td><td>Meilleures salutations</td></tr>
+</tbody>
+</table>
+<h3>Un QSO minimal à savoir lire</h3>
+<div class="callout">
+<p><code>CQ CQ CQ DE F4ABC F4ABC K</code></p>
+<p><code>F4ABC DE F1XYZ KN</code></p>
+<p><code>F1XYZ DE F4ABC GM UR RST 599 QTH PARIS KN</code></p>
+<p><code>F4ABC DE F1XYZ R RST 579 QTH LYON KN</code></p>
+<p><code>F1XYZ DE F4ABC TNX FER QSO 73 SK</code></p>
+</div>
+<h3>À connaître côté maritime</h3>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>SOS</strong> — <span class="morse">···−−−···</span></td>
+<td>Signal Morse international de détresse</td>
+</tr>
+<tr>
+<td><strong>MAYDAY</strong></td>
+<td>Détresse en radiotéléphonie VHF</td>
+</tr>
+<tr>
+<td><strong>PAN PAN</strong></td>
+<td>Urgence en radiotéléphonie</td>
+</tr>
+<tr>
+<td><strong>SÉCURITÉ</strong></td>
+<td>Message de sécurité en radiotéléphonie</td>
+</tr>
+</tbody>
+</table>
+<p class="muted">
+    Pour le permis bateau / CRR, MAYDAY, PAN PAN et SÉCURITÉ sont surtout à connaître
+    comme procédures vocales VHF ; l'intérêt Morse principal ici est SOS.
+  </p>
+</section><section class="card" id="entraineur">
+<h2>6. Entraîneur interactif</h2>
+<div class="trainer">
+<div class="trainer-box">
+<div id="trainer-display">Clique sur « Nouveau »</div>
+<div class="controls">
+<button class="btn-primary" onclick="newQuestion()" type="button">Nouveau</button>
+<button class="btn-secondary" onclick="playCurrent()" type="button">Écouter</button>
+<button class="btn-secondary" onclick="revealAnswer()" type="button">Afficher la réponse</button>
+</div>
+</div>
+<div style="text-align:center">
+<input autocomplete="off" id="trainer-input" maxlength="1" placeholder="Ta réponse" type="text"/>
+</div>
+<div class="controls">
+<button class="btn-primary" onclick="checkAnswer()" type="button">Vérifier</button>
+</div>
+<div class="answer" id="trainer-answer"></div>
+<div class="speed-row">
+<label for="speed">Vitesse du son :</label>
+<input id="speed" max="160" min="60" type="range" value="95"/>
+</div>
+</div>
+</section>
+<section class="card" id="radio">
+<h2>7. Morse et radiocommunications</h2>
+<p>
+          En radiotélégraphie, le Morse est souvent désigné par <strong>CW</strong> (<em>continuous wave</em>).
+          Le signal radio est activé et interrompu selon le rythme du Morse.
+        </p>
+<p>
+          La vitesse est souvent exprimée en <strong>mots par minute</strong> (WPM).
+          Pour l'apprentissage, la régularité du rythme est plus importante que la vitesse brute.
+        </p>
+<div class="callout">
+          Si tu apprends le Morse pour la radio ou le permis radio, entraîne-toi surtout à
+          <strong>reconnaître à l'oreille</strong> plutôt qu'à traduire visuellement une suite de symboles.
+        </div>
+</section>
+</section>
+</div>
+</main>
+<footer>
+  © <span id="year"></span> — Blog personnel
+</footer>
+<script>
+  const MORSE = {
+    A: ".-", B: "-...", C: "-.-.", D: "-..", E: ".", F: "..-.",
+    G: "--.", H: "....", I: "..", J: ".---", K: "-.-", L: ".-..",
+    M: "--", N: "-.", O: "---", P: ".--.", Q: "--.-", R: ".-.",
+    S: "...", T: "-", U: "..-", V: "...-", W: ".--", X: "-..-",
+    Y: "-.--", Z: "--..",
+    0: "-----", 1: ".----", 2: "..---", 3: "...--", 4: "....-",
+    5: ".....", 6: "-....", 7: "--...", 8: "---..", 9: "----."
+  };
+
+  let currentChar = null;
+  let audioContext = null;
+
+  document.getElementById("year").textContent = new Date().getFullYear();
+
+  function displayMorse(code){
+    return code.replaceAll(".", "·").replaceAll("-", "−");
+  }
+
+  function newQuestion(){
+    const chars = Object.keys(MORSE);
+    currentChar = chars[Math.floor(Math.random() * chars.length)];
+    document.getElementById("trainer-display").textContent = displayMorse(MORSE[currentChar]);
+    document.getElementById("trainer-answer").textContent = "";
+    document.getElementById("trainer-input").value = "";
+    document.getElementById("trainer-input").focus();
+  }
+
+  function revealAnswer(){
+    if(!currentChar) return;
+    document.getElementById("trainer-answer").textContent = "Réponse : " + currentChar;
+  }
+
+  function checkAnswer(){
+    if(!currentChar) return;
+
+    const value = document.getElementById("trainer-input").value.trim().toUpperCase();
+    const answer = document.getElementById("trainer-answer");
+
+    if(value === currentChar){
+      answer.textContent = "✓ Correct : " + currentChar;
+      answer.style.color = "green";
+    } else {
+      answer.textContent = "✗ Réponse attendue : " + currentChar;
+      answer.style.color = "#8b0000";
+    }
+  }
+
+  document.getElementById("trainer-input").addEventListener("keydown", e => {
+    if(e.key === "Enter") checkAnswer();
+  });
+
+  async function playCurrent(){
+    if(!currentChar) return;
+
+    if(!audioContext){
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    if(audioContext.state === "suspended"){
+      await audioContext.resume();
+    }
+
+    const code = MORSE[currentChar];
+    const speed = Number(document.getElementById("speed").value);
+    const unit = 140 / speed;
+    const frequency = 650;
+
+    let t = audioContext.currentTime + 0.05;
+
+    function beep(duration){
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+
+      osc.frequency.value = frequency;
+      osc.type = "sine";
+
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.18, t + 0.005);
+      gain.gain.setValueAtTime(0.18, t + duration - 0.005);
+      gain.gain.linearRampToValueAtTime(0, t + duration);
+
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+
+      osc.start(t);
+      osc.stop(t + duration + 0.01);
+      t += duration;
+    }
+
+    for(let i = 0; i < code.length; i++){
+      beep(code[i] === "." ? unit : 3 * unit);
+      if(i < code.length - 1) t += unit;
+    }
+  }
+
+  // Sommaire actif pendant le défilement
+  document.addEventListener("DOMContentLoaded", () => {
+    const links = [...document.querySelectorAll("#toc-nav a")];
+    const sections = links
+      .map(link => document.querySelector(link.getAttribute("href")))
+      .filter(Boolean);
+
+    if(!("IntersectionObserver" in window)) return;
+
+    const observer = new IntersectionObserver(entries => {
+      const visible = entries
+        .filter(e => e.isIntersecting)
+        .sort((a,b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+      if(!visible) return;
+
+      links.forEach(link => {
+        link.classList.toggle(
+          "active",
+          link.getAttribute("href") === "#" + visible.target.id
+        );
+      });
+    }, {
+      rootMargin:"-20% 0px -65% 0px",
+      threshold:[0,.25,.5,1]
+    });
+
+    sections.forEach(section => observer.observe(section));
+  });
+</script>
+</body>
+</html>
