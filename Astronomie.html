@@ -3,10 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Astronomie — Blog de l'intranquilité</title>
-
+  <title>Astronomie — vraies formes des constellations</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
-
   <style>
     :root {
       --bg:#ffffff;
@@ -16,10 +14,8 @@
       --accent-cta:#8b0000;
       --line:#e5e7eb;
       --soft:#f9fafb;
-      --soft-2:#f3f4f6;
-      --maxw:1080px;
+      --maxw:1120px;
     }
-
     * { box-sizing:border-box; }
     body {
       margin:0;
@@ -28,9 +24,6 @@
       font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
       line-height:1.65;
     }
-    a { color:var(--accent); }
-    a:hover { text-decoration-thickness:2px; }
-
     header {
       background:var(--accent-cta);
       border-bottom:1px solid #7a0000;
@@ -59,8 +52,7 @@
       align-items:center;
       flex-wrap:wrap;
     }
-    nav > a,
-    .menu-btn {
+    nav>a, .menu-btn {
       color:#f3f4f6;
       text-decoration:none;
       font-size:14px;
@@ -91,18 +83,16 @@
       white-space:nowrap;
       font-size:14px;
     }
-    .dropdown a:hover,
-    .dropdown a:focus {
+    .dropdown a:hover, .dropdown a:focus {
       background:var(--soft);
     }
-    .menu:hover .dropdown,
-    .menu:focus-within .dropdown {
+    .menu:hover .dropdown, .menu:focus-within .dropdown {
       display:block;
     }
 
     main {
       max-width:var(--maxw);
-      margin:38px auto 60px;
+      margin:36px auto 60px;
       padding:0 20px;
     }
     h2, h3 {
@@ -110,21 +100,14 @@
       line-height:1.3;
     }
     .lead {
-      font-size:1.04rem;
-      max-width:900px;
-    }
-    .note {
-      margin:20px 0 28px;
-      padding:14px 16px;
-      background:var(--soft);
-      border-left:4px solid var(--accent-cta);
-      border-radius:4px;
+      font-size:1.05rem;
+      max-width:920px;
     }
     .summary {
       display:flex;
       gap:12px;
       flex-wrap:wrap;
-      margin:18px 0 28px;
+      margin:18px 0 24px;
     }
     .pill {
       border:1px solid var(--line);
@@ -133,51 +116,21 @@
       background:#fff;
       font-size:14px;
     }
-    .sky-map {
-      margin:34px 0 44px;
-    }
-    .map-frame {
-      border:1px solid var(--line);
-      border-radius:10px;
-      padding:14px;
+    .note {
+      margin:20px 0 30px;
+      padding:14px 16px;
       background:var(--soft);
+      border-left:4px solid var(--accent-cta);
+      border-radius:4px;
     }
-    .map-frame img {
-      display:block;
-      width:100%;
-      height:auto;
-      border-radius:6px;
+    .note code {
       background:#fff;
-    }
-    .map-actions {
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:12px;
-    }
-    .button {
-      display:inline-block;
-      padding:9px 13px;
-      border-radius:6px;
-      background:var(--accent-cta);
-      color:#fff;
-      text-decoration:none;
-      font-weight:600;
-      font-size:14px;
-    }
-    .button.secondary {
-      background:#fff;
-      color:var(--text);
+      padding:2px 6px;
+      border-radius:4px;
       border:1px solid var(--line);
     }
-    figcaption {
-      margin-top:10px;
-      color:var(--muted);
-      font-size:13px;
-    }
-
     .hemisphere {
-      margin-top:42px;
+      margin-top:40px;
     }
     .hemisphere-heading {
       display:flex;
@@ -193,62 +146,82 @@
       font-size:14px;
       white-space:nowrap;
     }
-    .constellation-grid {
+    .grid {
       display:grid;
-      grid-template-columns:repeat(2, minmax(0, 1fr));
-      gap:16px;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:18px;
     }
-    .constellation-card {
+    .card {
       border:1px solid var(--line);
-      border-radius:10px;
-      padding:14px;
+      border-radius:12px;
+      overflow:hidden;
       background:#fff;
-      display:grid;
-      grid-template-columns:140px 1fr;
-      gap:14px;
-      align-items:start;
     }
-    .constellation-content h3 {
+    .card-media {
+      background:#0b1228;
+      padding:14px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      min-height:220px;
+    }
+    .card-media img {
+      max-width:100%;
+      height:auto;
+      display:block;
+      border-radius:6px;
+      background:#fff;
+    }
+    .card-body {
+      padding:15px 16px 16px;
+    }
+    .card h3 {
       margin:0 0 8px;
-      font-size:16px;
+      font-size:17px;
     }
-    .constellation-content h3 span {
+    .latin {
       color:var(--muted);
-      font-size:13px;
-      font-weight:400;
       font-style:italic;
-    }
-    .constellation-content p {
-      margin:0;
+      font-weight:400;
       font-size:14px;
     }
-
-    .constellation-figure {
-      width:100%;
+    .abbr {
+      display:inline-block;
+      margin-left:8px;
+      padding:2px 8px;
+      border-radius:999px;
+      background:var(--soft);
+      border:1px solid var(--line);
+      font-size:12px;
+      color:var(--muted);
+      font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
     }
-    .constellation-figure svg {
-      display:block;
-      width:100%;
-      height:auto;
+    .card p {
+      margin:0 0 12px;
+      font-size:14px;
     }
-    .constellation-figure rect {
-      fill:#0f172a;
-      stroke:#1e293b;
-      stroke-width:1;
+    .actions {
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
     }
-    .constellation-figure polyline {
-      fill:none;
-      stroke:#cbd5e1;
-      stroke-width:1.6;
-      stroke-linecap:round;
-      stroke-linejoin:round;
+    .btn {
+      display:inline-block;
+      padding:8px 12px;
+      border-radius:6px;
+      text-decoration:none;
+      font-weight:600;
+      font-size:14px;
     }
-    .constellation-figure circle {
-      fill:#ffffff;
-      stroke:#facc15;
-      stroke-width:.7;
+    .btn-primary {
+      background:var(--accent-cta);
+      color:#fff;
     }
-
+    .btn-secondary {
+      background:#fff;
+      color:var(--text);
+      border:1px solid var(--line);
+    }
     footer {
       border-top:1px solid var(--line);
       text-align:center;
@@ -256,14 +229,10 @@
       padding:24px 20px;
       font-size:14px;
     }
-
-    @media (max-width:860px) {
-      .constellation-grid { grid-template-columns:1fr; }
+    @media (max-width:900px) {
+      .grid { grid-template-columns:1fr; }
     }
     @media (max-width:640px) {
-      .constellation-card {
-        grid-template-columns:1fr;
-      }
       .hemisphere-heading {
         align-items:start;
         flex-direction:column;
@@ -272,16 +241,13 @@
     }
   </style>
 </head>
-
 <body>
 <header>
   <div class="wrap top">
     <h1>Blog de l'intranquilité</h1>
-
     <nav aria-label="Navigation principale">
       <a href="index.html">Accueil</a>
       <a href="articles.html">Articles</a>
-
       <div class="menu">
         <a class="menu-btn" href="#">Projets ▾</a>
         <div class="dropdown">
@@ -295,15 +261,13 @@
           <a href="EDP.html">EDP</a>
         </div>
       </div>
-
       <div class="menu">
         <a class="menu-btn" href="#">Culture Générale ▾</a>
         <div class="dropdown">
           <a href="CG-morse.html">Morse</a>
-          <a href="astronomie.html" aria-current="page">Astronomie</a>
+          <a href="astronomie-vraies-formes.html" aria-current="page">Astronomie</a>
         </div>
       </div>
-
       <div class="menu">
         <a class="menu-btn" href="#">Culture ▾</a>
         <div class="dropdown">
@@ -317,1684 +281,44 @@
 </header>
 
 <main>
-  <section class="intro">
-    <h2>Astronomie — les constellations</h2>
+  <section>
+    <h2>Astronomie — les vraies formes des constellations</h2>
     <p class="lead">
-      L’Union astronomique internationale reconnaît 88 constellations. Sur cette page, elles sont séparées entre
-      l’hémisphère céleste nord et l’hémisphère céleste sud, et chaque fiche comporte un petit schéma de la forme
-      traditionnelle de la constellation.
+      Cette version utilise les <strong>cartes officielles publiées par l’UAI</strong> (International Astronomical Union),
+      produites en collaboration avec <em>Sky &amp; Telescope</em>. Ce sont donc de vraies cartes de constellation,
+      et non plus des schémas approximatifs.
     </p>
 
     <div class="summary">
       <span class="pill">88 constellations officielles</span>
-      <span class="pill">36 à centre boréal</span>
-      <span class="pill">52 à centre austral</span>
-      <span class="pill">Schémas simplifiés</span>
+      <span class="pill">36 au nord</span>
+      <span class="pill">52 au sud</span>
+      <span class="pill">Cartes UAI / Sky &amp; Telescope</span>
     </div>
 
     <div class="note">
-      <strong>Important :</strong> les dessins ci-dessous sont des <strong>schémas simplifiés</strong> destinés à montrer
-      la forme générale de la constellation. Ils ne reproduisent ni l’échelle exacte ni la luminosité réelle des étoiles.
-      Les constellations proches de l’équateur céleste peuvent être visibles depuis une grande partie des deux hémisphères terrestres.
+      <strong>Important :</strong> l’UAI précise que les cartes ci-dessous ont été produites avec
+      <em>Sky &amp; Telescope</em> et qu’elles sont publiées sous licence
+      <strong>Creative Commons Attribution 4.0 International</strong>.
+      Si tu veux les héberger sur ton site, tu peux télécharger les GIF/PDF et remplacer la base d’images
+      dans le code par un dossier local, par exemple <code>images/constellations/</code>.
     </div>
   </section>
 
-  <section class="sky-map">
-    <h2>Carte générale des constellations</h2>
-    <div class="map-frame">
-      <img
-        src="https://upload.wikimedia.org/wikipedia/commons/7/71/Constellations%2C_equirectangular_plot.svg"
-        alt="Carte des 88 constellations avec leurs limites sur l'ensemble de la sphère céleste"
-        loading="lazy"
-      >
-
-      <div class="map-actions">
-        <a class="button"
-           href="https://commons.wikimedia.org/wiki/File:Constellations,_equirectangular_plot.svg"
-           target="_blank" rel="noopener">
-          Télécharger la carte en SVG
-        </a>
-
-        <a class="button secondary"
-           href="https://iauarchive.eso.org/public/themes/constellations/"
-           target="_blank" rel="noopener">
-          Cartes officielles de l’UAI
-        </a>
-      </div>
-
-      <figcaption>
-        Carte de Cmglee, Wikimedia Commons, licence CC BY-SA 3.0. Si tu l’héberges sur ton site, conserve une attribution
-        et un lien vers la licence.
-      </figcaption>
-    </div>
-  </section>
-
-  <section class="hemisphere" id="nord">
+  <section class="hemisphere">
     <div class="hemisphere-heading">
       <h2>Hémisphère céleste nord</h2>
-      <span class="count">36 constellations</span>
+      <div class="count">36 constellations</div>
     </div>
-    <div class="constellation-grid">
-      <article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Andromède">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="10,35 28,28 45,40 60,25 78,35" />
-<polyline points="45,40 38,58" />
-    <circle cx="10" cy="35" r="2.8" />
-<circle cx="28" cy="28" r="2.8" />
-<circle cx="45" cy="40" r="2.8" />
-<circle cx="60" cy="25" r="2.8" />
-<circle cx="78" cy="35" r="2.8" />
-<circle cx="38" cy="58" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Andromède <span>Andromeda</span></h3>
-    <p>La princesse d’Éthiopie. Elle contient la galaxie d’Andromède (M31), la grande galaxie la plus proche de la Voie lactée.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Bélier">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="15,50 30,42 47,36 63,40" />
-    <circle cx="15" cy="50" r="2.8" />
-<circle cx="30" cy="42" r="2.8" />
-<circle cx="47" cy="36" r="2.8" />
-<circle cx="63" cy="40" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Bélier <span>Aries</span></h3>
-    <p>Constellation du zodiaque. Son étoile la plus connue est Hamal.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Cassiopée">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="10,58 25,25 40,55 55,22 72,54" />
-    <circle cx="10" cy="58" r="2.8" />
-<circle cx="25" cy="25" r="2.8" />
-<circle cx="40" cy="55" r="2.8" />
-<circle cx="55" cy="22" r="2.8" />
-<circle cx="72" cy="54" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Cassiopée <span>Cassiopeia</span></h3>
-    <p>Facile à reconnaître grâce à sa forme en W ou en M. Elle est circumpolaire depuis une grande partie de l’Europe.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Orion">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="18,20 30,34 42,46 54,44 66,30 78,16" />
-<polyline points="36,36 45,39 54,42" />
-<polyline points="54,44 60,60" />
-<polyline points="30,34 22,52" />
-    <circle cx="18" cy="20" r="2.8" />
-<circle cx="30" cy="34" r="2.8" />
-<circle cx="42" cy="46" r="2.8" />
-<circle cx="54" cy="44" r="2.8" />
-<circle cx="66" cy="30" r="2.8" />
-<circle cx="78" cy="16" r="2.8" />
-<circle cx="36" cy="36" r="2.8" />
-<circle cx="45" cy="39" r="2.8" />
-<circle cx="54" cy="42" r="2.8" />
-<circle cx="60" cy="60" r="2.8" />
-<circle cx="22" cy="52" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Orion <span>Orion</span></h3>
-    <p>Le chasseur. Très reconnaissable grâce à sa ceinture de trois étoiles ; on y trouve Bételgeuse, Rigel et la nébuleuse d’Orion (M42).</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Persée">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="12,45 28,35 44,25 58,37 72,26" />
-<polyline points="44,25 48,52" />
-    <circle cx="12" cy="45" r="2.8" />
-<circle cx="28" cy="35" r="2.8" />
-<circle cx="44" cy="25" r="2.8" />
-<circle cx="58" cy="37" r="2.8" />
-<circle cx="72" cy="26" r="2.8" />
-<circle cx="48" cy="52" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Persée <span>Perseus</span></h3>
-    <p>Le héros mythologique. Elle contient Algol, célèbre étoile variable, et le Double Amas de Persée.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Poissons">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="14,30 28,24 40,32" />
-<polyline points="40,32 50,42 60,32 72,24" />
-<polyline points="50,42 48,58 38,62 28,55" />
-    <circle cx="14" cy="30" r="2.8" />
-<circle cx="28" cy="24" r="2.8" />
-<circle cx="40" cy="32" r="2.8" />
-<circle cx="50" cy="42" r="2.8" />
-<circle cx="60" cy="32" r="2.8" />
-<circle cx="72" cy="24" r="2.8" />
-<circle cx="48" cy="58" r="2.8" />
-<circle cx="38" cy="62" r="2.8" />
-<circle cx="28" cy="55" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Poissons <span>Pisces</span></h3>
-    <p>Constellation zodiacale assez discrète, située près de Pégase et du Verseau.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Taureau">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="18,50 34,38 48,26 62,38 78,50" />
-<polyline points="48,26 48,58" />
-    <circle cx="18" cy="50" r="2.8" />
-<circle cx="34" cy="38" r="2.8" />
-<circle cx="48" cy="26" r="2.8" />
-<circle cx="62" cy="38" r="2.8" />
-<circle cx="78" cy="50" r="2.8" />
-<circle cx="48" cy="58" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Taureau <span>Taurus</span></h3>
-    <p>Constellation zodiacale d’hiver. Elle contient Aldébaran, les Hyades et les Pléiades.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Triangle">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="18,56 48,20 78,56 18,56" />
-    <circle cx="18" cy="56" r="2.8" />
-<circle cx="48" cy="20" r="2.8" />
-<circle cx="78" cy="56" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Triangle <span>Triangulum</span></h3>
-    <p>Petite constellation formée par trois étoiles principales ; elle contient la galaxie du Triangle (M33).</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Cocher">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="25,18 58,15 78,38 58,62 22,52 25,18" />
-    <circle cx="25" cy="18" r="2.8" />
-<circle cx="58" cy="15" r="2.8" />
-<circle cx="78" cy="38" r="2.8" />
-<circle cx="58" cy="62" r="2.8" />
-<circle cx="22" cy="52" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Cocher <span>Auriga</span></h3>
-    <p>Constellation d’hiver dominée par Capella, l’une des étoiles les plus brillantes du ciel.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Girafe">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="10,58 22,40 34,50 46,30 58,40 70,22 82,32" />
-    <circle cx="10" cy="58" r="2.8" />
-<circle cx="22" cy="40" r="2.8" />
-<circle cx="34" cy="50" r="2.8" />
-<circle cx="46" cy="30" r="2.8" />
-<circle cx="58" cy="40" r="2.8" />
-<circle cx="70" cy="22" r="2.8" />
-<circle cx="82" cy="32" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Girafe <span>Camelopardalis</span></h3>
-    <p>Grande constellation boréale très peu lumineuse, située près du pôle céleste nord.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Cancer">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="18,38 32,28 46,42 60,28 74,38" />
-<polyline points="32,28 28,18" />
-<polyline points="60,28 64,18" />
-<polyline points="46,42 46,58" />
-    <circle cx="18" cy="38" r="2.8" />
-<circle cx="32" cy="28" r="2.8" />
-<circle cx="46" cy="42" r="2.8" />
-<circle cx="60" cy="28" r="2.8" />
-<circle cx="74" cy="38" r="2.8" />
-<circle cx="28" cy="18" r="2.8" />
-<circle cx="64" cy="18" r="2.8" />
-<circle cx="46" cy="58" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Cancer <span>Cancer</span></h3>
-    <p>Constellation zodiacale faible mais célèbre pour l’amas de la Crèche (M44).</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Petit Chien">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="20,46 45,38 70,30" />
-    <circle cx="20" cy="46" r="2.8" />
-<circle cx="45" cy="38" r="2.8" />
-<circle cx="70" cy="30" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Petit Chien <span>Canis Minor</span></h3>
-    <p>Petite constellation dominée par Procyon, l’un des sommets du Triangle d’hiver.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Gémeaux">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="22,20 28,38 34,58" />
-<polyline points="60,18 56,38 52,58" />
-<polyline points="28,38 56,38" />
-    <circle cx="22" cy="20" r="2.8" />
-<circle cx="28" cy="38" r="2.8" />
-<circle cx="34" cy="58" r="2.8" />
-<circle cx="60" cy="18" r="2.8" />
-<circle cx="56" cy="38" r="2.8" />
-<circle cx="52" cy="58" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Gémeaux <span>Gemini</span></h3>
-    <p>Constellation zodiacale reconnaissable à Castor et Pollux.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Lion">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="18,44 28,30 40,22 52,28 46,44 58,54 76,52" />
-    <circle cx="18" cy="44" r="2.8" />
-<circle cx="28" cy="30" r="2.8" />
-<circle cx="40" cy="22" r="2.8" />
-<circle cx="52" cy="28" r="2.8" />
-<circle cx="46" cy="44" r="2.8" />
-<circle cx="58" cy="54" r="2.8" />
-<circle cx="76" cy="52" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Lion <span>Leo</span></h3>
-    <p>Constellation zodiacale du printemps. Régulus marque le cœur du Lion.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Petit Lion">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="18,44 34,34 50,42 66,28" />
-    <circle cx="18" cy="44" r="2.8" />
-<circle cx="34" cy="34" r="2.8" />
-<circle cx="50" cy="42" r="2.8" />
-<circle cx="66" cy="28" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Petit Lion <span>Leo Minor</span></h3>
-    <p>Petite constellation peu brillante située entre le Lion et la Grande Ourse.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Lynx">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="14,50 28,40 42,48 56,36 70,42 82,30" />
-    <circle cx="14" cy="50" r="2.8" />
-<circle cx="28" cy="40" r="2.8" />
-<circle cx="42" cy="48" r="2.8" />
-<circle cx="56" cy="36" r="2.8" />
-<circle cx="70" cy="42" r="2.8" />
-<circle cx="82" cy="30" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Lynx <span>Lynx</span></h3>
-    <p>Constellation boréale très étendue mais composée surtout d’étoiles faibles.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Licorne">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="20,56 36,38 54,26 68,40" />
-<polyline points="54,26 78,18" />
-    <circle cx="20" cy="56" r="2.8" />
-<circle cx="36" cy="38" r="2.8" />
-<circle cx="54" cy="26" r="2.8" />
-<circle cx="68" cy="40" r="2.8" />
-<circle cx="78" cy="18" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Licorne <span>Monoceros</span></h3>
-    <p>Constellation de la Voie lactée située entre Orion et le Grand Chien ; elle abrite notamment la nébuleuse de la Rosette.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Grande Ourse">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="18,22 34,20 46,32 46,52 28,60 16,46 18,22" />
-    <circle cx="18" cy="22" r="2.8" />
-<circle cx="34" cy="20" r="2.8" />
-<circle cx="46" cy="32" r="2.8" />
-<circle cx="46" cy="52" r="2.8" />
-<circle cx="28" cy="60" r="2.8" />
-<circle cx="16" cy="46" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Grande Ourse <span>Ursa Major</span></h3>
-    <p>L’une des constellations les plus connues. Son Grand Chariot permet de retrouver facilement l’étoile Polaire.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Bouvier">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="18,40 42,18 68,38 44,64 18,40" />
-    <circle cx="18" cy="40" r="2.8" />
-<circle cx="42" cy="18" r="2.8" />
-<circle cx="68" cy="38" r="2.8" />
-<circle cx="44" cy="64" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Bouvier <span>Boötes</span></h3>
-    <p>Constellation de printemps dominée par Arcturus, brillante étoile orangée.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Chiens de chasse">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="18,50 38,36 60,28" />
-<polyline points="38,36 44,58" />
-    <circle cx="18" cy="50" r="2.8" />
-<circle cx="38" cy="36" r="2.8" />
-<circle cx="60" cy="28" r="2.8" />
-<circle cx="44" cy="58" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Chiens de chasse <span>Canes Venatici</span></h3>
-    <p>Petite constellation sous la Grande Ourse. Elle contient Cor Caroli et la galaxie du Tourbillon (M51).</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Chevelure de Bérénice">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="28,28 40,20 54,30 36,42 52,48 66,40" />
-    <circle cx="28" cy="28" r="2.8" />
-<circle cx="40" cy="20" r="2.8" />
-<circle cx="54" cy="30" r="2.8" />
-<circle cx="36" cy="42" r="2.8" />
-<circle cx="52" cy="48" r="2.8" />
-<circle cx="66" cy="40" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Chevelure de Bérénice <span>Coma Berenices</span></h3>
-    <p>Région riche en galaxies, proche de l’amas de la Vierge, avec un bel amas d’étoiles visible à l’œil nu.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Couronne boréale">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="14,52 28,36 44,26 60,30 74,44" />
-    <circle cx="14" cy="52" r="2.8" />
-<circle cx="28" cy="36" r="2.8" />
-<circle cx="44" cy="26" r="2.8" />
-<circle cx="60" cy="30" r="2.8" />
-<circle cx="74" cy="44" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Couronne boréale <span>Corona Borealis</span></h3>
-    <p>Petit arc d’étoiles en forme de couronne, dominé par Alphecca.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Dragon">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="12,52 24,34 38,42 52,22 66,34 80,18" />
-    <circle cx="12" cy="52" r="2.8" />
-<circle cx="24" cy="34" r="2.8" />
-<circle cx="38" cy="42" r="2.8" />
-<circle cx="52" cy="22" r="2.8" />
-<circle cx="66" cy="34" r="2.8" />
-<circle cx="80" cy="18" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Dragon <span>Draco</span></h3>
-    <p>Longue constellation qui serpente autour de la Petite Ourse et du pôle nord céleste.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Hercule">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="28,22 52,22 62,40 40,50 28,22" />
-<polyline points="52,22 72,10" />
-<polyline points="40,50 24,64" />
-    <circle cx="28" cy="22" r="2.8" />
-<circle cx="52" cy="22" r="2.8" />
-<circle cx="62" cy="40" r="2.8" />
-<circle cx="40" cy="50" r="2.8" />
-<circle cx="72" cy="10" r="2.8" />
-<circle cx="24" cy="64" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Hercule <span>Hercules</span></h3>
-    <p>Grande constellation d’été. Elle contient le célèbre amas globulaire M13.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Serpent">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="10,28 24,18 38,24 48,38" />
-<polyline points="54,42 64,58 78,52 88,64" />
-    <circle cx="10" cy="28" r="2.8" />
-<circle cx="24" cy="18" r="2.8" />
-<circle cx="38" cy="24" r="2.8" />
-<circle cx="48" cy="38" r="2.8" />
-<circle cx="54" cy="42" r="2.8" />
-<circle cx="64" cy="58" r="2.8" />
-<circle cx="78" cy="52" r="2.8" />
-<circle cx="88" cy="64" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Serpent <span>Serpens</span></h3>
-    <p>Unique constellation officiellement divisée en deux parties, la Tête et la Queue, séparées par Ophiuchus.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Petite Ourse">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="20,28 34,30 44,38 46,54 34,62 22,56 20,28" />
-    <circle cx="20" cy="28" r="2.8" />
-<circle cx="34" cy="30" r="2.8" />
-<circle cx="44" cy="38" r="2.8" />
-<circle cx="46" cy="54" r="2.8" />
-<circle cx="34" cy="62" r="2.8" />
-<circle cx="22" cy="56" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Petite Ourse <span>Ursa Minor</span></h3>
-    <p>Elle contient Polaris, l’étoile Polaire, très proche du pôle nord céleste.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Aigle">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="16,40 34,24 48,40 62,24 80,40" />
-<polyline points="48,40 46,60" />
-    <circle cx="16" cy="40" r="2.8" />
-<circle cx="34" cy="24" r="2.8" />
-<circle cx="48" cy="40" r="2.8" />
-<circle cx="62" cy="24" r="2.8" />
-<circle cx="80" cy="40" r="2.8" />
-<circle cx="46" cy="60" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Aigle <span>Aquila</span></h3>
-    <p>Constellation d’été dominée par Altaïr, l’un des sommets du Triangle d’été.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Céphée">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="24,26 50,16 76,28 74,58 28,60 24,26" />
-    <circle cx="24" cy="26" r="2.8" />
-<circle cx="50" cy="16" r="2.8" />
-<circle cx="76" cy="28" r="2.8" />
-<circle cx="74" cy="58" r="2.8" />
-<circle cx="28" cy="60" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Céphée <span>Cepheus</span></h3>
-    <p>Constellation circumpolaire en forme de maison. Delta Cephei a donné son nom aux étoiles variables céphéides.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Cygne">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="50,12 50,60" />
-<polyline points="22,36 78,36" />
-    <circle cx="50" cy="12" r="2.8" />
-<circle cx="50" cy="60" r="2.8" />
-<circle cx="22" cy="36" r="2.8" />
-<circle cx="78" cy="36" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Cygne <span>Cygnus</span></h3>
-    <p>Grande constellation de la Voie lactée, aussi appelée Croix du Nord. Deneb appartient au Triangle d’été.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Dauphin">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="26,28 50,18 64,38 40,48 26,28" />
-<polyline points="64,38 78,50" />
-    <circle cx="26" cy="28" r="2.8" />
-<circle cx="50" cy="18" r="2.8" />
-<circle cx="64" cy="38" r="2.8" />
-<circle cx="40" cy="48" r="2.8" />
-<circle cx="78" cy="50" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Dauphin <span>Delphinus</span></h3>
-    <p>Petite constellation compacte et assez facile à repérer près de l’Aigle.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Petit Cheval">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="24,42 42,32 58,44 72,36" />
-    <circle cx="24" cy="42" r="2.8" />
-<circle cx="42" cy="32" r="2.8" />
-<circle cx="58" cy="44" r="2.8" />
-<circle cx="72" cy="36" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Petit Cheval <span>Equuleus</span></h3>
-    <p>L’une des plus petites constellations du ciel, voisine de Pégase.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Lézard">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="14,50 28,34 42,46 58,30 74,42" />
-    <circle cx="14" cy="50" r="2.8" />
-<circle cx="28" cy="34" r="2.8" />
-<circle cx="42" cy="46" r="2.8" />
-<circle cx="58" cy="30" r="2.8" />
-<circle cx="74" cy="42" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Lézard <span>Lacerta</span></h3>
-    <p>Petite constellation en zigzag située entre le Cygne, Cassiopée et Andromède.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Lyre">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="22,34 40,20 58,30 52,50 30,48 22,34" />
-<polyline points="14,22 22,34" />
-    <circle cx="22" cy="34" r="2.8" />
-<circle cx="40" cy="20" r="2.8" />
-<circle cx="58" cy="30" r="2.8" />
-<circle cx="52" cy="50" r="2.8" />
-<circle cx="30" cy="48" r="2.8" />
-<circle cx="14" cy="22" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Lyre <span>Lyra</span></h3>
-    <p>Petite constellation dominée par Véga. Elle contient aussi la nébuleuse annulaire M57.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Pégase">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="18,20 64,18 72,54 24,56 18,20" />
-<polyline points="64,18 84,34" />
-    <circle cx="18" cy="20" r="2.8" />
-<circle cx="64" cy="18" r="2.8" />
-<circle cx="72" cy="54" r="2.8" />
-<circle cx="24" cy="56" r="2.8" />
-<circle cx="84" cy="34" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Pégase <span>Pegasus</span></h3>
-    <p>Le cheval ailé. Le Grand Carré de Pégase est un repère majeur du ciel d’automne.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Flèche">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="14,40 56,40" />
-<polyline points="56,40 44,28" />
-<polyline points="56,40 44,52" />
-    <circle cx="14" cy="40" r="2.8" />
-<circle cx="56" cy="40" r="2.8" />
-<circle cx="44" cy="28" r="2.8" />
-<circle cx="44" cy="52" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Flèche <span>Sagitta</span></h3>
-    <p>Toute petite constellation évoquant une flèche, située dans la région du Triangle d’été.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Petit Renard">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="20,24 38,44 54,26" />
-<polyline points="38,44 72,54" />
-    <circle cx="20" cy="24" r="2.8" />
-<circle cx="38" cy="44" r="2.8" />
-<circle cx="54" cy="26" r="2.8" />
-<circle cx="72" cy="54" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Petit Renard <span>Vulpecula</span></h3>
-    <p>Constellation discrète de la Voie lactée ; elle contient la nébuleuse de l’Haltère (M27).</p>
-  </div>
-</article>
-    </div>
+    <div class="grid" id="north-grid"></div>
   </section>
 
-  <section class="hemisphere" id="sud">
+  <section class="hemisphere">
     <div class="hemisphere-heading">
       <h2>Hémisphère céleste sud</h2>
-      <span class="count">52 constellations</span>
+      <div class="count">52 constellations</div>
     </div>
-    <div class="constellation-grid">
-      <article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Machine pneumatique">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="18,28 58,28 58,52 18,52 18,28" />
-<polyline points="58,40 76,40" />
-<polyline points="70,28 70,52" />
-    <circle cx="18" cy="28" r="2.8" />
-<circle cx="58" cy="28" r="2.8" />
-<circle cx="58" cy="52" r="2.8" />
-<circle cx="18" cy="52" r="2.8" />
-<circle cx="58" cy="40" r="2.8" />
-<circle cx="76" cy="40" r="2.8" />
-<circle cx="70" cy="28" r="2.8" />
-<circle cx="70" cy="52" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Machine pneumatique <span>Antlia</span></h3>
-    <p>Constellation moderne créée par Nicolas-Louis de Lacaille ; elle représente une pompe à air.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Oiseau de paradis">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="16,46 36,28 54,42 74,24" />
-    <circle cx="16" cy="46" r="2.8" />
-<circle cx="36" cy="28" r="2.8" />
-<circle cx="54" cy="42" r="2.8" />
-<circle cx="74" cy="24" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Oiseau de paradis <span>Apus</span></h3>
-    <p>Petite constellation du ciel austral profond, invisible depuis la plupart de l’Europe.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Verseau">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="12,36 24,28 36,38 48,30 60,40 72,34 84,46" />
-    <circle cx="12" cy="36" r="2.8" />
-<circle cx="24" cy="28" r="2.8" />
-<circle cx="36" cy="38" r="2.8" />
-<circle cx="48" cy="30" r="2.8" />
-<circle cx="60" cy="40" r="2.8" />
-<circle cx="72" cy="34" r="2.8" />
-<circle cx="84" cy="46" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Verseau <span>Aquarius</span></h3>
-    <p>Constellation zodiacale étendue et assez peu lumineuse, associée au porteur d’eau.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Autel">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="22,24 62,24 70,50 16,50 22,24" />
-    <circle cx="22" cy="24" r="2.8" />
-<circle cx="62" cy="24" r="2.8" />
-<circle cx="70" cy="50" r="2.8" />
-<circle cx="16" cy="50" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Autel <span>Ara</span></h3>
-    <p>Constellation australe ancienne située dans une région riche de la Voie lactée.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Burin">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="30,54 46,22 56,18" />
-    <circle cx="30" cy="54" r="2.8" />
-<circle cx="46" cy="22" r="2.8" />
-<circle cx="56" cy="18" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Burin <span>Caelum</span></h3>
-    <p>Petite constellation moderne de Lacaille représentant un outil de gravure.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Grand Chien">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="18,54 32,38 46,22 60,30 74,18" />
-    <circle cx="18" cy="54" r="2.8" />
-<circle cx="32" cy="38" r="2.8" />
-<circle cx="46" cy="22" r="2.8" />
-<circle cx="60" cy="30" r="2.8" />
-<circle cx="74" cy="18" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Grand Chien <span>Canis Major</span></h3>
-    <p>Il contient Sirius, l’étoile la plus brillante du ciel nocturne.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Capricorne">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="14,26 32,44 48,28 66,52 80,34" />
-    <circle cx="14" cy="26" r="2.8" />
-<circle cx="32" cy="44" r="2.8" />
-<circle cx="48" cy="28" r="2.8" />
-<circle cx="66" cy="52" r="2.8" />
-<circle cx="80" cy="34" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Capricorne <span>Capricornus</span></h3>
-    <p>Constellation zodiacale représentant traditionnellement une chèvre-poisson.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Carène">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="20,22 44,18 68,38 54,60 30,52 20,22" />
-    <circle cx="20" cy="22" r="2.8" />
-<circle cx="44" cy="18" r="2.8" />
-<circle cx="68" cy="38" r="2.8" />
-<circle cx="54" cy="60" r="2.8" />
-<circle cx="30" cy="52" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Carène <span>Carina</span></h3>
-    <p>Ancienne partie du Navire Argo. Elle contient Canopus, la nébuleuse de la Carène et l’étoile Eta Carinae.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Centaure">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="18,46 34,30 50,36 62,22 78,28" />
-<polyline points="50,36 54,58" />
-    <circle cx="18" cy="46" r="2.8" />
-<circle cx="34" cy="30" r="2.8" />
-<circle cx="50" cy="36" r="2.8" />
-<circle cx="62" cy="22" r="2.8" />
-<circle cx="78" cy="28" r="2.8" />
-<circle cx="54" cy="58" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Centaure <span>Centaurus</span></h3>
-    <p>Grande constellation australe contenant Alpha du Centaure et l’amas globulaire Oméga du Centaure.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Baleine">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="12,36 28,22 48,28 60,18 74,30 68,52 44,58 20,48" />
-    <circle cx="12" cy="36" r="2.8" />
-<circle cx="28" cy="22" r="2.8" />
-<circle cx="48" cy="28" r="2.8" />
-<circle cx="60" cy="18" r="2.8" />
-<circle cx="74" cy="30" r="2.8" />
-<circle cx="68" cy="52" r="2.8" />
-<circle cx="44" cy="58" r="2.8" />
-<circle cx="20" cy="48" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Baleine <span>Cetus</span></h3>
-    <p>Très grande constellation associée au monstre marin des récits de Persée ; elle contient l’étoile variable Mira.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Caméléon">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="18,44 34,34 50,42 66,28" />
-    <circle cx="18" cy="44" r="2.8" />
-<circle cx="34" cy="34" r="2.8" />
-<circle cx="50" cy="42" r="2.8" />
-<circle cx="66" cy="28" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Caméléon <span>Chamaeleon</span></h3>
-    <p>Petite constellation très australe créée à l’époque des grandes explorations maritimes.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Compas">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="30,54 48,18 66,54" />
-<polyline points="48,18 48,60" />
-    <circle cx="30" cy="54" r="2.8" />
-<circle cx="48" cy="18" r="2.8" />
-<circle cx="66" cy="54" r="2.8" />
-<circle cx="48" cy="60" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Compas <span>Circinus</span></h3>
-    <p>Petite constellation australe de Lacaille représentant un compas de dessin.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Colombe">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="18,46 34,28 54,38 72,24" />
-<polyline points="34,28 28,14" />
-    <circle cx="18" cy="46" r="2.8" />
-<circle cx="34" cy="28" r="2.8" />
-<circle cx="54" cy="38" r="2.8" />
-<circle cx="72" cy="24" r="2.8" />
-<circle cx="28" cy="14" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Colombe <span>Columba</span></h3>
-    <p>Constellation située au sud du Grand Chien, représentant une colombe.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Couronne australe">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="14,52 28,36 44,26 60,30 74,44" />
-    <circle cx="14" cy="52" r="2.8" />
-<circle cx="28" cy="36" r="2.8" />
-<circle cx="44" cy="26" r="2.8" />
-<circle cx="60" cy="30" r="2.8" />
-<circle cx="74" cy="44" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Couronne australe <span>Corona Australis</span></h3>
-    <p>Petit arc d’étoiles proche du Sagittaire, dans une région riche en poussières et nébuleuses.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Corbeau">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="22,24 62,20 74,48 30,54 22,24" />
-    <circle cx="22" cy="24" r="2.8" />
-<circle cx="62" cy="20" r="2.8" />
-<circle cx="74" cy="48" r="2.8" />
-<circle cx="30" cy="54" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Corbeau <span>Corvus</span></h3>
-    <p>Petite constellation dont quatre étoiles dessinent un quadrilatère facilement reconnaissable.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Coupe">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="20,32 32,22 52,22 64,32" />
-<polyline points="24,44 60,44" />
-<polyline points="42,44 42,58" />
-    <circle cx="20" cy="32" r="2.8" />
-<circle cx="32" cy="22" r="2.8" />
-<circle cx="52" cy="22" r="2.8" />
-<circle cx="64" cy="32" r="2.8" />
-<circle cx="24" cy="44" r="2.8" />
-<circle cx="60" cy="44" r="2.8" />
-<circle cx="42" cy="44" r="2.8" />
-<circle cx="42" cy="58" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Coupe <span>Crater</span></h3>
-    <p>Ancienne constellation représentant une coupe, posée sur le dos de l’Hydre dans les cartes classiques.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Croix du Sud">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="48,14 48,60" />
-<polyline points="26,36 70,36" />
-    <circle cx="48" cy="14" r="2.8" />
-<circle cx="48" cy="60" r="2.8" />
-<circle cx="26" cy="36" r="2.8" />
-<circle cx="70" cy="36" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Croix du Sud <span>Crux</span></h3>
-    <p>Petite mais très célèbre constellation australe, utilisée comme repère pour retrouver le pôle sud céleste.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Dorade">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="20,38 38,24 56,38 38,52 20,38" />
-<polyline points="56,38 76,30" />
-    <circle cx="20" cy="38" r="2.8" />
-<circle cx="38" cy="24" r="2.8" />
-<circle cx="56" cy="38" r="2.8" />
-<circle cx="38" cy="52" r="2.8" />
-<circle cx="76" cy="30" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Dorade <span>Dorado</span></h3>
-    <p>Constellation australe contenant une grande partie du Grand Nuage de Magellan et la nébuleuse de la Tarentule.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Éridan">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="10,54 22,38 34,46 46,30 58,38 70,22 82,30" />
-    <circle cx="10" cy="54" r="2.8" />
-<circle cx="22" cy="38" r="2.8" />
-<circle cx="34" cy="46" r="2.8" />
-<circle cx="46" cy="30" r="2.8" />
-<circle cx="58" cy="38" r="2.8" />
-<circle cx="70" cy="22" r="2.8" />
-<circle cx="82" cy="30" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Éridan <span>Eridanus</span></h3>
-    <p>Très longue constellation représentant un fleuve ; elle s’étend d’Orion jusqu’à l’étoile Achernar.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Fourneau">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="24,24 62,24 70,52 18,52 24,24" />
-<polyline points="40,14 40,24" />
-    <circle cx="24" cy="24" r="2.8" />
-<circle cx="62" cy="24" r="2.8" />
-<circle cx="70" cy="52" r="2.8" />
-<circle cx="18" cy="52" r="2.8" />
-<circle cx="40" cy="14" r="2.8" />
-<circle cx="40" cy="24" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Fourneau <span>Fornax</span></h3>
-    <p>Constellation moderne de Lacaille ; sa région contient de nombreuses galaxies de l’amas du Fourneau.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Grue">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="20,58 38,30 54,24 72,18" />
-<polyline points="38,30 44,52" />
-    <circle cx="20" cy="58" r="2.8" />
-<circle cx="38" cy="30" r="2.8" />
-<circle cx="54" cy="24" r="2.8" />
-<circle cx="72" cy="18" r="2.8" />
-<circle cx="44" cy="52" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Grue <span>Grus</span></h3>
-    <p>Constellation australe créée à la fin du XVIe siècle, dominée par l’étoile Alnair.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Horloge">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="40,18 58,30 58,54" />
-<polyline points="58,54 46,64 34,54" />
-    <circle cx="40" cy="18" r="2.8" />
-<circle cx="58" cy="30" r="2.8" />
-<circle cx="58" cy="54" r="2.8" />
-<circle cx="46" cy="64" r="2.8" />
-<circle cx="34" cy="54" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Horloge <span>Horologium</span></h3>
-    <p>Constellation faible de Lacaille représentant une horloge à pendule.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Hydre">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="8,44 22,34 36,40 50,30 64,36 78,26 90,32" />
-    <circle cx="8" cy="44" r="2.8" />
-<circle cx="22" cy="34" r="2.8" />
-<circle cx="36" cy="40" r="2.8" />
-<circle cx="50" cy="30" r="2.8" />
-<circle cx="64" cy="36" r="2.8" />
-<circle cx="78" cy="26" r="2.8" />
-<circle cx="90" cy="32" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Hydre <span>Hydra</span></h3>
-    <p>La plus grande constellation du ciel par sa superficie. Son étoile principale est Alphard.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Hydre mâle">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="18,52 34,34 50,44 66,30" />
-    <circle cx="18" cy="52" r="2.8" />
-<circle cx="34" cy="34" r="2.8" />
-<circle cx="50" cy="44" r="2.8" />
-<circle cx="66" cy="30" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Hydre mâle <span>Hydrus</span></h3>
-    <p>Constellation du ciel austral profond, distincte de l’Hydre.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Indien">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="40,18 44,40 36,60" />
-<polyline points="44,40 62,32" />
-    <circle cx="40" cy="18" r="2.8" />
-<circle cx="44" cy="40" r="2.8" />
-<circle cx="36" cy="60" r="2.8" />
-<circle cx="62" cy="32" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Indien <span>Indus</span></h3>
-    <p>Constellation australe introduite à l’époque des premières cartes du ciel du Sud.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Lièvre">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="24,28 56,24 70,42 32,52 24,28" />
-<polyline points="40,18 34,8" />
-<polyline points="48,18 56,8" />
-    <circle cx="24" cy="28" r="2.8" />
-<circle cx="56" cy="24" r="2.8" />
-<circle cx="70" cy="42" r="2.8" />
-<circle cx="32" cy="52" r="2.8" />
-<circle cx="40" cy="18" r="2.8" />
-<circle cx="34" cy="8" r="2.8" />
-<circle cx="48" cy="18" r="2.8" />
-<circle cx="56" cy="8" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Lièvre <span>Lepus</span></h3>
-    <p>Petite constellation placée sous Orion, dominée par Arneb.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Balance">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="18,24 34,38 50,24 66,40 82,28" />
-<polyline points="50,24 50,56" />
-    <circle cx="18" cy="24" r="2.8" />
-<circle cx="34" cy="38" r="2.8" />
-<circle cx="50" cy="24" r="2.8" />
-<circle cx="66" cy="40" r="2.8" />
-<circle cx="82" cy="28" r="2.8" />
-<circle cx="50" cy="56" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Balance <span>Libra</span></h3>
-    <p>Constellation zodiacale située entre la Vierge et le Scorpion.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Loup">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="14,50 28,34 42,46 58,30 74,42" />
-    <circle cx="14" cy="50" r="2.8" />
-<circle cx="28" cy="34" r="2.8" />
-<circle cx="42" cy="46" r="2.8" />
-<circle cx="58" cy="30" r="2.8" />
-<circle cx="74" cy="42" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Loup <span>Lupus</span></h3>
-    <p>Ancienne constellation australe située dans une région dense de la Voie lactée.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Table">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="20,26 70,26" />
-<polyline points="28,26 22,58" />
-<polyline points="62,26 68,58" />
-    <circle cx="20" cy="26" r="2.8" />
-<circle cx="70" cy="26" r="2.8" />
-<circle cx="28" cy="26" r="2.8" />
-<circle cx="22" cy="58" r="2.8" />
-<circle cx="62" cy="26" r="2.8" />
-<circle cx="68" cy="58" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Table <span>Mensa</span></h3>
-    <p>Constellation extrêmement australe nommée d’après la montagne de la Table, au Cap.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Microscope">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="24,54 40,40 56,26" />
-<polyline points="40,40 52,56" />
-<polyline points="56,26 70,18" />
-    <circle cx="24" cy="54" r="2.8" />
-<circle cx="40" cy="40" r="2.8" />
-<circle cx="56" cy="26" r="2.8" />
-<circle cx="52" cy="56" r="2.8" />
-<circle cx="70" cy="18" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Microscope <span>Microscopium</span></h3>
-    <p>Constellation moderne de Lacaille représentant un microscope.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Mouche">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="20,20 70,60" />
-<polyline points="20,60 70,20" />
-    <circle cx="20" cy="20" r="2.8" />
-<circle cx="70" cy="60" r="2.8" />
-<circle cx="20" cy="60" r="2.8" />
-<circle cx="70" cy="20" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Mouche <span>Musca</span></h3>
-    <p>Petite constellation proche de la Croix du Sud, dans une zone riche de la Voie lactée.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Règle">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="18,24 70,24" />
-<polyline points="18,24 18,54" />
-    <circle cx="18" cy="24" r="2.8" />
-<circle cx="70" cy="24" r="2.8" />
-<circle cx="18" cy="54" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Règle <span>Norma</span></h3>
-    <p>Constellation moderne représentant une règle ou une équerre, proche du Scorpion.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Octant">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="24,24 62,18 52,56 24,24" />
-    <circle cx="24" cy="24" r="2.8" />
-<circle cx="62" cy="18" r="2.8" />
-<circle cx="52" cy="56" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Octant <span>Octans</span></h3>
-    <p>Elle contient le pôle sud céleste. Sigma Octantis joue un rôle de repère analogue, mais bien moins brillant, à Polaris au nord.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Ophiuchus / Serpentaire">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="28,20 48,16 60,32 50,52 30,56 20,38 28,20" />
-<polyline points="10,42 22,36 34,42" />
-<polyline points="60,32 74,26 86,34" />
-    <circle cx="28" cy="20" r="2.8" />
-<circle cx="48" cy="16" r="2.8" />
-<circle cx="60" cy="32" r="2.8" />
-<circle cx="50" cy="52" r="2.8" />
-<circle cx="30" cy="56" r="2.8" />
-<circle cx="20" cy="38" r="2.8" />
-<circle cx="10" cy="42" r="2.8" />
-<circle cx="22" cy="36" r="2.8" />
-<circle cx="34" cy="42" r="2.8" />
-<circle cx="74" cy="26" r="2.8" />
-<circle cx="86" cy="34" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Ophiuchus / Serpentaire <span>Ophiuchus</span></h3>
-    <p>Le porteur du Serpent. L’écliptique traverse cette constellation, parfois présentée comme la « treizième constellation du zodiaque ».</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Paon">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="22,54 42,38 56,24 72,16" />
-<polyline points="42,38 36,20" />
-<polyline points="42,38 56,52" />
-    <circle cx="22" cy="54" r="2.8" />
-<circle cx="42" cy="38" r="2.8" />
-<circle cx="56" cy="24" r="2.8" />
-<circle cx="72" cy="16" r="2.8" />
-<circle cx="36" cy="20" r="2.8" />
-<circle cx="56" cy="52" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Paon <span>Pavo</span></h3>
-    <p>Constellation australe créée à la fin du XVIe siècle ; son étoile Alpha Pavonis porte le nom Peacock.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Phénix">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="18,56 34,34 48,22 62,34 78,14" />
-<polyline points="48,22 54,54" />
-    <circle cx="18" cy="56" r="2.8" />
-<circle cx="34" cy="34" r="2.8" />
-<circle cx="48" cy="22" r="2.8" />
-<circle cx="62" cy="34" r="2.8" />
-<circle cx="78" cy="14" r="2.8" />
-<circle cx="54" cy="54" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Phénix <span>Phoenix</span></h3>
-    <p>Constellation australe représentant l’oiseau mythique renaissant de ses cendres.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Peintre">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="26,56 44,20 62,56" />
-<polyline points="34,40 54,40" />
-    <circle cx="26" cy="56" r="2.8" />
-<circle cx="44" cy="20" r="2.8" />
-<circle cx="62" cy="56" r="2.8" />
-<circle cx="34" cy="40" r="2.8" />
-<circle cx="54" cy="40" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Peintre <span>Pictor</span></h3>
-    <p>Constellation de Lacaille. Beta Pictoris est célèbre pour son disque de débris et son système planétaire.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Poisson austral">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="20,38 38,24 56,38 38,52 20,38" />
-<polyline points="56,38 76,30" />
-    <circle cx="20" cy="38" r="2.8" />
-<circle cx="38" cy="24" r="2.8" />
-<circle cx="56" cy="38" r="2.8" />
-<circle cx="38" cy="52" r="2.8" />
-<circle cx="76" cy="30" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Poisson austral <span>Piscis Austrinus</span></h3>
-    <p>Constellation ancienne dominée par Fomalhaut, l’une des étoiles les plus brillantes du ciel austral.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Poupe">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="20,22 52,18 72,34 64,58 32,54 20,22" />
-    <circle cx="20" cy="22" r="2.8" />
-<circle cx="52" cy="18" r="2.8" />
-<circle cx="72" cy="34" r="2.8" />
-<circle cx="64" cy="58" r="2.8" />
-<circle cx="32" cy="54" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Poupe <span>Puppis</span></h3>
-    <p>Ancienne partie du Navire Argo, représentant la poupe du navire.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Boussole">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="48,16 48,60" />
-<polyline points="20,38 76,38" />
-<polyline points="34,24 62,52" />
-<polyline points="62,24 34,52" />
-    <circle cx="48" cy="16" r="2.8" />
-<circle cx="48" cy="60" r="2.8" />
-<circle cx="20" cy="38" r="2.8" />
-<circle cx="76" cy="38" r="2.8" />
-<circle cx="34" cy="24" r="2.8" />
-<circle cx="62" cy="52" r="2.8" />
-<circle cx="62" cy="24" r="2.8" />
-<circle cx="34" cy="52" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Boussole <span>Pyxis</span></h3>
-    <p>Constellation moderne représentant une boussole de marin, proche de la Poupe.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Réticule">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="24,24 68,24 68,56 24,56 24,24" />
-<polyline points="46,24 46,56" />
-<polyline points="24,40 68,40" />
-    <circle cx="24" cy="24" r="2.8" />
-<circle cx="68" cy="24" r="2.8" />
-<circle cx="68" cy="56" r="2.8" />
-<circle cx="24" cy="56" r="2.8" />
-<circle cx="46" cy="24" r="2.8" />
-<circle cx="46" cy="56" r="2.8" />
-<circle cx="24" cy="40" r="2.8" />
-<circle cx="68" cy="40" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Réticule <span>Reticulum</span></h3>
-    <p>Petite constellation de Lacaille représentant le réticule d’un instrument d’observation.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Sagittaire">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="18,44 30,28 46,30 56,44 46,58 28,56 18,44" />
-<polyline points="56,44 74,38" />
-<polyline points="24,34 14,28" />
-    <circle cx="18" cy="44" r="2.8" />
-<circle cx="30" cy="28" r="2.8" />
-<circle cx="46" cy="30" r="2.8" />
-<circle cx="56" cy="44" r="2.8" />
-<circle cx="46" cy="58" r="2.8" />
-<circle cx="28" cy="56" r="2.8" />
-<circle cx="74" cy="38" r="2.8" />
-<circle cx="24" cy="34" r="2.8" />
-<circle cx="14" cy="28" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Sagittaire <span>Sagittarius</span></h3>
-    <p>Constellation zodiacale très riche. La direction du centre de la Voie lactée se trouve dans cette région.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Scorpion">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="14,22 28,30 42,26 54,36 60,48 68,58 80,50" />
-<polyline points="80,50 74,40" />
-    <circle cx="14" cy="22" r="2.8" />
-<circle cx="28" cy="30" r="2.8" />
-<circle cx="42" cy="26" r="2.8" />
-<circle cx="54" cy="36" r="2.8" />
-<circle cx="60" cy="48" r="2.8" />
-<circle cx="68" cy="58" r="2.8" />
-<circle cx="80" cy="50" r="2.8" />
-<circle cx="74" cy="40" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Scorpion <span>Scorpius</span></h3>
-    <p>Constellation zodiacale spectaculaire, dominée par la supergéante rouge Antarès.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Sculpteur">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="20,22 54,22 54,58" />
-    <circle cx="20" cy="22" r="2.8" />
-<circle cx="54" cy="22" r="2.8" />
-<circle cx="54" cy="58" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Sculpteur <span>Sculptor</span></h3>
-    <p>Constellation moderne contenant notamment la brillante galaxie du Sculpteur (NGC 253).</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Écu de Sobieski">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="28,22 58,22 70,42 44,60 18,42 28,22" />
-    <circle cx="28" cy="22" r="2.8" />
-<circle cx="58" cy="22" r="2.8" />
-<circle cx="70" cy="42" r="2.8" />
-<circle cx="44" cy="60" r="2.8" />
-<circle cx="18" cy="42" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Écu de Sobieski <span>Scutum</span></h3>
-    <p>Petite constellation de la Voie lactée, connue notamment pour l’amas du Canard sauvage (M11).</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Sextant">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="20,56 52,20 72,48 20,56" />
-<polyline points="20,56 46,56" />
-    <circle cx="20" cy="56" r="2.8" />
-<circle cx="52" cy="20" r="2.8" />
-<circle cx="72" cy="48" r="2.8" />
-<circle cx="46" cy="56" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Sextant <span>Sextans</span></h3>
-    <p>Constellation peu lumineuse créée par Johannes Hevelius en hommage à l’instrument astronomique.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Télescope">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="20,56 40,44 66,24" />
-<polyline points="40,44 42,60" />
-<polyline points="32,50 52,36" />
-    <circle cx="20" cy="56" r="2.8" />
-<circle cx="40" cy="44" r="2.8" />
-<circle cx="66" cy="24" r="2.8" />
-<circle cx="42" cy="60" r="2.8" />
-<circle cx="32" cy="50" r="2.8" />
-<circle cx="52" cy="36" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Télescope <span>Telescopium</span></h3>
-    <p>Constellation australe de Lacaille représentant un télescope.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Triangle austral">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="18,56 48,20 78,56 18,56" />
-    <circle cx="18" cy="56" r="2.8" />
-<circle cx="48" cy="20" r="2.8" />
-<circle cx="78" cy="56" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Triangle austral <span>Triangulum Australe</span></h3>
-    <p>Petit triangle d’étoiles brillantes, beaucoup plus facile à distinguer que de nombreuses constellations australes.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Toucan">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="18,48 40,30 58,38 78,24" />
-<polyline points="58,38 68,46" />
-    <circle cx="18" cy="48" r="2.8" />
-<circle cx="40" cy="30" r="2.8" />
-<circle cx="58" cy="38" r="2.8" />
-<circle cx="78" cy="24" r="2.8" />
-<circle cx="68" cy="46" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Toucan <span>Tucana</span></h3>
-    <p>Constellation australe contenant le Petit Nuage de Magellan et l’amas globulaire 47 Tucanae.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Voiles">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="20,58 44,18 46,60" />
-<polyline points="46,18 70,36 46,60" />
-    <circle cx="20" cy="58" r="2.8" />
-<circle cx="44" cy="18" r="2.8" />
-<circle cx="46" cy="60" r="2.8" />
-<circle cx="46" cy="18" r="2.8" />
-<circle cx="70" cy="36" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Voiles <span>Vela</span></h3>
-    <p>Ancienne partie du Navire Argo. Elle contient notamment le rémanent de supernova des Voiles.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Vierge">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="16,20 30,34 44,22 54,40 68,28 80,50" />
-    <circle cx="16" cy="20" r="2.8" />
-<circle cx="30" cy="34" r="2.8" />
-<circle cx="44" cy="22" r="2.8" />
-<circle cx="54" cy="40" r="2.8" />
-<circle cx="68" cy="28" r="2.8" />
-<circle cx="80" cy="50" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Vierge <span>Virgo</span></h3>
-    <p>Grande constellation zodiacale dominée par Spica ; elle se trouve près du riche amas de galaxies de la Vierge.</p>
-  </div>
-</article>
-<article class="constellation-card">
-  <div class="constellation-figure" role="img" aria-label="Schéma simplifié de la constellation Poisson volant">
-  <svg viewBox="0 0 100 80" aria-hidden="true" focusable="false">
-    <rect x="0" y="0" width="100" height="80" rx="10"></rect>
-    <polyline points="18,42 38,28 58,42 44,52 18,42" />
-<polyline points="38,28 72,22" />
-    <circle cx="18" cy="42" r="2.8" />
-<circle cx="38" cy="28" r="2.8" />
-<circle cx="58" cy="42" r="2.8" />
-<circle cx="44" cy="52" r="2.8" />
-<circle cx="72" cy="22" r="2.8" />
-  </svg>
-</div>
-  <div class="constellation-content">
-    <h3>Poisson volant <span>Volans</span></h3>
-    <p>Petite constellation du ciel austral profond représentant un poisson volant.</p>
-  </div>
-</article>
-    </div>
+    <div class="grid" id="south-grid"></div>
   </section>
 </main>
 
@@ -2004,6 +328,137 @@
 
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
+
+  const north = [
+{fr:'Andromède', lat:'Andromeda', abbr:'AND', desc:'La princesse enchaînée. Elle contient la galaxie d’Andromède (M31), visible à l’œil nu sous un bon ciel.'},
+{fr:'Bélier', lat:'Aries', abbr:'ARI', desc:'Constellation zodiacale discrète. Son étoile la plus connue est Hamal.'},
+{fr:'Cassiopée', lat:'Cassiopeia', abbr:'CAS', desc:'Très facile à reconnaître grâce à sa forme en W ou en M.'},
+{fr:'Orion', lat:'Orion', abbr:'ORI', desc:'L’une des constellations les plus célèbres, avec la ceinture d’Orion et la nébuleuse M42.'},
+{fr:'Persée', lat:'Perseus', abbr:'PER', desc:'Constellation mythologique abritant notamment Algol et le Double Amas de Persée.'},
+{fr:'Poissons', lat:'Pisces', abbr:'PSC', desc:'Grande constellation zodiacale plutôt faible, située entre le Bélier et le Verseau.'},
+{fr:'Taureau', lat:'Taurus', abbr:'TAU', desc:'Constellation zodiacale remarquable contenant Aldébaran, les Hyades et les Pléiades.'},
+{fr:'Triangle', lat:'Triangulum', abbr:'TRI', desc:'Petite constellation formée de trois étoiles principales ; elle contient la galaxie M33.'},
+{fr:'Cocher', lat:'Auriga', abbr:'AUR', desc:'Constellation dominée par Capella, l’une des étoiles les plus brillantes du ciel.'},
+{fr:'Girafe', lat:'Camelopardalis', abbr:'CAM', desc:'Grande constellation boréale assez discrète, proche du pôle nord céleste.'},
+{fr:'Cancer', lat:'Cancer', abbr:'CNC', desc:'Constellation zodiacale peu lumineuse, célèbre pour l’amas de la Crèche (M44).'},
+{fr:'Petit Chien', lat:'Canis Minor', abbr:'CMI', desc:'Petite constellation dominée par Procyon.'},
+{fr:'Gémeaux', lat:'Gemini', abbr:'GEM', desc:'Constellation zodiacale aisément repérable grâce à Castor et Pollux.'},
+{fr:'Lion', lat:'Leo', abbr:'LEO', desc:'Constellation zodiacale du printemps, reconnaissable à Régulus et à sa forme en faucille.'},
+{fr:'Petit Lion', lat:'Leo Minor', abbr:'LMI', desc:'Petite constellation faible située entre le Lion et la Grande Ourse.'},
+{fr:'Lynx', lat:'Lynx', abbr:'LYN', desc:'Constellation boréale étendue mais peu brillante.'},
+{fr:'Licorne', lat:'Monoceros', abbr:'MON', desc:'Constellation de la Voie lactée située entre Orion et le Grand Chien.'},
+{fr:'Grande Ourse', lat:'Ursa Major', abbr:'UMA', desc:'L’une des constellations les plus connues, contenant le Grand Chariot.'},
+{fr:'Bouvier', lat:'Boötes', abbr:'BOO', desc:'Constellation dominée par Arcturus, brillante étoile orangée.'},
+{fr:'Chiens de chasse', lat:'Canes Venatici', abbr:'CVN', desc:'Petite constellation contenant Cor Caroli et la galaxie du Tourbillon (M51).'},
+{fr:'Chevelure de Bérénice', lat:'Coma Berenices', abbr:'COM', desc:'Région riche en galaxies et en amas, proche de la Vierge.'},
+{fr:'Couronne boréale', lat:'Corona Borealis', abbr:'CRB', desc:'Petit arc d’étoiles évoquant une couronne.'},
+{fr:'Dragon', lat:'Draco', abbr:'DRA', desc:'Longue constellation serpentant autour du pôle nord céleste.'},
+{fr:'Hercule', lat:'Hercules', abbr:'HER', desc:'Grande constellation d’été contenant le célèbre amas globulaire M13.'},
+{fr:'Serpent', lat:'Serpens', abbr:'SER', desc:'Unique constellation officiellement séparée en deux parties : Tête et Queue.'},
+{fr:'Petite Ourse', lat:'Ursa Minor', abbr:'UMI', desc:'Elle contient Polaris, l’étoile Polaire.'},
+{fr:'Aigle', lat:'Aquila', abbr:'AQL', desc:'Constellation d’été dominée par Altaïr.'},
+{fr:'Céphée', lat:'Cepheus', abbr:'CEP', desc:'Constellation circumpolaire souvent décrite comme une petite maison.'},
+{fr:'Cygne', lat:'Cygnus', abbr:'CYG', desc:'Grande constellation de la Voie lactée, aussi appelée Croix du Nord.'},
+{fr:'Dauphin', lat:'Delphinus', abbr:'DEL', desc:'Petite constellation compacte et assez facile à repérer.'},
+{fr:'Petit Cheval', lat:'Equuleus', abbr:'EQU', desc:'L’une des plus petites constellations du ciel.'},
+{fr:'Lézard', lat:'Lacerta', abbr:'LAC', desc:'Petite constellation en zigzag située entre le Cygne, Cassiopée et Andromède.'},
+{fr:'Lyre', lat:'Lyra', abbr:'LYR', desc:'Petite constellation dominée par Véga ; elle contient aussi M57.'},
+{fr:'Pégase', lat:'Pegasus', abbr:'PEG', desc:'Le Grand Carré de Pégase est un repère majeur du ciel d’automne.'},
+{fr:'Flèche', lat:'Sagitta', abbr:'SGE', desc:'Toute petite constellation évoquant une flèche.'},
+{fr:'Petit Renard', lat:'Vulpecula', abbr:'VUL', desc:'Constellation discrète de la Voie lactée ; elle contient M27.'}
+];
+  const south = [
+{fr:'Machine pneumatique', lat:'Antlia', abbr:'ANT', desc:'Constellation moderne représentant une pompe à air.'},
+{fr:'Oiseau de paradis', lat:'Apus', abbr:'APS', desc:'Petite constellation du ciel austral profond.'},
+{fr:'Verseau', lat:'Aquarius', abbr:'AQR', desc:'Grande constellation zodiacale associée au porteur d’eau.'},
+{fr:'Autel', lat:'Ara', abbr:'ARA', desc:'Constellation australe ancienne, riche en étoiles de la Voie lactée.'},
+{fr:'Burin', lat:'Caelum', abbr:'CAE', desc:'Petite constellation moderne représentant un outil de gravure.'},
+{fr:'Grand Chien', lat:'Canis Major', abbr:'CMA', desc:'Constellation contenant Sirius, l’étoile la plus brillante du ciel nocturne.'},
+{fr:'Capricorne', lat:'Capricornus', abbr:'CAP', desc:'Constellation zodiacale représentant la chèvre-poisson.'},
+{fr:'Carène', lat:'Carina', abbr:'CAR', desc:'Ancienne partie du Navire Argo ; elle contient Canopus et la nébuleuse de la Carène.'},
+{fr:'Centaure', lat:'Centaurus', abbr:'CEN', desc:'Grande constellation australe contenant Alpha Centauri et Oméga du Centaure.'},
+{fr:'Baleine', lat:'Cetus', abbr:'CET', desc:'Très grande constellation associée au monstre marin des récits de Persée.'},
+{fr:'Caméléon', lat:'Chamaeleon', abbr:'CHA', desc:'Petite constellation très australe.'},
+{fr:'Compas', lat:'Circinus', abbr:'CIR', desc:'Constellation moderne représentant un compas de dessin.'},
+{fr:'Colombe', lat:'Columba', abbr:'COL', desc:'Constellation située au sud du Grand Chien.'},
+{fr:'Couronne australe', lat:'Corona Australis', abbr:'CRA', desc:'Petit arc d’étoiles proche du Sagittaire.'},
+{fr:'Corbeau', lat:'Corvus', abbr:'CRV', desc:'Petite constellation en forme de quadrilatère.'},
+{fr:'Coupe', lat:'Crater', abbr:'CRT', desc:'Ancienne constellation représentant une coupe.'},
+{fr:'Croix du Sud', lat:'Crux', abbr:'CRU', desc:'Célèbre petite constellation australe, très utile pour repérer le sud céleste.'},
+{fr:'Dorade', lat:'Dorado', abbr:'DOR', desc:'Constellation contenant une partie du Grand Nuage de Magellan.'},
+{fr:'Éridan', lat:'Eridanus', abbr:'ERI', desc:'Très longue constellation représentant un fleuve.'},
+{fr:'Fourneau', lat:'Fornax', abbr:'FOR', desc:'Constellation moderne connue aussi pour l’amas de galaxies du Fourneau.'},
+{fr:'Grue', lat:'Grus', abbr:'GRU', desc:'Constellation australe dominée par l’étoile Alnair.'},
+{fr:'Horloge', lat:'Horologium', abbr:'HOR', desc:'Constellation faible créée par Lacaille.'},
+{fr:'Hydre', lat:'Hydra', abbr:'HYA', desc:'La plus grande constellation du ciel par sa superficie.'},
+{fr:'Hydre mâle', lat:'Hydrus', abbr:'HYI', desc:'Petite constellation du ciel austral profond.'},
+{fr:'Indien', lat:'Indus', abbr:'IND', desc:'Constellation australe introduite à l’époque des grandes explorations.'},
+{fr:'Lièvre', lat:'Lepus', abbr:'LEP', desc:'Petite constellation située sous Orion.'},
+{fr:'Balance', lat:'Libra', abbr:'LIB', desc:'Constellation zodiacale située entre la Vierge et le Scorpion.'},
+{fr:'Loup', lat:'Lupus', abbr:'LUP', desc:'Ancienne constellation australe dans une zone riche de la Voie lactée.'},
+{fr:'Table', lat:'Mensa', abbr:'MEN', desc:'Constellation extrêmement australe, nommée d’après la montagne de la Table.'},
+{fr:'Microscope', lat:'Microscopium', abbr:'MIC', desc:'Constellation moderne représentant un microscope.'},
+{fr:'Mouche', lat:'Musca', abbr:'MUS', desc:'Petite constellation proche de la Croix du Sud.'},
+{fr:'Règle', lat:'Norma', abbr:'NOR', desc:'Constellation moderne représentant une règle ou une équerre.'},
+{fr:'Octant', lat:'Octans', abbr:'OCT', desc:'Constellation contenant le pôle sud céleste.'},
+{fr:'Ophiuchus / Serpentaire', lat:'Ophiuchus', abbr:'OPH', desc:'Le porteur du Serpent ; l’écliptique traverse cette constellation.'},
+{fr:'Paon', lat:'Pavo', abbr:'PAV', desc:'Constellation australe dont l’étoile principale est Peacock.'},
+{fr:'Phénix', lat:'Phoenix', abbr:'PHE', desc:'Constellation australe représentant l’oiseau mythique.'},
+{fr:'Peintre', lat:'Pictor', abbr:'PIC', desc:'Constellation contenant Beta Pictoris, célèbre pour son disque de débris.'},
+{fr:'Poisson austral', lat:'Piscis Austrinus', abbr:'PSA', desc:'Constellation dominée par Fomalhaut.'},
+{fr:'Poupe', lat:'Puppis', abbr:'PUP', desc:'Ancienne partie du Navire Argo représentant la poupe du navire.'},
+{fr:'Boussole', lat:'Pyxis', abbr:'PYX', desc:'Constellation moderne représentant une boussole de marin.'},
+{fr:'Réticule', lat:'Reticulum', abbr:'RET', desc:'Petite constellation de Lacaille.'},
+{fr:'Sagittaire', lat:'Sagittarius', abbr:'SGR', desc:'Constellation zodiacale riche ; la direction du centre galactique s’y trouve.'},
+{fr:'Scorpion', lat:'Scorpius', abbr:'SCO', desc:'Constellation zodiacale spectaculaire dominée par Antarès.'},
+{fr:'Sculpteur', lat:'Sculptor', abbr:'SCL', desc:'Constellation moderne contenant NGC 253, la galaxie du Sculpteur.'},
+{fr:'Écu de Sobieski', lat:'Scutum', abbr:'SCT', desc:'Petite constellation de la Voie lactée contenant M11.'},
+{fr:'Sextant', lat:'Sextans', abbr:'SEX', desc:'Constellation faible créée par Hevelius.'},
+{fr:'Télescope', lat:'Telescopium', abbr:'TEL', desc:'Constellation moderne représentant un télescope.'},
+{fr:'Triangle austral', lat:'Triangulum Australe', abbr:'TRA', desc:'Petit triangle d’étoiles brillantes du ciel austral.'},
+{fr:'Toucan', lat:'Tucana', abbr:'TUC', desc:'Constellation contenant le Petit Nuage de Magellan et 47 Tucanae.'},
+{fr:'Voiles', lat:'Vela', abbr:'VEL', desc:'Ancienne partie du Navire Argo ; elle contient le rémanent des Voiles.'},
+{fr:'Vierge', lat:'Virgo', abbr:'VIR', desc:'Grande constellation zodiacale dominée par Spica.'},
+{fr:'Poisson volant', lat:'Volans', abbr:'VOL', desc:'Petite constellation australe représentant un poisson volant.'}
+];
+
+  // Pour héberger les images localement, remplace cette ligne par :
+  // const IMG_BASE = "images/constellations/";
+  const IMG_BASE = "https://iauarchive.eso.org/static/public/constellations/gif/";
+  const PDF_BASE = "https://iauarchive.eso.org/static/public/constellations/pdf/";
+
+  function makeCard(item) {
+    const imgUrl = IMG_BASE + item.abbr + ".gif";
+    const pdfUrl = PDF_BASE + item.abbr + ".pdf";
+
+    return `
+      <article class="card">
+        <div class="card-media">
+          <img
+            src="${imgUrl}"
+            alt="Carte officielle de la constellation ${item.fr}"
+            loading="lazy"
+            onerror="this.style.display='none'; this.parentNode.insertAdjacentHTML('beforeend','<div style=&quot;color:#fff;text-align:center&quot;>Image indisponible : ' + this.alt + '</div>')"
+          >
+        </div>
+        <div class="card-body">
+          <h3>${item.fr} <span class="latin">${item.lat}</span><span class="abbr">${item.abbr}</span></h3>
+          <p>${item.desc}</p>
+          <div class="actions">
+            <a class="btn btn-primary" href="${pdfUrl}" target="_blank" rel="noopener">PDF officiel</a>
+            <a class="btn btn-secondary" href="${imgUrl}" target="_blank" rel="noopener">Image GIF</a>
+          </div>
+        </div>
+      </article>
+    `;
+  }
+
+  function render(list, targetId) {
+    document.getElementById(targetId).innerHTML = list.map(makeCard).join("");
+  }
+
+  render(north, "north-grid");
+  render(south, "south-grid");
 </script>
 </body>
 </html>
