@@ -9,7 +9,7 @@
 
   <style>
     :root{
-      --maxw:760px;
+      --maxw:1180px;
       --bg:#fbfcfe;
       --card:#ffffff;
       --muted:#6b7280;
@@ -77,6 +77,146 @@
     footer.site-footer{max-width:var(--maxw);margin:48px auto 30px;padding:0 20px;color:var(--muted);font-size:13px}
     pre.debug{display:none}
 
+    /* ---------- FICHES FILMS AVEC AFFICHES ---------- */
+    section > .card{margin-bottom:18px}
+    .film-poster{
+      width:132px;
+      aspect-ratio:2 / 3;
+      flex:0 0 132px;
+      object-fit:cover;
+      border-radius:9px;
+      box-shadow:0 8px 20px rgba(15,23,42,.16);
+      background:#eef2f6;
+    }
+    .film-copy{min-width:0;flex:1;padding:4px 2px}
+
+    /* ---------- CINÉMA ITALIEN DES ANNÉES 60 ---------- */
+    .italian-sixties{margin-top:46px}
+    .section-heading{margin-bottom:18px}
+    .section-heading h2{
+      margin:0 0 7px;
+      font-family:Merriweather,serif;
+      font-size:30px;
+      line-height:1.2;
+    }
+    .section-kicker{
+      margin:0 0 6px;
+      color:var(--accent);
+      font-weight:600;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-size:12px;
+    }
+    .section-intro{max-width:820px;margin:0;color:#374151}
+
+    /* ---------- FILMOGRAPHIES : POSTER WALL ---------- */
+    .director-block{
+      margin:28px 0 38px;
+      padding:0;
+    }
+    .director-heading{
+      display:flex;
+      align-items:baseline;
+      gap:10px;
+      margin-bottom:14px;
+      padding-bottom:9px;
+      border-bottom:1px solid #e5e7eb;
+    }
+    .director-heading h3{
+      margin:0;
+      font-family:Merriweather,serif;
+      font-size:25px;
+      line-height:1.15;
+    }
+    .director-years{color:var(--muted);font-size:12px}
+    .director-films{
+      display:grid;
+      grid-template-columns:repeat(5,minmax(0,1fr));
+      gap:18px 12px;
+    }
+    .poster-card{
+      min-width:0;
+    }
+    .poster-link{
+      position:relative;
+      display:block;
+      width:100%;
+      aspect-ratio:2 / 3;
+      overflow:hidden;
+      border-radius:7px;
+      background:linear-gradient(145deg,#d7dce4,#f4f6f8);
+      box-shadow:0 2px 8px rgba(15,23,42,.16);
+      transition:transform .16s ease,box-shadow .16s ease;
+    }
+    .poster-link:hover{
+      transform:translateY(-3px) scale(1.015);
+      box-shadow:0 8px 20px rgba(15,23,42,.22);
+    }
+    .poster-link::after{
+      content:'';
+      position:absolute;
+      inset:0;
+      border:1px solid rgba(15,23,42,.14);
+      border-radius:inherit;
+      pointer-events:none;
+    }
+    .poster-card img{
+      width:100%;
+      height:100%;
+      display:block;
+      object-fit:cover;
+      opacity:0;
+      transition:opacity .22s ease;
+    }
+    .poster-card img.loaded{opacity:1}
+    .poster-fallback{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:12px;
+      text-align:center;
+      font-family:Merriweather,serif;
+      font-size:13px;
+      line-height:1.35;
+      color:#374151;
+    }
+    .poster-card img.loaded + .poster-fallback{display:none}
+    .poster-title{
+      margin:7px 0 0;
+      font-size:13px;
+      line-height:1.25;
+      font-weight:600;
+      color:#111827;
+      overflow-wrap:anywhere;
+    }
+    .poster-year{
+      display:block;
+      margin-top:2px;
+      color:var(--muted);
+      font-size:11px;
+      font-weight:400;
+    }
+
+    @media (max-width:820px){
+      .director-films{grid-template-columns:repeat(4,minmax(0,1fr))}
+    }
+    @media (max-width:640px){
+      .wrap{align-items:flex-start;flex-direction:column}
+      nav{flex-wrap:wrap}
+      .card{flex-direction:column}
+      .film-poster{width:100%;max-width:230px;flex-basis:auto;align-self:center}
+      .director-heading{display:block}
+      .director-heading h3{font-size:22px}
+      .director-years{display:block;margin-top:4px}
+      .director-films{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 10px}
+      .section-heading h2{font-size:25px}
+    }
+    @media (max-width:420px){
+      .director-films{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+
     @media print{ body{background:#fff} header,footer.site-footer{display:none} .card{box-shadow:none;border-radius:0} }
   </style>
 </head>
@@ -87,6 +227,7 @@
       <nav aria-label="Navigation principale">
         <a href="index.html">Accueil</a>
         <a href="culture-films.html">Films</a>
+        <a href="#cinema-italien-60">Italie années 60</a>
         <a href="culture-livres.html">Livres</a>
         <a href="culture-musiques.html">Musiques</a>
         <a href="projets-libres-pensees.html">Projets</a>
@@ -98,41 +239,51 @@
     <div class="grid">
       <section>
         <article class="card simple-item" aria-labelledby="simple-title">
-          <div style="padding:12px">
+          <img class="film-poster"
+               src="https://upload.wikimedia.org/wikipedia/commons/3/38/Rear_Window_film_poster.jpg"
+               alt="Affiche du film Fenêtre sur cour" loading="lazy">
+          <div class="film-copy">
             <h2 id="simple-title" class="item-title">Fenêtre sur cour</h2>
-            <p class="meta"><span id="simple-pseudo">Pseudo : L'Homme Vert</span> &nbsp; • &nbsp; <span id="simple-author">Réalisateur : Hitchcock—</span></p>
+            <p class="meta"><span id="simple-pseudo">Pseudo : L'Homme Vert</span> &nbsp; • &nbsp; <span id="simple-author">Réalisateur : Alfred Hitchcock — 1954</span></p>
 
             <h3 style="font-size:14px;margin-top:10px;color:var(--muted)">Description</h3>
-            <p id="simple-description" class="description">Super film de suspens. J'ai lu une interview du dernier pris Nobel de physique dans laquelle il expliquait qu'il faisait regarder ce film a ses étudiants car il y avait beaucoup d'analogies à la mécanique quantique.</p>
-
-            <div style="margin-top:12px"><span class="badge">fiche film</span></div>
-          </div>
-        </article>
-        <article class="card simple-item" aria-labelledby="simple-title">
-          <div style="padding:12px">
-            <h2 id="simple-title" class="item-title">Empire du soleil</h2>
-            <p class="meta"><span id="simple-pseudo">Pseudo : Berni</span> &nbsp; • &nbsp; <span id="simple-author">Réalisateur : Steven Spielberg—</span></p>
-
-            <h3 style="font-size:14px;margin-top:10px;color:var(--muted)">Description</h3>
-            <p id="simple-description" class="description">Magnifique film de Spielberg, sublimes chants</p>
-
-            <div style="margin-top:12px"><span class="badge">fiche film</span></div>
-          </div>
-        </article>
-        </article>
-        <article class="card simple-item" aria-labelledby="simple-title">
-          <div style="padding:12px">
-            <h2 id="simple-title" class="item-title">Memories of Murder</h2>
-            <p class="meta"><span id="simple-pseudo">Pseudo : Pigeon vif</span> &nbsp; • &nbsp; <span id="simple-author">Réalisateur : Bong Joon-ho </span></p>
-
-            <h3 style="font-size:14px;margin-top:10px;color:var(--muted)">Description</h3>
-            <p id="simple-description" class="description">La psychologie et l'évolution des personnages, le ton ironique et aussi l'atmosphère angoissante, des envolées laissant place à la folie et au chaos, mais surtout une frustration incroyable face à l'impuissance des personnages face à une cruauté sans nom: superbe.</p>
+            <p id="simple-description" class="description">Super film de suspense. J'ai lu une interview du dernier prix Nobel de physique dans laquelle il expliquait qu'il faisait regarder ce film à ses étudiants car il y avait beaucoup d'analogies avec la mécanique quantique.</p>
 
             <div style="margin-top:12px"><span class="badge">fiche film</span></div>
           </div>
         </article>
 
-        <h2 style="margin-top:26px">Recommendations récentes <small style="color:var(--muted);font-size:13px"> (en attente d'ajout)</small></h2>
+        <article class="card simple-item">
+          <img class="film-poster"
+               src="https://upload.wikimedia.org/wikipedia/en/5/59/Empire_of_the_Sun.jpg"
+               alt="Affiche du film Empire du soleil" loading="lazy">
+          <div class="film-copy">
+            <h2 class="item-title">Empire du soleil</h2>
+            <p class="meta">Pseudo : Berni &nbsp; • &nbsp; Réalisateur : Steven Spielberg — 1987</p>
+
+            <h3 style="font-size:14px;margin-top:10px;color:var(--muted)">Description</h3>
+            <p class="description">Magnifique film de Spielberg, sublimes chants.</p>
+
+            <div style="margin-top:12px"><span class="badge">fiche film</span></div>
+          </div>
+        </article>
+
+        <article class="card simple-item">
+          <img class="film-poster"
+               src="https://upload.wikimedia.org/wikipedia/en/0/01/Salinui-chueok-south-korean-movie-poster-md.jpg"
+               alt="Affiche du film Memories of Murder" loading="lazy">
+          <div class="film-copy">
+            <h2 class="item-title">Memories of Murder</h2>
+            <p class="meta">Pseudo : Pigeon vif &nbsp; • &nbsp; Réalisateur : Bong Joon-ho — 2003</p>
+
+            <h3 style="font-size:14px;margin-top:10px;color:var(--muted)">Description</h3>
+            <p class="description">La psychologie et l'évolution des personnages, le ton ironique et aussi l'atmosphère angoissante, des envolées laissant place à la folie et au chaos, mais surtout une frustration incroyable face à l'impuissance des personnages face à une cruauté sans nom : superbe.</p>
+
+            <div style="margin-top:12px"><span class="badge">fiche film</span></div>
+          </div>
+        </article>
+
+        <h2 style="margin-top:26px">Recommandations récentes <small style="color:var(--muted);font-size:13px"> (en attente d'ajout)</small></h2>
         <div id="proposals-list" class="panel">Chargement…</div>
       </section>
 
@@ -152,6 +303,488 @@
         </div>
       </aside>
     </div>
+
+    <section id="cinema-italien-60" class="italian-sixties" aria-labelledby="italie-60-title">
+      <div class="section-heading">
+        <p class="section-kicker">Dossier cinéma</p>
+        <h2 id="italie-60-title">Le grand cinéma italien des années 1960</h2>
+        <p class="section-intro">Une sélection de grands réalisateurs et de leurs films majeurs de la décennie, présentée sous forme de filmographies visuelles.</p>
+      </div>
+      <article class="director-block">
+        <div class="director-heading">
+          <h3>Federico Fellini</h3><span class="director-years">1920–1993</span>
+        </div>
+        <div class="director-films">
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/La_Dolce_Vita" target="_blank" rel="noopener" aria-label="La Dolce Vita (1960)">
+              <img data-wiki="La Dolce Vita" alt="Affiche de La Dolce Vita" loading="lazy">
+              <span class="poster-fallback">La Dolce Vita</span>
+            </a>
+            <h4 class="poster-title">La Dolce Vita <span class="poster-year">1960</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/8½" target="_blank" rel="noopener" aria-label="8½ (1963)">
+              <img data-wiki="8½" alt="Affiche de 8½" loading="lazy">
+              <span class="poster-fallback">8½</span>
+            </a>
+            <h4 class="poster-title">8½ <span class="poster-year">1963</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/Juliet_of_the_Spirits" target="_blank" rel="noopener" aria-label="Giulietta degli spiriti (1965)">
+              <img data-wiki="Juliet of the Spirits" alt="Affiche de Giulietta degli spiriti" loading="lazy">
+              <span class="poster-fallback">Giulietta degli spiriti</span>
+            </a>
+            <h4 class="poster-title">Giulietta degli spiriti <span class="poster-year">1965</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/Fellini_Satyricon" target="_blank" rel="noopener" aria-label="Fellini Satyricon (1969)">
+              <img data-wiki="Fellini Satyricon" alt="Affiche de Fellini Satyricon" loading="lazy">
+              <span class="poster-fallback">Fellini Satyricon</span>
+            </a>
+            <h4 class="poster-title">Fellini Satyricon <span class="poster-year">1969</span></h4>
+          </article>
+        </div>
+      </article>
+
+      <article class="director-block">
+        <div class="director-heading">
+          <h3>Michelangelo Antonioni</h3><span class="director-years">1912–2007</span>
+        </div>
+        <div class="director-films">
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/L'Avventura" target="_blank" rel="noopener" aria-label="L'Avventura (1960)">
+              <img data-wiki="L'Avventura" alt="Affiche de L'Avventura" loading="lazy">
+              <span class="poster-fallback">L'Avventura</span>
+            </a>
+            <h4 class="poster-title">L'Avventura <span class="poster-year">1960</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/La_Notte" target="_blank" rel="noopener" aria-label="La Notte (1961)">
+              <img data-wiki="La Notte" alt="Affiche de La Notte" loading="lazy">
+              <span class="poster-fallback">La Notte</span>
+            </a>
+            <h4 class="poster-title">La Notte <span class="poster-year">1961</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/L'Eclisse" target="_blank" rel="noopener" aria-label="L'Eclisse (1962)">
+              <img data-wiki="L'Eclisse" alt="Affiche de L'Eclisse" loading="lazy">
+              <span class="poster-fallback">L'Eclisse</span>
+            </a>
+            <h4 class="poster-title">L'Eclisse <span class="poster-year">1962</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/Red_Desert_(film)" target="_blank" rel="noopener" aria-label="Il deserto rosso (1964)">
+              <img data-wiki="Red Desert (film)" alt="Affiche de Il deserto rosso" loading="lazy">
+              <span class="poster-fallback">Il deserto rosso</span>
+            </a>
+            <h4 class="poster-title">Il deserto rosso <span class="poster-year">1964</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/Blowup" target="_blank" rel="noopener" aria-label="Blow-Up (1966)">
+              <img data-wiki="Blowup" alt="Affiche de Blow-Up" loading="lazy">
+              <span class="poster-fallback">Blow-Up</span>
+            </a>
+            <h4 class="poster-title">Blow-Up <span class="poster-year">1966</span></h4>
+          </article>
+        </div>
+      </article>
+
+      <article class="director-block">
+        <div class="director-heading">
+          <h3>Luchino Visconti</h3><span class="director-years">1906–1976</span>
+        </div>
+        <div class="director-films">
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/Rocco_and_His_Brothers" target="_blank" rel="noopener" aria-label="Rocco e i suoi fratelli (1960)">
+              <img data-wiki="Rocco and His Brothers" alt="Affiche de Rocco e i suoi fratelli" loading="lazy">
+              <span class="poster-fallback">Rocco e i suoi fratelli</span>
+            </a>
+            <h4 class="poster-title">Rocco e i suoi fratelli <span class="poster-year">1960</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/The_Leopard_(1963_film)" target="_blank" rel="noopener" aria-label="Il Gattopardo (1963)">
+              <img data-wiki="The Leopard (1963 film)" alt="Affiche de Il Gattopardo" loading="lazy">
+              <span class="poster-fallback">Il Gattopardo</span>
+            </a>
+            <h4 class="poster-title">Il Gattopardo <span class="poster-year">1963</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/Sandra_(film)" target="_blank" rel="noopener" aria-label="Vaghe stelle dell'Orsa… (1965)">
+              <img data-wiki="Sandra (film)" alt="Affiche de Vaghe stelle dell'Orsa…" loading="lazy">
+              <span class="poster-fallback">Vaghe stelle dell'Orsa…</span>
+            </a>
+            <h4 class="poster-title">Vaghe stelle dell'Orsa… <span class="poster-year">1965</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/The_Stranger_(1967_film)" target="_blank" rel="noopener" aria-label="Lo straniero (1967)">
+              <img data-wiki="The Stranger (1967 film)" alt="Affiche de Lo straniero" loading="lazy">
+              <span class="poster-fallback">Lo straniero</span>
+            </a>
+            <h4 class="poster-title">Lo straniero <span class="poster-year">1967</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/The_Damned_(1969_film)" target="_blank" rel="noopener" aria-label="La caduta degli dei (1969)">
+              <img data-wiki="The Damned (1969 film)" alt="Affiche de La caduta degli dei" loading="lazy">
+              <span class="poster-fallback">La caduta degli dei</span>
+            </a>
+            <h4 class="poster-title">La caduta degli dei <span class="poster-year">1969</span></h4>
+          </article>
+        </div>
+      </article>
+
+      <article class="director-block">
+        <div class="director-heading">
+          <h3>Pier Paolo Pasolini</h3><span class="director-years">1922–1975</span>
+        </div>
+        <div class="director-films">
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/Accattone" target="_blank" rel="noopener" aria-label="Accattone (1961)">
+              <img data-wiki="Accattone" alt="Affiche de Accattone" loading="lazy">
+              <span class="poster-fallback">Accattone</span>
+            </a>
+            <h4 class="poster-title">Accattone <span class="poster-year">1961</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/Mamma_Roma" target="_blank" rel="noopener" aria-label="Mamma Roma (1962)">
+              <img data-wiki="Mamma Roma" alt="Affiche de Mamma Roma" loading="lazy">
+              <span class="poster-fallback">Mamma Roma</span>
+            </a>
+            <h4 class="poster-title">Mamma Roma <span class="poster-year">1962</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/The_Gospel_According_to_St._Matthew_(film)" target="_blank" rel="noopener" aria-label="Il Vangelo secondo Matteo (1964)">
+              <img data-wiki="The Gospel According to St. Matthew (film)" alt="Affiche de Il Vangelo secondo Matteo" loading="lazy">
+              <span class="poster-fallback">Il Vangelo secondo Matteo</span>
+            </a>
+            <h4 class="poster-title">Il Vangelo secondo Matteo <span class="poster-year">1964</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/The_Hawks_and_the_Sparrows" target="_blank" rel="noopener" aria-label="Uccellacci e uccellini (1966)">
+              <img data-wiki="The Hawks and the Sparrows" alt="Affiche de Uccellacci e uccellini" loading="lazy">
+              <span class="poster-fallback">Uccellacci e uccellini</span>
+            </a>
+            <h4 class="poster-title">Uccellacci e uccellini <span class="poster-year">1966</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/Oedipus_Rex_(1967_film)" target="_blank" rel="noopener" aria-label="Edipo re (1967)">
+              <img data-wiki="Oedipus Rex (1967 film)" alt="Affiche de Edipo re" loading="lazy">
+              <span class="poster-fallback">Edipo re</span>
+            </a>
+            <h4 class="poster-title">Edipo re <span class="poster-year">1967</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/Teorema_(film)" target="_blank" rel="noopener" aria-label="Teorema (1968)">
+              <img data-wiki="Teorema (film)" alt="Affiche de Teorema" loading="lazy">
+              <span class="poster-fallback">Teorema</span>
+            </a>
+            <h4 class="poster-title">Teorema <span class="poster-year">1968</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/Medea_(1969_film)" target="_blank" rel="noopener" aria-label="Medea (1969)">
+              <img data-wiki="Medea (1969 film)" alt="Affiche de Medea" loading="lazy">
+              <span class="poster-fallback">Medea</span>
+            </a>
+            <h4 class="poster-title">Medea <span class="poster-year">1969</span></h4>
+          </article>
+        </div>
+      </article>
+
+      <article class="director-block">
+        <div class="director-heading">
+          <h3>Sergio Leone</h3><span class="director-years">1929–1989</span>
+        </div>
+        <div class="director-films">
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/The_Colossus_of_Rhodes_(film)" target="_blank" rel="noopener" aria-label="Il colosso di Rodi (1961)">
+              <img data-wiki="The Colossus of Rhodes (film)" alt="Affiche de Il colosso di Rodi" loading="lazy">
+              <span class="poster-fallback">Il colosso di Rodi</span>
+            </a>
+            <h4 class="poster-title">Il colosso di Rodi <span class="poster-year">1961</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/A_Fistful_of_Dollars" target="_blank" rel="noopener" aria-label="Per un pugno di dollari (1964)">
+              <img data-wiki="A Fistful of Dollars" alt="Affiche de Per un pugno di dollari" loading="lazy">
+              <span class="poster-fallback">Per un pugno di dollari</span>
+            </a>
+            <h4 class="poster-title">Per un pugno di dollari <span class="poster-year">1964</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/For_a_Few_Dollars_More" target="_blank" rel="noopener" aria-label="Per qualche dollaro in più (1965)">
+              <img data-wiki="For a Few Dollars More" alt="Affiche de Per qualche dollaro in più" loading="lazy">
+              <span class="poster-fallback">Per qualche dollaro in più</span>
+            </a>
+            <h4 class="poster-title">Per qualche dollaro in più <span class="poster-year">1965</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/The_Good,_the_Bad_and_the_Ugly" target="_blank" rel="noopener" aria-label="Il buono, il brutto, il cattivo (1966)">
+              <img data-wiki="The Good, the Bad and the Ugly" alt="Affiche de Il buono, il brutto, il cattivo" loading="lazy">
+              <span class="poster-fallback">Il buono, il brutto, il cattivo</span>
+            </a>
+            <h4 class="poster-title">Il buono, il brutto, il cattivo <span class="poster-year">1966</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/Once_Upon_a_Time_in_the_West" target="_blank" rel="noopener" aria-label="C'era una volta il West (1968)">
+              <img data-wiki="Once Upon a Time in the West" alt="Affiche de C'era una volta il West" loading="lazy">
+              <span class="poster-fallback">C'era una volta il West</span>
+            </a>
+            <h4 class="poster-title">C'era una volta il West <span class="poster-year">1968</span></h4>
+          </article>
+        </div>
+      </article>
+
+      <article class="director-block">
+        <div class="director-heading">
+          <h3>Dino Risi</h3><span class="director-years">1916–2008</span>
+        </div>
+        <div class="director-films">
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/A_Difficult_Life" target="_blank" rel="noopener" aria-label="Una vita difficile (1961)">
+              <img data-wiki="A Difficult Life" alt="Affiche de Una vita difficile" loading="lazy">
+              <span class="poster-fallback">Una vita difficile</span>
+            </a>
+            <h4 class="poster-title">Una vita difficile <span class="poster-year">1961</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/Il_Sorpasso" target="_blank" rel="noopener" aria-label="Il Sorpasso (1962)">
+              <img data-wiki="Il Sorpasso" alt="Affiche de Il Sorpasso" loading="lazy">
+              <span class="poster-fallback">Il Sorpasso</span>
+            </a>
+            <h4 class="poster-title">Il Sorpasso <span class="poster-year">1962</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/I_mostri" target="_blank" rel="noopener" aria-label="I mostri (1963)">
+              <img data-wiki="I mostri" alt="Affiche de I mostri" loading="lazy">
+              <span class="poster-fallback">I mostri</span>
+            </a>
+            <h4 class="poster-title">I mostri <span class="poster-year">1963</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/Operation_San_Gennaro" target="_blank" rel="noopener" aria-label="Operazione San Gennaro (1966)">
+              <img data-wiki="Operation San Gennaro" alt="Affiche de Operazione San Gennaro" loading="lazy">
+              <span class="poster-fallback">Operazione San Gennaro</span>
+            </a>
+            <h4 class="poster-title">Operazione San Gennaro <span class="poster-year">1966</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/Torture_Me_But_Kill_Me_with_Kisses" target="_blank" rel="noopener" aria-label="Straziami, ma di baci saziami (1968)">
+              <img data-wiki="Torture Me But Kill Me with Kisses" alt="Affiche de Straziami, ma di baci saziami" loading="lazy">
+              <span class="poster-fallback">Straziami, ma di baci saziami</span>
+            </a>
+            <h4 class="poster-title">Straziami, ma di baci saziami <span class="poster-year">1968</span></h4>
+          </article>
+        </div>
+      </article>
+
+      <article class="director-block">
+        <div class="director-heading">
+          <h3>Vittorio De Sica</h3><span class="director-years">1901–1974</span>
+        </div>
+        <div class="director-films">
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/Two_Women" target="_blank" rel="noopener" aria-label="La ciociara (1960)">
+              <img data-wiki="Two Women" alt="Affiche de La ciociara" loading="lazy">
+              <span class="poster-fallback">La ciociara</span>
+            </a>
+            <h4 class="poster-title">La ciociara <span class="poster-year">1960</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/The_Last_Judgment_(1961_film)" target="_blank" rel="noopener" aria-label="Il giudizio universale (1961)">
+              <img data-wiki="The Last Judgment (1961 film)" alt="Affiche de Il giudizio universale" loading="lazy">
+              <span class="poster-fallback">Il giudizio universale</span>
+            </a>
+            <h4 class="poster-title">Il giudizio universale <span class="poster-year">1961</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/The_Condemned_of_Altona_(film)" target="_blank" rel="noopener" aria-label="I sequestrati di Altona (1962)">
+              <img data-wiki="The Condemned of Altona (film)" alt="Affiche de I sequestrati di Altona" loading="lazy">
+              <span class="poster-fallback">I sequestrati di Altona</span>
+            </a>
+            <h4 class="poster-title">I sequestrati di Altona <span class="poster-year">1962</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/Yesterday,_Today_and_Tomorrow" target="_blank" rel="noopener" aria-label="Ieri, oggi, domani (1963)">
+              <img data-wiki="Yesterday, Today and Tomorrow" alt="Affiche de Ieri, oggi, domani" loading="lazy">
+              <span class="poster-fallback">Ieri, oggi, domani</span>
+            </a>
+            <h4 class="poster-title">Ieri, oggi, domani <span class="poster-year">1963</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/Marriage_Italian_Style" target="_blank" rel="noopener" aria-label="Matrimonio all'italiana (1964)">
+              <img data-wiki="Marriage Italian Style" alt="Affiche de Matrimonio all'italiana" loading="lazy">
+              <span class="poster-fallback">Matrimonio all'italiana</span>
+            </a>
+            <h4 class="poster-title">Matrimonio all'italiana <span class="poster-year">1964</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/A_Place_for_Lovers" target="_blank" rel="noopener" aria-label="Amanti (1968)">
+              <img data-wiki="A Place for Lovers" alt="Affiche de Amanti" loading="lazy">
+              <span class="poster-fallback">Amanti</span>
+            </a>
+            <h4 class="poster-title">Amanti <span class="poster-year">1968</span></h4>
+          </article>
+        </div>
+      </article>
+
+      <article class="director-block">
+        <div class="director-heading">
+          <h3>Pietro Germi</h3><span class="director-years">1914–1974</span>
+        </div>
+        <div class="director-films">
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/Divorce_Italian_Style" target="_blank" rel="noopener" aria-label="Divorzio all'italiana (1961)">
+              <img data-wiki="Divorce Italian Style" alt="Affiche de Divorzio all'italiana" loading="lazy">
+              <span class="poster-fallback">Divorzio all'italiana</span>
+            </a>
+            <h4 class="poster-title">Divorzio all'italiana <span class="poster-year">1961</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/Seduced_and_Abandoned" target="_blank" rel="noopener" aria-label="Sedotta e abbandonata (1964)">
+              <img data-wiki="Seduced and Abandoned" alt="Affiche de Sedotta e abbandonata" loading="lazy">
+              <span class="poster-fallback">Sedotta e abbandonata</span>
+            </a>
+            <h4 class="poster-title">Sedotta e abbandonata <span class="poster-year">1964</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/The_Birds,_the_Bees_and_the_Italians" target="_blank" rel="noopener" aria-label="Signore &amp; signori (1966)">
+              <img data-wiki="The Birds, the Bees and the Italians" alt="Affiche de Signore &amp; signori" loading="lazy">
+              <span class="poster-fallback">Signore &amp; signori</span>
+            </a>
+            <h4 class="poster-title">Signore &amp; signori <span class="poster-year">1966</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/Serafino_(film)" target="_blank" rel="noopener" aria-label="Serafino (1968)">
+              <img data-wiki="Serafino (film)" alt="Affiche de Serafino" loading="lazy">
+              <span class="poster-fallback">Serafino</span>
+            </a>
+            <h4 class="poster-title">Serafino <span class="poster-year">1968</span></h4>
+          </article>
+        </div>
+      </article>
+
+      <article class="director-block">
+        <div class="director-heading">
+          <h3>Mario Monicelli</h3><span class="director-years">1915–2010</span>
+        </div>
+        <div class="director-films">
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/The_Passionate_Thief" target="_blank" rel="noopener" aria-label="Risate di gioia (1960)">
+              <img data-wiki="The Passionate Thief" alt="Affiche de Risate di gioia" loading="lazy">
+              <span class="poster-fallback">Risate di gioia</span>
+            </a>
+            <h4 class="poster-title">Risate di gioia <span class="poster-year">1960</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/The_Organizer" target="_blank" rel="noopener" aria-label="I compagni (1963)">
+              <img data-wiki="The Organizer" alt="Affiche de I compagni" loading="lazy">
+              <span class="poster-fallback">I compagni</span>
+            </a>
+            <h4 class="poster-title">I compagni <span class="poster-year">1963</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/L’armata_Brancaleone" target="_blank" rel="noopener" aria-label="L'armata Brancaleone (1966)">
+              <img data-wiki="L’armata Brancaleone" alt="Affiche de L'armata Brancaleone" loading="lazy">
+              <span class="poster-fallback">L'armata Brancaleone</span>
+            </a>
+            <h4 class="poster-title">L'armata Brancaleone <span class="poster-year">1966</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/The_Girl_with_the_Pistol" target="_blank" rel="noopener" aria-label="La ragazza con la pistola (1968)">
+              <img data-wiki="The Girl with the Pistol" alt="Affiche de La ragazza con la pistola" loading="lazy">
+              <span class="poster-fallback">La ragazza con la pistola</span>
+            </a>
+            <h4 class="poster-title">La ragazza con la pistola <span class="poster-year">1968</span></h4>
+          </article>
+        </div>
+      </article>
+
+      <article class="director-block">
+        <div class="director-heading">
+          <h3>Elio Petri</h3><span class="director-years">1929–1982</span>
+        </div>
+        <div class="director-films">
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/The_Assassin_(1961_film)" target="_blank" rel="noopener" aria-label="L'assassino (1961)">
+              <img data-wiki="The Assassin (1961 film)" alt="Affiche de L'assassino" loading="lazy">
+              <span class="poster-fallback">L'assassino</span>
+            </a>
+            <h4 class="poster-title">L'assassino <span class="poster-year">1961</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/The_10th_Victim" target="_blank" rel="noopener" aria-label="La decima vittima (1965)">
+              <img data-wiki="The 10th Victim" alt="Affiche de La decima vittima" loading="lazy">
+              <span class="poster-fallback">La decima vittima</span>
+            </a>
+            <h4 class="poster-title">La decima vittima <span class="poster-year">1965</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/We_Still_Kill_the_Old_Way" target="_blank" rel="noopener" aria-label="A ciascuno il suo (1967)">
+              <img data-wiki="We Still Kill the Old Way" alt="Affiche de A ciascuno il suo" loading="lazy">
+              <span class="poster-fallback">A ciascuno il suo</span>
+            </a>
+            <h4 class="poster-title">A ciascuno il suo <span class="poster-year">1967</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/A_Quiet_Place_in_the_Country" target="_blank" rel="noopener" aria-label="Un tranquillo posto di campagna (1968)">
+              <img data-wiki="A Quiet Place in the Country" alt="Affiche de Un tranquillo posto di campagna" loading="lazy">
+              <span class="poster-fallback">Un tranquillo posto di campagna</span>
+            </a>
+            <h4 class="poster-title">Un tranquillo posto di campagna <span class="poster-year">1968</span></h4>
+          </article>
+        </div>
+      </article>
+
+      <article class="director-block">
+        <div class="director-heading">
+          <h3>Bernardo Bertolucci</h3><span class="director-years">1941–2018</span>
+        </div>
+        <div class="director-films">
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/La_commare_secca" target="_blank" rel="noopener" aria-label="La commare secca (1962)">
+              <img data-wiki="La commare secca" alt="Affiche de La commare secca" loading="lazy">
+              <span class="poster-fallback">La commare secca</span>
+            </a>
+            <h4 class="poster-title">La commare secca <span class="poster-year">1962</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/Before_the_Revolution" target="_blank" rel="noopener" aria-label="Prima della rivoluzione (1964)">
+              <img data-wiki="Before the Revolution" alt="Affiche de Prima della rivoluzione" loading="lazy">
+              <span class="poster-fallback">Prima della rivoluzione</span>
+            </a>
+            <h4 class="poster-title">Prima della rivoluzione <span class="poster-year">1964</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/Partner_(1968_film)" target="_blank" rel="noopener" aria-label="Partner (1968)">
+              <img data-wiki="Partner (1968 film)" alt="Affiche de Partner" loading="lazy">
+              <span class="poster-fallback">Partner</span>
+            </a>
+            <h4 class="poster-title">Partner <span class="poster-year">1968</span></h4>
+          </article>
+        </div>
+      </article>
+
+      <article class="director-block">
+        <div class="director-heading">
+          <h3>Marco Bellocchio</h3><span class="director-years">1939–</span>
+        </div>
+        <div class="director-films">
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/Fists_in_the_Pocket" target="_blank" rel="noopener" aria-label="I pugni in tasca (1965)">
+              <img data-wiki="Fists in the Pocket" alt="Affiche de I pugni in tasca" loading="lazy">
+              <span class="poster-fallback">I pugni in tasca</span>
+            </a>
+            <h4 class="poster-title">I pugni in tasca <span class="poster-year">1965</span></h4>
+          </article>
+          <article class="poster-card">
+            <a class="poster-link" href="https://en.wikipedia.org/wiki/China_Is_Near" target="_blank" rel="noopener" aria-label="La Cina è vicina (1967)">
+              <img data-wiki="China Is Near" alt="Affiche de La Cina è vicina" loading="lazy">
+              <span class="poster-fallback">La Cina è vicina</span>
+            </a>
+            <h4 class="poster-title">La Cina è vicina <span class="poster-year">1967</span></h4>
+          </article>
+        </div>
+      </article>
+
+    </section>
 
     <pre id="debug" class="debug"></pre>
   </main>
@@ -500,6 +1133,7 @@ ${desc}`;
   const form = document.getElementById('remark-form');
   const resultEl = document.getElementById('remark-result');
   const listEl = document.getElementById('remarks-list');
+  if(!form || !resultEl || !listEl) return;
 
   function escapeHtml(s=''){ return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;'); }
   function fmtDate(iso){ try{ return new Date(iso).toLocaleString(); }catch(e){ return iso; } }
@@ -568,6 +1202,92 @@ ${desc}`;
   fetchRemarks();
 })();
 </script>
+
+  <script>
+  // Charge de vraies affiches de films depuis Wikipedia.
+  // On cherche d'abord une image dont le nom ressemble à une affiche/poster,
+  // puis on utilise l'image principale de la page en solution de secours.
+  (function loadFilmPosters(){
+    const images = [...document.querySelectorAll('.poster-card img[data-wiki]')];
+    const queue = [...images];
+    const workers = 5;
+
+    const API = 'https://en.wikipedia.org/w/api.php?origin=*&format=json&action=query&';
+
+    async function fetchJson(url){
+      const res = await fetch(url, {cache:'force-cache'});
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    }
+
+    function choosePoster(files, title){
+      if(!files || !files.length) return null;
+      const cleanTitle = String(title || '').toLowerCase().replace(/[^a-z0-9]+/g,' ');
+      const bad = /(logo|icon|map|flag|commons-logo|wikidata|speaker|question_book|pictogram|signature|svg)/i;
+      const scored = files
+        .map(f => {
+          const name = (f.title || '').replace(/^File:/i,'');
+          const low = name.toLowerCase();
+          let score = 0;
+          if(/poster|film poster|movie poster|locandina|manifesto/i.test(low)) score += 100;
+          if(/\.jpe?g$|\.png$|\.webp$/i.test(low)) score += 15;
+          if(cleanTitle && cleanTitle.split(' ').filter(x=>x.length>3).some(x=>low.includes(x))) score += 25;
+          if(bad.test(low)) score -= 1000;
+          return {file:f.title, score};
+        })
+        .sort((a,b)=>b.score-a.score);
+      return scored[0] && scored[0].score > 0 ? scored[0].file : null;
+    }
+
+    async function posterFromPageImages(title){
+      const url = API + 'prop=images&imlimit=80&titles=' + encodeURIComponent(title);
+      const data = await fetchJson(url);
+      const pages = data?.query?.pages ? Object.values(data.query.pages) : [];
+      const file = choosePoster(pages[0]?.images || [], title);
+      if(!file) return null;
+
+      const infoUrl = API + 'prop=imageinfo&iiprop=url&iiurlwidth=520&titles=' + encodeURIComponent(file);
+      const info = await fetchJson(infoUrl);
+      const imagePages = info?.query?.pages ? Object.values(info.query.pages) : [];
+      const ii = imagePages[0]?.imageinfo?.[0];
+      return ii?.thumburl || ii?.url || null;
+    }
+
+    async function mainPageImage(title){
+      const url = API + 'prop=pageimages&piprop=thumbnail&pithumbsize=520&titles=' + encodeURIComponent(title);
+      const data = await fetchJson(url);
+      const pages = data?.query?.pages ? Object.values(data.query.pages) : [];
+      return pages[0]?.thumbnail?.source || null;
+    }
+
+    async function loadOne(img){
+      const title = img.dataset.wiki;
+      if(!title) return;
+      try{
+        let src = await posterFromPageImages(title);
+        if(!src) src = await mainPageImage(title);
+        if(!src) return;
+
+        img.addEventListener('load', () => img.classList.add('loaded'), {once:true});
+        img.addEventListener('error', () => {
+          img.removeAttribute('src');
+          console.warn('Affiche impossible à charger :', title);
+        }, {once:true});
+        img.src = src;
+      }catch(e){
+        console.warn('Affiche indisponible :', title, e);
+      }
+    }
+
+    async function worker(){
+      while(queue.length){
+        await loadOne(queue.shift());
+      }
+    }
+
+    Promise.all(Array.from({length:workers}, worker));
+  })();
+  </script>
 
 </body>
 </html>
