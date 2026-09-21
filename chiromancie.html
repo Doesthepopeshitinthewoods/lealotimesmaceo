@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Chiromancie — Les lignes de la main</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            background: #f5f1e8;
+            color: #28251f;
+            line-height: 1.65;
+        }
+
+        header {
+            padding: 90px 20px 70px;
+            text-align: center;
+            background:
+                linear-gradient(rgba(30,25,20,.55), rgba(30,25,20,.65)),
+                url("images/chiromancie/main.jpg") center/cover;
+            color: white;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: clamp(2.7rem, 7vw, 5rem);
+            font-weight: 500;
+            letter-spacing: .04em;
+        }
+
+        header p {
+            max-width: 700px;
+            margin: 20px auto 0;
+            font-size: 1.15rem;
+        }
+
+        main {
+            width: min(1100px, 92%);
+            margin: auto;
+        }
+
+        .intro {
+            max-width: 800px;
+            margin: 70px auto;
+            text-align: center;
+            font-size: 1.08rem;
+        }
+
+        .note {
+            margin: 35px auto;
+            padding: 20px 24px;
+            max-width: 800px;
+            border-left: 4px solid #7b4937;
+            background: #ebe4d6;
+            text-align: left;
+        }
+
+        h2 {
+            margin-top: 70px;
+            font-size: 2.2rem;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .subtitle {
+            max-width: 700px;
+            margin: -10px auto 40px;
+            text-align: center;
+            color: #696258;
+        }
+
+        /* MAIN */
+
+        .hand-zone {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 55px;
+            align-items: center;
+            margin: 50px 0 80px;
+        }
+
+        .hand {
+            position: relative;
+            max-width: 430px;
+            margin: auto;
+        }
+
+        .hand img {
+            width: 100%;
+            display: block;
+            border-radius: 220px 220px 80px 80px;
+        }
+
+        .legend {
+            display: flex;
+            flex-direction: column;
+            gap: 17px;
+        }
+
+        .legend-item {
+            padding: 18px 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 18px rgba(0,0,0,.06);
+        }
+
+        .legend-item strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #734535;
+            font-size: 1.08rem;
+        }
+
+        /* CARTES */
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin: 45px 0;
+        }
+
+        .card {
+            background: #fff;
+            padding: 28px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,.06);
+        }
+
+        .card .number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #784b38;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .card h3 {
+            margin: 5px 0 12px;
+            font-size: 1.45rem;
+        }
+
+        .interpretation {
+            margin-top: 15px;
+            border-top: 1px solid #ddd5c8;
+            padding-top: 15px;
+        }
+
+        .interpretation b {
+            color: #754937;
+        }
+
+        /* FORMES */
+
+        .shapes {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 80px;
+        }
+
+        .shape {
+            background: #ebe4d8;
+            padding: 25px 18px;
+            text-align: center;
+            border-radius: 8px;
+        }
+
+        .shape span {
+            font-size: 2rem;
+        }
+
+        .shape h3 {
+            margin: 8px 0;
+        }
+
+        /* MONTS */
+
+        .mounts {
+            columns: 2;
+            column-gap: 45px;
+            margin: 40px auto 80px;
+            max-width: 850px;
+        }
+
+        .mount {
+            break-inside: avoid;
+            margin-bottom: 22px;
+        }
+
+        .mount strong {
+            color: #754937;
+        }
+
+        footer {
+            margin-top: 80px;
+            padding: 40px 20px;
+            text-align: center;
+            background: #29251f;
+            color: #d9d1c4;
+        }
+
+        @media (max-width: 760px) {
+
+            .hand-zone,
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            .shapes {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .mounts {
+                columns: 1;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Les lignes de la main</h1>
+
+    <p>
+        Une introduction à la chiromancie : symbolique des lignes,
+        formes de la main et traditions d'interprétation.
+    </p>
+</header>
+
+
+<main>
+
+    <section class="intro">
+
+        <p>
+            Depuis l'Antiquité, certaines traditions ont cherché à lire
+            le caractère ou le destin d'une personne à travers la forme
+            de ses mains et les lignes de sa paume.
+        </p>
+
+        <p>
+            Cette pratique porte le nom de
+            <strong>chiromancie</strong>.
+            Elle s'est développée sous différentes formes en Inde,
+            en Chine, au Moyen-Orient puis en Europe.
+        </p>
+
+        <div class="note">
+            <strong>À garder à l'esprit :</strong>
+            la chiromancie ne possède pas de fondement scientifique
+            permettant de prédire la personnalité, la santé ou
+            l'avenir. Les interprétations présentées ici appartiennent
+            à une tradition culturelle et symbolique.
+        </div>
+
+    </section>
+
+
+    <h2>Les grandes lignes de la paume</h2>
+
+    <p class="subtitle">
+        Toutes les mains sont différentes, mais la tradition
+        chiromantique distingue plusieurs lignes principales.
+    </p>
+
+
+    <section class="hand-zone">
+
+        <div class="hand">
+            <img src="images/chiromancie/main-lignes.jpg"
+                 alt="Schéma des principales lignes de la main">
+        </div>
+
+
+        <div class="legend">
+
+            <div class="legend-item">
+                <strong>① Ligne de cœur</strong>
+                Traverse la partie supérieure de la paume.
+                Elle est traditionnellement associée aux émotions
+                et aux relations sentimentales.
+            </div>
+
+            <div class="legend-item">
+                <strong>② Ligne de tête</strong>
+                Traverse le centre de la paume et symboliserait
+                la pensée, le raisonnement et l'imagination.
+            </div>
+
+            <div class="legend-item">
+                <strong>③ Ligne de vie</strong>
+                Forme un arc autour de la base du pouce.
+                Elle est associée à l'énergie et aux changements de vie.
+            </div>
+
+            <div class="legend-item">
+                <strong>④ Ligne du destin</strong>
+                Ligne verticale remontant vers le majeur.
+                Elle représente traditionnellement la trajectoire
+                sociale ou professionnelle.
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <h2>Interprétation traditionnelle</h2>
+
+    <div class="cards">
+
+
+        <article class="card">
+
+            <span class="number">1</span>
+
+            <h3>Ligne de cœur</h3>
+
+            <p>
+                Également appelée <strong>ligne d'amour</strong>,
+                elle commence généralement sous l'auriculaire
+                et traverse la partie supérieure de la paume.
+            </p>
+
+            <div class="interpretation">
+
+                <p>
+                    <b>Longue et marquée :</b>
+                    émotions fortes et importance donnée aux relations.
+                </p>
+
+                <p>
+                    <b>Courbe :</b>
+                    expression émotionnelle plus spontanée.
+                </p>
+
+                <p>
+                    <b>Droite :</b>
+                    approche plus réservée ou rationnelle
+                    des sentiments.
+                </p>
+
+                <p>
+                    <b>Interrompue :</b>
+                    changements affectifs importants dans
+                    l'interprétation traditionnelle.
+                </p>
+
+            </div>
+
+        </article>
+
+
+
+        <article class="card">
+
+            <span class="number">2</span>
+
+            <h3>Ligne de tête</h3>
+
+            <p>
+                Située au centre de la paume, elle est associée
+                à l'intellect, aux décisions et à la façon de réfléchir.
+            </p>
+
+            <div class="interpretation">
+
+                <p>
+                    <b>Longue :</b>
+                    esprit analytique ou forte capacité de concentration.
+                </p>
+
+                <p>
+                    <b>Courte :</b>
+                    pensée plus directe ou pragmatique.
+                </p>
+
+                <p>
+                    <b>Droite :</b>
+                    logique et rationalité.
+                </p>
+
+                <p>
+                    <b>Descendante :</b>
+                    imagination et créativité.
+                </p>
+
+            </div>
+
+        </article>
+
+
+
+        <article class="card">
+
+            <span class="number">3</span>
+
+            <h3>Ligne de vie</h3>
+
+            <p>
+                Elle part généralement entre le pouce et l'index
+                avant de contourner la base du pouce.
+            </p>
+
+            <p>
+                Contrairement à une idée très répandue,
+                sa longueur n'est traditionnellement pas censée
+                donner directement le nombre d'années à vivre.
+            </p>
+
+            <div class="interpretation">
+
+                <p>
+                    <b>Profonde :</b>
+                    énergie et vitalité.
+                </p>
+
+                <p>
+                    <b>Large courbe :</b>
+                    tempérament actif ou goût pour l'expérience.
+                </p>
+
+                <p>
+                    <b>Fine :</b>
+                    énergie plus variable.
+                </p>
+
+                <p>
+                    <b>Ramifications :</b>
+                    périodes de changement, voyages ou transitions.
+                </p>
+
+            </div>
+
+        </article>
+
+
+
+        <article class="card">
+
+            <span class="number">4</span>
+
+            <h3>Ligne du destin</h3>
+
+            <p>
+                Aussi appelée <strong>ligne de Saturne</strong>,
+                elle peut remonter verticalement depuis le bas
+                de la paume vers le majeur.
+            </p>
+
+            <p>
+                Elle n'est pas visible chez tout le monde.
+            </p>
+
+            <div class="interpretation">
+
+                <p>
+                    <b>Très marquée :</b>
+                    trajectoire ou objectifs relativement définis.
+                </p>
+
+                <p>
+                    <b>Faible :</b>
+                    parcours plus flexible ou changeant.
+                </p>
+
+                <p>
+                    <b>Interruptions :</b>
+                    changements de carrière ou de direction.
+                </p>
+
+            </div>
+
+        </article>
+
+
+
+        <article class="card">
+
+            <span class="number">5</span>
+
+            <h3>Ligne du Soleil</h3>
+
+            <p>
+                Également appelée
+                <strong>ligne d'Apollon</strong>,
+                elle se dirige vers l'annulaire.
+            </p>
+
+            <p>
+                Dans la tradition, elle est associée à la créativité,
+                à la reconnaissance et à l'accomplissement personnel.
+            </p>
+
+        </article>
+
+
+
+        <article class="card">
+
+            <span class="number">6</span>
+
+            <h3>Ligne de Mercure</h3>
+
+            <p>
+                Elle peut remonter vers l'auriculaire.
+            </p>
+
+            <p>
+                Les traditions de chiromancie l'associent
+                à la communication, au commerce,
+                à l'intuition et au sens pratique.
+            </p>
+
+        </article>
+
+
+    </div>
+
+
+
+    <h2>Les lignes d'union</h2>
+
+    <p class="subtitle">
+        De petites lignes horizontales peuvent apparaître
+        sur le bord extérieur de la main, sous l'auriculaire.
+    </p>
+
+    <section class="intro">
+
+        <p>
+            Elles sont parfois appelées
+            <strong>lignes d'union</strong>,
+            <strong>lignes de relation</strong>
+            ou, plus traditionnellement,
+            <strong>lignes de mariage</strong>.
+        </p>
+
+        <p>
+            Les chiromanciens les ont associées aux relations
+            sentimentales importantes. Leur nombre n'est toutefois
+            pas censé correspondre littéralement au nombre
+            de mariages d'une personne.
+        </p>
+
+    </section>
+
+
+
+    <h2>Les monts de la main</h2>
+
+    <p class="subtitle">
+        Les zones charnues de la paume portent traditionnellement
+        les noms de plusieurs divinités et planètes antiques.
+    </p>
+
+
+    <div class="mounts">
+
+        <div class="mount">
+            <strong>Mont de Vénus</strong><br>
+            Sous le pouce : affection, sensualité,
+            énergie et sociabilité.
+        </div>
+
+        <div class="mount">
+            <strong>Mont de Jupiter</strong><br>
+            Sous l'index : ambition, autorité,
+            confiance et aspiration.
+        </div>
+
+        <div class="mount">
+            <strong>Mont de Saturne</strong><br>
+            Sous le majeur : réflexion,
+            prudence et sens des responsabilités.
+        </div>
+
+        <div class="mount">
+            <strong>Mont d'Apollon</strong><br>
+            Sous l'annulaire : créativité,
+            esthétique et recherche de reconnaissance.
+        </div>
+
+        <div class="mount">
+            <strong>Mont de Mercure</strong><br>
+            Sous l'auriculaire : communication,
+            adaptabilité et habileté.
+        </div>
+
+        <div class="mount">
+            <strong>Mont de la Lune</strong><br>
+            Partie basse extérieure de la paume :
+            imagination, intuition et goût du voyage.
+        </div>
+
+        <div class="mount">
+            <strong>Mont de Mars</strong><br>
+            Plusieurs zones de la paume lui sont associées :
+            courage, résistance et combativité.
+        </div>
+
+    </div>
+
+
+
+    <h2>Les quatre formes traditionnelles de mains</h2>
+
+    <p class="subtitle">
+        Une autre branche de la chiromancie classe les mains
+        selon quatre catégories inspirées des éléments.
+    </p>
+
+
+    <div class="shapes">
+
+        <div class="shape">
+            <span>🜃</span>
+            <h3>Terre</h3>
+            <p>
+                Paume plutôt carrée et doigts courts.
+                Associée au pragmatisme et à la stabilité.
+            </p>
+        </div>
+
+
+        <div class="shape">
+            <span>🜁</span>
+            <h3>Air</h3>
+            <p>
+                Paume carrée et doigts longs.
+                Associée à la curiosité et à l'intellect.
+            </p>
+        </div>
+
+
+        <div class="shape">
+            <span>🜄</span>
+            <h3>Eau</h3>
+            <p>
+                Paume longue et doigts longs.
+                Associée à la sensibilité et à l'imagination.
+            </p>
+        </div>
+
+
+        <div class="shape">
+            <span>🜂</span>
+            <h3>Feu</h3>
+            <p>
+                Paume longue et doigts plus courts.
+                Associée à l'énergie et à la spontanéité.
+            </p>
+        </div>
+
+    </div>
+
+
+
+    <h2>Main gauche ou main droite ?</h2>
+
+    <section class="intro">
+
+        <p>
+            Les écoles de chiromancie ne donnent pas toutes
+            la même interprétation.
+        </p>
+
+        <p>
+            Une convention courante consiste à considérer la
+            <strong>main dominante</strong> comme représentant
+            davantage la vie actuelle, les choix et les expériences,
+            tandis que la <strong>main non dominante</strong>
+            représenterait davantage les dispositions initiales
+            ou le potentiel.
+        </p>
+
+        <p>
+            Il s'agit là encore d'une convention symbolique
+            propre à cette tradition.
+        </p>
+
+    </section>
+
+
+</main>
+
+
+<footer>
+    Culture générale · Chiromancie et symbolique des mains
+</footer>
+
+</body>
+</html>
