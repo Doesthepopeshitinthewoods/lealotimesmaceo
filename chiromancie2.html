@@ -1,0 +1,894 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Chiromancie — Blog de l'intranquilité</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --maxw:1180px;
+      --toc-w:250px;
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --text:#172033;
+      --muted:#667085;
+      --line:#e5e9f0;
+      --accent:#8b0000;
+      --accent-dark:#6f0000;
+      --accent-soft:#f8eeee;
+      --shadow:0 10px 30px rgba(15,23,42,.07);
+      --radius:14px;
+    }
+
+    *{box-sizing:border-box}
+
+    html{
+      scroll-behavior:smooth;
+      scroll-padding-top:94px;
+    }
+
+    body{
+      margin:0;
+      color:var(--text);
+      background:var(--bg);
+      font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+      line-height:1.72;
+      -webkit-font-smoothing:antialiased;
+    }
+
+    a{color:var(--accent);text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    header{
+      position:sticky;
+      top:0;
+      z-index:100;
+      background:linear-gradient(90deg,var(--accent),var(--accent-dark));
+      color:#fff;
+      box-shadow:0 4px 18px rgba(0,0,0,.10);
+    }
+
+    .wrap{
+      max-width:var(--maxw);
+      margin:0 auto;
+      padding:16px 24px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:24px;
+    }
+
+    .site-title{
+      margin:0;
+      font-family:Merriweather,Georgia,serif;
+      font-size:21px;
+      white-space:nowrap;
+    }
+
+    nav{
+      display:flex;
+      gap:14px;
+      align-items:center;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    nav a{
+      color:rgba(255,255,255,.94);
+      font-size:13px;
+      font-weight:500;
+    }
+
+    main{
+      max-width:var(--maxw);
+      margin:0 auto;
+      padding:40px 24px 72px;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns:var(--toc-w) minmax(0,1fr);
+      gap:34px;
+      align-items:start;
+    }
+
+    .toc{
+      position:sticky;
+      top:92px;
+    }
+
+    .toc-box{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:0 6px 22px rgba(15,23,42,.05);
+      padding:14px;
+      max-height:calc(100vh - 116px);
+      overflow:auto;
+    }
+
+    .toc-box strong{
+      display:block;
+      margin-bottom:8px;
+      font-family:Merriweather,Georgia,serif;
+    }
+
+    .toc-box a{
+      display:block;
+      padding:8px 10px;
+      border-radius:8px;
+      color:#344054;
+      font-size:13px;
+      line-height:1.35;
+    }
+
+    .toc-box a:hover,
+    .toc-box a.active{
+      background:var(--accent-soft);
+      color:var(--accent);
+      text-decoration:none;
+    }
+
+    .content{min-width:0}
+
+    .hero,
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:28px;
+      margin-bottom:22px;
+    }
+
+    .hero{padding:34px 32px}
+
+    h1,h2,h3,h4{
+      font-family:Merriweather,Georgia,serif;
+      line-height:1.35;
+      color:#101828;
+    }
+
+    h1{
+      margin:0 0 10px;
+      font-size:2rem;
+    }
+
+    h2{
+      margin:0 0 14px;
+      font-size:1.42rem;
+    }
+
+    h3{
+      margin:1.35em 0 .55em;
+      font-size:1.1rem;
+    }
+
+    p{margin:0 0 1em}
+    ul{padding-left:1.35rem}
+    li{margin:.35em 0}
+
+    .lead{
+      color:#475467;
+      font-size:1.03rem;
+      max-width:820px;
+    }
+
+    .muted{
+      color:var(--muted);
+      font-size:.9rem;
+    }
+
+    .callout{
+      margin:16px 0;
+      padding:14px 16px;
+      border-left:4px solid var(--accent);
+      border-radius:9px;
+      background:var(--accent-soft);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:14px;
+      margin-top:16px;
+    }
+
+    .mini-card{
+      padding:16px;
+      border:1px solid var(--line);
+      border-radius:11px;
+      background:#fafbfc;
+    }
+
+    .mini-card h3{
+      margin:0 0 8px;
+      font-size:1rem;
+    }
+
+    .tag{
+      display:inline-block;
+      padding:4px 8px;
+      border-radius:999px;
+      background:var(--accent-soft);
+      color:var(--accent);
+      font-size:12px;
+      font-weight:600;
+      margin-bottom:8px;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin:14px 0 4px;
+    }
+
+    th,td{
+      padding:10px 12px;
+      border-bottom:1px solid var(--line);
+      text-align:left;
+      vertical-align:top;
+    }
+
+    th{
+      background:#fafbfc;
+      color:#344054;
+      font-size:.86rem;
+    }
+
+    .reading-steps{
+      counter-reset:step;
+      list-style:none;
+      padding:0;
+      margin:0;
+    }
+
+    .reading-steps li{
+      counter-increment:step;
+      position:relative;
+      padding:14px 14px 14px 50px;
+      border:1px solid var(--line);
+      border-radius:10px;
+      background:#fafbfc;
+      margin:10px 0;
+    }
+
+    .reading-steps li::before{
+      content:counter(step);
+      position:absolute;
+      left:14px;
+      top:14px;
+      width:24px;
+      height:24px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      background:var(--accent);
+      color:#fff;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    /* bloc visuel central */
+    .overview-card{
+      padding:26px;
+    }
+
+    .overview-intro{
+      margin-bottom:18px;
+      color:var(--muted);
+    }
+
+    .hand-overview{
+      display:grid;
+      grid-template-columns:minmax(220px,1fr) minmax(320px,520px) minmax(220px,1fr);
+      gap:18px;
+      align-items:center;
+    }
+
+    .overview-col{
+      display:grid;
+      gap:14px;
+    }
+
+    .overview-figure{
+      margin:0;
+      padding:18px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:linear-gradient(180deg,#faf6ef,#f4eee5);
+      box-shadow:0 10px 28px rgba(15,23,42,.07);
+    }
+
+    .overview-figure img{
+      display:block;
+      width:100%;
+      height:auto;
+      border-radius:12px;
+    }
+
+    .overview-center-caption{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:.88rem;
+      text-align:center;
+    }
+
+    .line-card{
+      display:block;
+      padding:16px 16px 14px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#fff;
+      box-shadow:0 8px 24px rgba(15,23,42,.06);
+      color:inherit;
+      text-decoration:none;
+      transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    }
+
+    .line-card:hover{
+      transform:translateY(-2px);
+      text-decoration:none;
+      border-color:rgba(139,0,0,.28);
+      box-shadow:0 12px 28px rgba(15,23,42,.10);
+    }
+
+    .line-name{
+      display:flex;
+      align-items:center;
+      gap:9px;
+      margin:0 0 8px;
+      font-family:Merriweather,Georgia,serif;
+      font-size:1rem;
+      color:#101828;
+    }
+
+    .line-dot{
+      width:12px;
+      height:12px;
+      border-radius:50%;
+      flex:0 0 auto;
+    }
+
+    .line-card p{
+      margin:0;
+      color:#475467;
+      font-size:.95rem;
+      line-height:1.6;
+    }
+
+    .line-heart .line-dot{background:#c96060}
+    .line-head .line-dot{background:#5e88ba}
+    .line-life .line-dot{background:#5d8b5d}
+    .line-fate .line-dot{background:#b48b43}
+
+    .overview-hint{
+      margin-top:16px;
+      text-align:center;
+      color:var(--muted);
+      font-size:.88rem;
+    }
+
+    footer{
+      border-top:1px solid var(--line);
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+      padding:26px 20px;
+      background:#fff;
+    }
+
+    @media(max-width:1100px){
+      .wrap{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:10px;
+      }
+
+      .site-title{white-space:normal}
+      nav{justify-content:flex-start}
+      .layout{grid-template-columns:1fr}
+      .toc{position:static}
+      .toc-box{max-height:none}
+      .toc-box nav{
+        display:grid;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+
+      .hand-overview{
+        grid-template-columns:1fr;
+      }
+
+      .overview-col{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+
+      .overview-figure{
+        order:-1;
+        max-width:640px;
+        margin:0 auto;
+      }
+    }
+
+    @media(max-width:620px){
+      main,.wrap{
+        padding-left:16px;
+        padding-right:16px;
+      }
+
+      main{padding-top:24px}
+      .hero,.card{padding:20px 18px}
+      h1{font-size:1.55rem}
+      h2{font-size:1.25rem}
+      .grid{grid-template-columns:1fr}
+      .toc-box nav{grid-template-columns:1fr}
+      .overview-col{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="wrap">
+    <h1 class="site-title">Blog de l'intranquilité</h1>
+    <nav aria-label="Navigation principale">
+      <a href="index.html">Accueil</a>
+      <a href="articles.html">Articles</a>
+      <a href="CG-morse.html">Morse</a>
+      <a href="CG-chiromancie.html" style="font-weight:700;text-decoration:underline">Chiromancie</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="layout">
+
+    <aside class="toc">
+      <div class="toc-box">
+        <strong>Sommaire</strong>
+        <nav id="toc-nav">
+          <a href="#intro">Introduction</a>
+          <a href="#carte-lignes">Vue d'ensemble des lignes</a>
+          <a href="#mains">Quelle main lire ?</a>
+          <a href="#lignes">Les grandes lignes</a>
+          <a href="#vie">Ligne de vie</a>
+          <a href="#coeur">Ligne du cœur / amour</a>
+          <a href="#tete">Ligne de tête</a>
+          <a href="#destin">Ligne du destin</a>
+          <a href="#secondaires">Lignes secondaires</a>
+          <a href="#monts">Les monts</a>
+          <a href="#formes">Forme de la main</a>
+          <a href="#doigts">Doigts et pouce</a>
+          <a href="#lecture">Méthode de lecture</a>
+          <a href="#limites">Limites</a>
+        </nav>
+      </div>
+    </aside>
+
+    <section class="content">
+
+      <section class="hero" id="intro">
+        <h1>Chiromancie : lecture traditionnelle des lignes de la main</h1>
+        <p class="lead">
+          La chiromancie est une tradition divinatoire qui interprète la forme des mains,
+          les doigts, les reliefs de la paume et surtout les lignes palmaires.
+          Les significations ci-dessous décrivent les conventions classiques de cette pratique.
+        </p>
+      </section>
+
+      <section class="card overview-card" id="carte-lignes">
+        <h2>Vue d'ensemble des principales lignes</h2>
+        <p class="overview-intro">
+          Au centre, la paume met en évidence les grandes lignes traditionnellement commentées en chiromancie.
+          Autour, tu retrouves un résumé rapide de leur sens avec un lien direct vers les explications détaillées.
+        </p>
+
+        <div class="hand-overview">
+          <div class="overview-col">
+            <a class="line-card line-heart" href="#coeur">
+              <h3 class="line-name"><span class="line-dot"></span>Ligne du cœur / amour</h3>
+              <p>
+                Située dans la partie supérieure de la paume, elle est associée aux émotions,
+                à la manière d’aimer et à l’expression affective.
+              </p>
+            </a>
+
+            <a class="line-card line-life" href="#vie">
+              <h3 class="line-name"><span class="line-dot"></span>Ligne de vie</h3>
+              <p>
+                Elle entoure la base du pouce et renvoie traditionnellement à la vitalité,
+                au rythme de vie et aux grands tournants.
+              </p>
+            </a>
+          </div>
+
+          <figure class="overview-figure">
+            <img src="chiromancie-mains.png"
+                 alt="Illustration de deux paumes avec les principales lignes de la main mises en évidence">
+            <figcaption class="overview-center-caption">
+              Illustration centrale des lignes les plus souvent commentées : cœur, tête, vie et destin.
+            </figcaption>
+          </figure>
+
+          <div class="overview-col">
+            <a class="line-card line-head" href="#tete">
+              <h3 class="line-name"><span class="line-dot"></span>Ligne de tête</h3>
+              <p>
+                Placée au milieu de la paume, elle est reliée à la pensée, à la logique,
+                à l’imagination et à la manière de raisonner.
+              </p>
+            </a>
+
+            <a class="line-card line-fate" href="#destin">
+              <h3 class="line-name"><span class="line-dot"></span>Ligne du destin</h3>
+              <p>
+                Lorsqu’elle est présente, elle monte plus verticalement dans la main et est
+                souvent interprétée comme une ligne d’orientation ou de trajectoire.
+              </p>
+            </a>
+          </div>
+        </div>
+
+        <p class="overview-hint">
+          Clique sur un encadré pour aller directement à la section détaillée correspondante.
+        </p>
+      </section>
+
+      <section class="card" id="mains">
+        <h2>Quelle main lire ?</h2>
+
+        <p>
+          Les écoles de chiromancie ne suivent pas toutes la même règle. Une convention fréquente consiste à
+          comparer les deux mains plutôt qu'à n'en lire qu'une.
+        </p>
+
+        <div class="grid">
+          <div class="mini-card">
+            <span class="tag">Main dominante</span>
+            <h3>Vie actuelle et évolution</h3>
+            <p>
+              Traditionnellement associée aux choix, au comportement présent, aux habitudes acquises
+              et à la manière dont la personne aurait développé son potentiel.
+            </p>
+          </div>
+
+          <div class="mini-card">
+            <span class="tag">Main non dominante</span>
+            <h3>Dispositions de départ</h3>
+            <p>
+              Souvent associée au tempérament de base, aux tendances supposées innées et au potentiel initial.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" id="lignes">
+        <h2>Les grandes lignes de la paume</h2>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Ligne</th>
+              <th>Emplacement général</th>
+              <th>Interprétation traditionnelle</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Ligne de vie</strong></td>
+              <td>Contourne la base du pouce</td>
+              <td>Vitalité, énergie, changements importants</td>
+            </tr>
+            <tr>
+              <td><strong>Ligne du cœur</strong></td>
+              <td>Partie supérieure de la paume</td>
+              <td>Relations affectives, manière d'aimer, expression émotionnelle</td>
+            </tr>
+            <tr>
+              <td><strong>Ligne de tête</strong></td>
+              <td>Traverse le centre de la paume</td>
+              <td>Façon de penser, logique, imagination, concentration</td>
+            </tr>
+            <tr>
+              <td><strong>Ligne du destin</strong></td>
+              <td>Monte verticalement vers le majeur lorsqu'elle est présente</td>
+              <td>Parcours, carrière, contraintes ou direction générale</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="card" id="vie">
+        <h2>Ligne de vie</h2>
+
+        <p>
+          Elle commence généralement entre le pouce et l'index puis descend en arc autour du mont de Vénus,
+          à la base du pouce.
+        </p>
+
+        <div class="callout">
+          <strong>Idée importante :</strong> dans la chiromancie traditionnelle, la longueur de la ligne de vie
+          n'est pas censée indiquer directement la durée de la vie.
+        </div>
+
+        <h3>Interprétations classiques</h3>
+        <ul>
+          <li><strong>Longue et bien marquée :</strong> vitalité, endurance, stabilité.</li>
+          <li><strong>Large arc autour du pouce :</strong> énergie tournée vers l'extérieur, goût de l'activité.</li>
+          <li><strong>Arc proche du pouce :</strong> tempérament supposé plus prudent ou réservé.</li>
+          <li><strong>Ligne fine :</strong> sensibilité ou énergie considérée comme plus fluctuante.</li>
+          <li><strong>Rupture :</strong> changement important de rythme de vie ou de situation.</li>
+          <li><strong>Ligne parallèle :</strong> parfois appelée « ligne sœur », interprétée comme un soutien ou une réserve de vitalité.</li>
+        </ul>
+      </section>
+
+      <section class="card" id="coeur">
+        <h2>Ligne du cœur — ligne de l'amour</h2>
+
+        <p>
+          La ligne du cœur traverse généralement la partie supérieure de la paume sous les doigts.
+          Elle est traditionnellement associée à la vie affective et à la manière d'exprimer les émotions.
+        </p>
+
+        <h3>Point d'arrivée</h3>
+        <ul>
+          <li><strong>Sous l'index :</strong> idéalisme sentimental, exigences élevées dans les relations.</li>
+          <li><strong>Entre index et majeur :</strong> recherche d'un équilibre entre idéalisme et réalisme.</li>
+          <li><strong>Sous le majeur :</strong> approche plus pragmatique ou individualiste des relations.</li>
+        </ul>
+
+        <h3>Forme</h3>
+        <ul>
+          <li><strong>Ligne courbe :</strong> expression émotionnelle plus spontanée.</li>
+          <li><strong>Ligne droite :</strong> émotions davantage contrôlées ou intellectualisées.</li>
+          <li><strong>Nombreuses petites branches :</strong> vie émotionnelle supposée complexe ou riche.</li>
+          <li><strong>Chaînes ou interruptions :</strong> périodes d'incertitude ou de changement affectif dans la lecture traditionnelle.</li>
+        </ul>
+      </section>
+
+      <section class="card" id="tete">
+        <h2>Ligne de tête</h2>
+
+        <p>
+          Située au milieu de la paume, elle commence généralement près de la ligne de vie et traverse
+          horizontalement ou en diagonale la main.
+        </p>
+
+        <ul>
+          <li><strong>Droite et longue :</strong> pensée structurée, analytique et pratique.</li>
+          <li><strong>Inclinée vers le bas :</strong> imagination, intuition et créativité.</li>
+          <li><strong>Courte :</strong> préférence supposée pour l'action et les décisions rapides.</li>
+          <li><strong>Très marquée :</strong> concentration et constance intellectuelle.</li>
+          <li><strong>Fourche à l'extrémité :</strong> capacité à envisager plusieurs points de vue.</li>
+        </ul>
+
+        <h3>Relation avec la ligne de vie</h3>
+        <ul>
+          <li><strong>Départ commun :</strong> prudence ou besoin de sécurité.</li>
+          <li><strong>Départ séparé :</strong> indépendance, autonomie ou goût du risque.</li>
+        </ul>
+      </section>
+
+      <section class="card" id="destin">
+        <h2>Ligne du destin</h2>
+
+        <p>
+          Contrairement aux trois lignes principales, elle n'est pas visible chez tout le monde.
+          Lorsqu'elle existe, elle monte généralement depuis le bas de la paume en direction du majeur.
+        </p>
+
+        <ul>
+          <li><strong>Droite et profonde :</strong> direction de vie considérée comme stable.</li>
+          <li><strong>Faible ou discontinue :</strong> parcours plus changeant ou moins prédéterminé.</li>
+          <li><strong>Commence près de la ligne de vie :</strong> influence importante de la famille ou du milieu d'origine.</li>
+          <li><strong>Commence au centre de la paume :</strong> orientation professionnelle ou personnelle apparaissant plus tard.</li>
+          <li><strong>Plusieurs lignes :</strong> plusieurs activités, rôles ou trajectoires.</li>
+        </ul>
+      </section>
+
+      <section class="card" id="secondaires">
+        <h2>Lignes secondaires</h2>
+
+        <div class="grid">
+          <div class="mini-card">
+            <h3>Ligne du Soleil / Apollon</h3>
+            <p>
+              Ligne verticale sous l'annulaire. Associée traditionnellement à la créativité,
+              à la reconnaissance et à la satisfaction personnelle.
+            </p>
+          </div>
+
+          <div class="mini-card">
+            <h3>Ligne de Mercure</h3>
+            <p>
+              Monte vers l'auriculaire. Liée dans certaines traditions à la communication,
+              aux affaires ou à la santé.
+            </p>
+          </div>
+
+          <div class="mini-card">
+            <h3>Lignes d'union</h3>
+            <p>
+              Petites lignes horizontales sur le bord de la main sous l'auriculaire.
+              Elles sont parfois appelées lignes de mariage ou de relation.
+            </p>
+          </div>
+
+          <div class="mini-card">
+            <h3>Ceinture de Vénus</h3>
+            <p>
+              Arc situé au-dessus de la ligne du cœur chez certaines personnes.
+              Associé à une sensibilité émotionnelle ou esthétique accentuée.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" id="monts">
+        <h2>Les monts de la main</h2>
+
+        <p>
+          En chiromancie, les zones charnues de la paume portent traditionnellement les noms de planètes
+          ou de divinités. Leur développement relatif est interprété symboliquement.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Mont</th>
+              <th>Emplacement</th>
+              <th>Symbolique traditionnelle</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Jupiter</td><td>Sous l'index</td><td>Ambition, autorité, confiance</td></tr>
+            <tr><td>Saturne</td><td>Sous le majeur</td><td>Responsabilité, sérieux, introspection</td></tr>
+            <tr><td>Apollon / Soleil</td><td>Sous l'annulaire</td><td>Créativité, esthétique, reconnaissance</td></tr>
+            <tr><td>Mercure</td><td>Sous l'auriculaire</td><td>Communication, commerce, vivacité</td></tr>
+            <tr><td>Vénus</td><td>Base du pouce</td><td>Affection, sensualité, énergie</td></tr>
+            <tr><td>Lune</td><td>Bord externe inférieur de la paume</td><td>Imagination, intuition, voyages</td></tr>
+            <tr><td>Mars</td><td>Plusieurs zones centrales ou latérales</td><td>Courage, résistance, combativité</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="card" id="formes">
+        <h2>Forme générale de la main</h2>
+
+        <p>
+          Certaines écoles classent les mains selon quatre types symboliques associés aux éléments.
+        </p>
+
+        <div class="grid">
+          <div class="mini-card">
+            <span class="tag">Terre</span>
+            <h3>Paume carrée, doigts plutôt courts</h3>
+            <p>Pragmatisme, stabilité, goût du concret.</p>
+          </div>
+
+          <div class="mini-card">
+            <span class="tag">Air</span>
+            <h3>Paume carrée, doigts longs</h3>
+            <p>Curiosité intellectuelle, communication, analyse.</p>
+          </div>
+
+          <div class="mini-card">
+            <span class="tag">Feu</span>
+            <h3>Paume longue, doigts plutôt courts</h3>
+            <p>Énergie, spontanéité, initiative.</p>
+          </div>
+
+          <div class="mini-card">
+            <span class="tag">Eau</span>
+            <h3>Paume longue, doigts longs</h3>
+            <p>Sensibilité, intuition, imagination.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" id="doigts">
+        <h2>Doigts et pouce</h2>
+
+        <h3>Longueur des doigts</h3>
+        <ul>
+          <li><strong>Doigts longs :</strong> attention au détail, patience, analyse.</li>
+          <li><strong>Doigts courts :</strong> vision globale, rapidité et spontanéité.</li>
+        </ul>
+
+        <h3>Pouce</h3>
+        <p>
+          Le pouce occupe une place importante dans plusieurs traditions de chiromancie.
+          Sa longueur, son ouverture par rapport à la paume et la souplesse de ses articulations
+          sont associées symboliquement à la volonté, à l'indépendance et à l'adaptabilité.
+        </p>
+
+        <h3>Annulaire et index</h3>
+        <p>
+          Certaines lectures traditionnelles comparent la longueur relative de l'index et de l'annulaire,
+          mais ces interprétations chiromantiques ne doivent pas être confondues avec les recherches
+          scientifiques sur les proportions des doigts.
+        </p>
+      </section>
+
+      <section class="card" id="lecture">
+        <h2>Comment réaliser une lecture traditionnelle</h2>
+
+        <ol class="reading-steps">
+          <li><strong>Observer les deux mains.</strong> Comparer la main dominante et la main non dominante.</li>
+          <li><strong>Regarder la forme générale.</strong> Paume large ou étroite, doigts longs ou courts, souplesse générale.</li>
+          <li><strong>Identifier les trois grandes lignes.</strong> Vie, cœur et tête.</li>
+          <li><strong>Observer leur profondeur et leur continuité.</strong> Ne pas se limiter à leur longueur.</li>
+          <li><strong>Repérer la ligne du destin et les lignes secondaires.</strong> Elles ne sont pas présentes de manière nette chez tout le monde.</li>
+          <li><strong>Examiner les monts.</strong> Comparer leur relief plutôt que d'analyser chaque zone isolément.</li>
+          <li><strong>Faire une lecture d'ensemble.</strong> La chiromancie traditionnelle privilégie généralement les combinaisons de signes plutôt qu'un signe unique.</li>
+        </ol>
+      </section>
+
+      <section class="card" id="limites">
+        <h2>Limites et statut de la chiromancie</h2>
+
+        <div class="callout">
+          La chiromancie relève d'une tradition culturelle et divinatoire.
+          Il n'existe pas de validation scientifique permettant d'utiliser les lignes de la main
+          pour prédire l'avenir ou déterminer de manière fiable la personnalité d'une personne.
+        </div>
+
+        <p>
+          Les lignes palmaires sont de véritables plis anatomiques de flexion de la peau.
+          Leur présence et leur forme peuvent être décrites objectivement, mais les significations
+          psychologiques ou prédictives données par la chiromancie appartiennent à un système symbolique.
+        </p>
+
+        <p class="muted">
+          Cette page présente donc la chiromancie comme un élément d'histoire des croyances et de culture générale,
+          et non comme une méthode scientifique de diagnostic ou de prédiction.
+        </p>
+      </section>
+
+    </section>
+  </div>
+</main>
+
+<footer>
+  © <span id="year"></span> — Blog personnel
+</footer>
+
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const links = [...document.querySelectorAll("#toc-nav a")];
+    const sections = links
+      .map(link => document.querySelector(link.getAttribute("href")))
+      .filter(Boolean);
+
+    if(!("IntersectionObserver" in window)) return;
+
+    const observer = new IntersectionObserver(entries => {
+      const visible = entries
+        .filter(e => e.isIntersecting)
+        .sort((a,b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+      if(!visible) return;
+
+      links.forEach(link => {
+        link.classList.toggle(
+          "active",
+          link.getAttribute("href") === "#" + visible.target.id
+        );
+      });
+    }, {
+      rootMargin:"-20% 0px -65% 0px",
+      threshold:[0,.25,.5,1]
+    });
+
+    sections.forEach(section => observer.observe(section));
+  });
+</script>
+
+</body>
+</html>
