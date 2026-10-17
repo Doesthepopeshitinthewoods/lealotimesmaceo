@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>
+   Blog de l'intranquilité
+  </title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&amp;family=Merriweather:wght@300;700&amp;display=swap" rel="stylesheet"/>
+<style>
+   :root {
+      --bg: #ffffff;
+      --surface: #f8fafc;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --accent: #8b0000;
+      --accent-dark: #6f0000;
+      --maxw: 920px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      line-height: 1.7;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    a:hover { text-decoration: underline; }
+
+    header {
+      position: relative;
+      z-index: 100;
+      background: var(--accent);
+      border-bottom: 1px solid var(--accent-dark);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .wrap {
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: 18px 24px;
+    }
+
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+    }
+
+    h1 {
+      margin: 0;
+      color: #fff;
+      font-family: Merriweather, serif;
+      font-size: 24px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      min-width: 0;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    nav > a,
+    nav .projets-btn,
+    nav .culture-btn,
+    nav .CG-btn {
+      color: #f9fafb;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+
+    .menu-projets,
+    .menu-culture,
+    .menu-CG {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .projets-dropdown,
+    .culture-dropdown,
+    .CG-dropdown {
+      position: absolute;
+      top: calc(100% - 2px);
+      left: 0;
+      min-width: 210px;
+      padding: 8px 6px 6px;
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.16);
+      z-index: 1000;
+
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(3px);
+      transition:
+        opacity .12s ease,
+        transform .12s ease,
+        visibility 0s linear .12s;
+    }
+
+    /* Zone invisible qui relie réellement le bouton au menu. */
+    .projets-dropdown::before,
+    .culture-dropdown::before,
+    .CG-dropdown::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: -10px;
+      height: 12px;
+    }
+
+    .projets-dropdown a,
+    .culture-dropdown a,
+    .CG-dropdown a {
+      display: block;
+      padding: 9px 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .projets-dropdown a:hover,
+    .culture-dropdown a:hover,
+    .CG-dropdown a:hover {
+      background: var(--surface);
+      text-decoration: none;
+    }
+
+    /* Fonctionne au survol, au clavier, et avec la classe ajoutée par JS. */
+    .menu-projets:hover .projets-dropdown,
+    .menu-projets:focus-within .projets-dropdown,
+    .menu-projets.is-open .projets-dropdown,
+    .menu-culture:hover .culture-dropdown,
+    .menu-culture:focus-within .culture-dropdown,
+    .menu-culture.is-open .culture-dropdown,
+    .menu-CG:hover .CG-dropdown,
+    .menu-CG:focus-within .CG-dropdown,
+    .menu-CG.is-open .CG-dropdown {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0);
+      transition-delay: 0s;
+    }
+
+
+
+    /* Curiosités : rubriques à deux niveaux (Culture générale / Dolce Vita). */
+    .CG-dropdown { min-width: 225px; }
+
+    .CG-group {
+      position: relative;
+    }
+
+    .CG-group-toggle {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      justify-content: space-between;
+      gap: 22px;
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      padding: 10px 11px;
+      font: 500 14px/1.6 Inter, system-ui, sans-serif;
+      text-align: left;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+
+    .CG-group-toggle:hover,
+    .CG-group-toggle:focus-visible,
+    .CG-group.is-open > .CG-group-toggle {
+      background: var(--surface);
+      outline-offset: -2px;
+    }
+
+    .CG-group-toggle .CG-arrow {
+      color: var(--accent);
+      font-size: 17px;
+      line-height: 1;
+      transition: transform .14s ease;
+    }
+
+    .CG-submenu {
+      position: absolute;
+      z-index: 1010;
+      top: -8px;
+      left: calc(100% - 4px);
+      min-width: 225px;
+      padding: 8px 6px;
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.16);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateX(-4px);
+      transition: opacity .12s ease, transform .12s ease, visibility 0s linear .12s;
+    }
+
+    /* Si l'espace manque à droite, afficher la seconde colonne à gauche. */
+    .CG-submenu.open-left {
+      right: calc(100% - 4px);
+      left: auto;
+      transform: translateX(4px);
+    }
+
+    .CG-group.is-open > .CG-submenu {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateX(0);
+      transition-delay: 0s;
+    }
+
+    /* Sur ordinateur, le passage de la souris suffit à déployer le niveau 2. */
+    @media (hover: hover) and (pointer: fine) {
+      .CG-group:hover > .CG-submenu {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateX(0);
+        transition-delay: 0s;
+      }
+    }
+
+    .CG-submenu a {
+      display: block;
+      padding: 10px 12px;
+    }
+
+    /* Mobile/tablette : vrais accordéons, sans menus hors écran. */
+    @media (max-width: 900px) {
+      .CG-dropdown { width: min(250px, calc(100vw - 36px)); max-height: 75vh; overflow-y: auto; }
+      .CG-submenu,
+      .CG-submenu.open-left {
+        position: static;
+        width: 100%;
+        min-width: 0;
+        padding: 0 0 5px 12px;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        display: none;
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: none;
+        transition: none;
+      }
+      .CG-group.is-open > .CG-submenu { display: block; }
+      .CG-submenu a { white-space: normal; }
+      .CG-group.is-open > .CG-group-toggle .CG-arrow { transform: rotate(90deg); }
+    }
+
+    .langs {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-shrink: 0;
+    }
+
+    .langs img.flag {
+      width: 23px;
+      height: 15px;
+      display: block;
+      object-fit: cover;
+      cursor: pointer;
+      border-radius: 2px;
+      border: 1px solid rgba(255,255,255,.18);
+      opacity: .82;
+      transition: transform .15s ease, opacity .15s ease;
+    }
+
+    .langs img.flag:hover,
+    .langs img.flag.active {
+      opacity: 1;
+      transform: translateY(-1px);
+    }
+
+    .langs img.flag:focus {
+      outline: 2px solid #fff;
+      outline-offset: 2px;
+    }
+
+    main {
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: 54px 24px 64px;
+    }
+
+    section {
+      margin-bottom: 38px;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-family: Merriweather, serif;
+      font-size: 22px;
+      line-height: 1.35;
+    }
+
+    p {
+      margin: 0 0 18px;
+      max-width: 760px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .proposal-form {
+      margin-top: 28px;
+      max-width: 680px;
+      padding: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      margin-bottom: 14px;
+      padding: 12px 14px;
+      background: #fff;
+      color: var(--text);
+      border: 1px solid #cfd5df;
+      border-radius: 8px;
+      font: inherit;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.10);
+    }
+
+    textarea {
+      min-height: 140px;
+      resize: vertical;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 18px;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-dark);
+    }
+
+    .btn[disabled] {
+      opacity: .6;
+      cursor: default;
+    }
+
+    .meta {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    footer {
+      padding: 28px 20px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 820px) {
+      .top {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .header-right {
+        width: 100%;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+
+      nav {
+        gap: 10px 14px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .wrap,
+      main {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
+      h1 {
+        font-size: 21px;
+        white-space: normal;
+      }
+
+      .header-right {
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      nav {
+        width: 100%;
+      }
+
+      .proposal-form {
+        padding: 18px;
+      }
+
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .projets-dropdown,
+      .culture-dropdown,
+      .CG-dropdown {
+        left: 0;
+        right: auto;
+        min-width: 210px;
+        max-width: calc(100vw - 36px);
+      }
+    }
+  </style>
+</head>
+<body>
+<header>
+<div class="wrap top">
+<h1>
+     Blog de l'intranquilité
+    </h1>
+<div class="header-right">
+<nav>
+<a href="#" onclick="showHome()">
+       Accueil
+      </a>
+<a href="articles.html">
+       Articles
+      </a>
+<div class="menu-projets">
+<a class="projets-btn" href="#">
+        Projets ▾
+       </a>
+<div class="projets-dropdown">
+<a href="projets-libres-pensees.html">
+         Libres Pensées
+        </a>
+<a href="#">
+         Bref
+        </a>
+<a href="droit-UE.html">
+         Droit de l'UE
+        </a>
+<a href="Stage.html">
+         Stage
+        </a>
+<a href="Boltzmann.html">
+         Modèle de Boltzmann
+        </a>
+<a href="Prostoch.html">
+         Martingales
+        </a>
+<a href="PenséesBayesiennes.html">
+         Pensées Bayesiennes
+        </a>
+<a href="Distributions.html">
+         Distributions
+        </a>
+<a href="EDP.html">
+         EDP
+        </a>
+</div>
+</div>
+<div class="menu-CG">
+  <a class="CG-btn" href="#" aria-haspopup="true" aria-expanded="false" aria-controls="curiosites-dropdown">Curiosités ▾</a>
+  <div class="CG-dropdown" id="curiosites-dropdown">
+
+    <!-- Première rubrique : les pages de culture générale déjà sur le site. -->
+    <div class="CG-group">
+      <button class="CG-group-toggle" type="button" aria-expanded="false" aria-controls="curiosites-culture-generale">
+        <span>Culture générale</span><span class="CG-arrow" aria-hidden="true">›</span>
+      </button>
+      <div class="CG-submenu" id="curiosites-culture-generale">
+        <a href="CG-morse.html">Morse</a>
+        <a href="Astronomie.html">Astronomie</a>
+        <a href="chiromancie2.html">Chiromancie</a>
+        <a href="hiéroglyphes.html">Hiéroglyphes</a>
+      </div>
+    </div>
+
+    <!-- Dolce Vita : l'espace gastronomique italien, prêt à être complété. -->
+    <div class="CG-group">
+      <button class="CG-group-toggle" type="button" aria-expanded="false" aria-controls="curiosites-dolce-vita">
+        <span>Dolce Vita</span><span class="CG-arrow" aria-hidden="true">›</span>
+      </button>
+      <div class="CG-submenu" id="curiosites-dolce-vita">
+        <a href="vins-italiens.html">Vins italiens</a>
+        <a href="cafes-italiens.html">Cafés italiens</a>
+        <a href="cuisine-italienne.html">Cuisine italienne</a>
+        <a href="fromagevin2.html">Fromages et Vins</a>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="menu-culture">
+  <a class="culture-btn" href="#">
+    Culture ▾
+  </a>
+
+  <div class="culture-dropdown">
+    <a href="culture-films.html">
+      Films
+    </a>
+
+    <a href="culture-livres.html">
+      Livres
+    </a>
+
+    <a href="culture-musiques.html">
+      Musiques
+    </a>
+
+    <a href="fromagevin2.html">
+       Fromages et Vins
+    </a>
+  </div>
+</div>
+</div>
+</nav>
+<div aria-label="Choix de la langue" class="langs" role="navigation">
+<img alt="Français" class="flag" data-lang="fr" role="button" src="https://flagcdn.com/w20/fr.png" tabindex="0"/>
+<img alt="English" class="flag" data-lang="en" role="button" src="https://flagcdn.com/w20/gb.png" tabindex="0"/>
+<img alt="Português" class="flag" data-lang="pt" role="button" src="https://flagcdn.com/w20/pt.png" tabindex="0"/>
+</div>
+</div>
+</div>
+</header>
+<main>
+<!-- HOME CONTENT ONLY -->
+<section id="home">
+<div class="lang-block" data-lang="fr">
+<h2>
+      Présentation
+     </h2>
+<p>
+      Vous êtes prêts pour le voyage vers le pays des réflexions et discussions futures de Maceo Leal, vêtu d'une chemise hawaïenne déboutonnée, par une température de trente degrés et une humidité relative de soixante-dix pour cent.
+     </p>
+<h2>
+      Contributions
+     </h2>
+<p class="muted">
+      Les lecteurs peuvent proposer des articles, des projets ou des suggestions culturelles via le formulaire ci-dessous.
+     </p>
+</div>
+<div class="lang-block hidden" data-lang="en">
+<h2>
+      About
+     </h2>
+<p>
+      You are on board for a journey into the land of future reflections and discussions
+by Maceo Leal, wearing an unbuttoned Hawaiian shirt, in temperatures of
+thirty degrees and relative humidity of seventy per cent.
+     </p>
+<h2>
+      Contributions
+     </h2>
+<p class="muted">
+      Readers are welcome to submit articles, projects, or cultural suggestions using the form below.
+     </p>
+</div>
+<div class="lang-block hidden" data-lang="pt">
+<h2>
+      Apresentação
+     </h2>
+<p>
+      Você está a bordo para a viagem ao país das reflexões e discussões futuras
+de Maceo Leal, com uma camisa havaiana desabotoada, sob uma temperatura de
+trinta graus e uma humidade relativa de setenta por cento.
+     </p>
+<h2>
+      Contribuições
+     </h2>
+<p class="muted">
+      Os leitores podem enviar artigos, projetos ou sugestões culturais através do formulário abaixo.
+     </p>
+</div>
+<form aria-label="Formulaire de contact" class="proposal-form" id="contact-form">
+<input name="section" type="hidden" value="contacts"/>
+<label class="hidden" for="cf-name">
+      Nom/Pseudo
+     </label>
+<input aria-required="true" id="cf-name" name="pseudo" placeholder="Nom ou pseudo" required=""/>
+<label class="hidden" for="cf-email">
+      Email
+     </label>
+<input aria-required="true" id="cf-email" name="email" placeholder="Email" required="" type="email"/>
+<label class="hidden" for="cf-message">
+      Message
+     </label>
+<textarea aria-required="true" id="cf-message" name="message" placeholder="Votre message" required="" rows="5"></textarea>
+<div class="controls">
+<!-- Bouton principal : envoi / sauvegarde -->
+<button aria-live="polite" class="btn btn-primary" id="cf-submit" type="submit">
+       Envoyer
+      </button>
+</div>
+<p aria-live="polite" class="meta" id="cf-result" role="status">
+</p>
+</form>
+</section>
+</main>
+<footer>
+   ©
+   <span id="year">
+</span>
+   — Blog personnel
+  </footer>
+<script>
+   // Met à jour l'année dans le footer
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Fonction pour scroller en haut
+  function showHome(){ window.scrollTo({top:0,behavior:'smooth'}) }
+
+  // Gestion des langues avec localStorage + accessibilité
+  (function() {
+    const LANG_KEY = 'blog_lang';
+
+    function setLang(lang) {
+      document.querySelectorAll('.lang-block').forEach(el => {
+        el.classList.toggle('hidden', el.dataset.lang !== lang);
+      });
+      document.querySelectorAll('.langs img[data-lang]').forEach(img => {
+        const isActive = (img.dataset.lang === lang);
+        img.classList.toggle('active', isActive);
+        img.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      });
+      document.documentElement.lang = lang;
+      try { localStorage.setItem(LANG_KEY, lang); } catch (e) { console.warn('localStorage inaccessible :', e); }
+    }
+
+    function initFlagListeners() {
+      document.querySelectorAll('.langs img[data-lang]').forEach(img => {
+        img.addEventListener('click', () => setLang(img.dataset.lang));
+        img.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setLang(img.dataset.lang);
+          }
+        });
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initFlagListeners();
+      const stored = (function(){ try { return localStorage.getItem(LANG_KEY); } catch(e){ return null; } })();
+      const initial = stored || document.documentElement.lang || 'fr';
+      setLang(initial);
+    });
+  })();
+  </script>
+<script>
+   /* === Configuration ===
+   Remplacez ces valeurs par les vôtres :
+   - WORKER_URL : endpoint Cloudflare Worker (ex: "https://mon-worker.example.workers.dev")
+   - OWNER_EMAIL : adresse email du propriétaire pour le bouton "Me contacter"
+*/
+const WORKER_URL = "https://steep-dawn-b94d.ettae634.workers.dev"; // <-- remplacez par votre Worker si vous en avez un
+const OWNER_EMAIL = "maceo@example.com"; // <-- remplacez par votre adresse email réelle
+
+// Utilitaire : formate un timestamp lisible pour le nom de fichier
+function filenameTimestamp() {
+  return new Date().toISOString().replace(/[:.]/g, "-");
+}
+
+// Sauvegarde locale : crée et déclenche le téléchargement d'un fichier JSON
+function saveLocally(payload) {
+  try {
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const safeName = (payload.pseudo || "anonyme").replace(/[^\w\-]/g, "_").slice(0, 60) || "anonyme";
+    const filename = `contact-${safeName}-${filenameTimestamp()}.json`;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    return true;
+  } catch (err) {
+    console.error("Erreur lors de la sauvegarde locale :", err);
+    return false;
+  }
+}
+
+// Envoi vers le serveur avec timeout + parsing JSON
+async function postToWorker(url, payload, timeout = 8000) {
+  const trimmed = (url || "").trim();
+  if (!trimmed || trimmed.includes("TON-WORKER")) {
+    return { ok: false, reason: "no-worker-configured" };
+  }
+
+  // Forcer la requête vers la racine '/' du worker (assure pathname '/')
+  const endpoint = trimmed.replace(/\/+$/, "") + "/";
+
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+    clearTimeout(id);
+
+    const text = await res.text().catch(() => "");
+    let json = null;
+    try { json = text ? JSON.parse(text) : null; } catch (e) { json = null; }
+
+    return { ok: res.ok, status: res.status, json, text };
+  } catch (err) {
+    clearTimeout(id);
+    return { ok: false, reason: err.name === "AbortError" ? "timeout" : err.message };
+  }
+}
+
+// Encodage mailto
+function buildMailtoLink(email, subject, body) {
+  const s = encodeURIComponent(subject || "");
+  const b = encodeURIComponent(body || "");
+  return `mailto:${encodeURIComponent(email)}?subject=${s}&body=${b}`;
+}
+
+// Gestion du formulaire
+(function() {
+  const form = document.getElementById("contact-form");
+  const nameEl = document.getElementById("cf-name");
+  const emailEl = document.getElementById("cf-email");
+  const msgEl = document.getElementById("cf-message");
+  const submitBtn = document.getElementById("cf-submit");
+  const mailBtn = document.getElementById("cf-mailto"); // peut être null si non présent
+  const resultEl = document.getElementById("cf-result");
+
+  // Si bouton "Me contacter" est présent, active son comportement
+  if (mailBtn) {
+    mailBtn.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      const pseudo = (nameEl.value || "Anonyme").trim();
+      const email = (emailEl.value || "").trim();
+      const message = (msgEl.value || "").trim();
+      const subject = `Message depuis votre blog — ${pseudo}`;
+      const body = `Nom: ${pseudo}\nEmail de l'expéditeur: ${email}\n\nMessage:\n${message}`;
+      const mailto = buildMailtoLink(OWNER_EMAIL, subject, body);
+      window.location.href = mailto;
+    });
+  }
+
+  // soumission principale
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const pseudo = (nameEl.value || "Anonyme").trim();
+    const email = (emailEl.value || "").trim();
+    const message = (msgEl.value || "").trim();
+
+    // validation simple côté client
+    if (!email || !message) {
+      resultEl.textContent = "Veuillez renseigner au minimum l'email et le message.";
+      resultEl.style.color = "var(--accent-cta)";
+      return;
+    }
+
+    const payload = {
+      title: "Contact",          // requis par le worker
+      pseudo,
+      email,                     // utile en plus (worker ignore mais on stocke)
+      content: message,
+      section: "contacts",
+      timestamp: new Date().toISOString()
+    };
+
+    // Mise à jour UI : disable boutons (si existants)
+    submitBtn.disabled = true;
+    if (mailBtn) mailBtn.disabled = true;
+    const prevSubmitText = submitBtn.textContent;
+    submitBtn.textContent = "Envoi…";
+    resultEl.textContent = "";
+
+    // Tentative d'envoi serveur (si WORKER_URL fourni)
+    const serverResp = await postToWorker(WORKER_URL, payload);
+
+    // Cas réussite HTTP
+    if (serverResp.ok) {
+      // si le worker renvoie un JSON { success: true } on affiche succès, sinon on vérifie le JSON
+      const successFlag = serverResp.json && (serverResp.json.success === true);
+      if (successFlag || serverResp.status === 200) {
+        resultEl.textContent = "Message envoyé et enregistré sur le serveur ✔";
+        resultEl.style.color = "green";
+        // vider le formulaire
+        nameEl.value = "";
+        emailEl.value = "";
+        msgEl.value = "";
+        submitBtn.disabled = false;
+        if (mailBtn) mailBtn.disabled = false;
+        submitBtn.textContent = prevSubmitText;
+        return;
+      } else {
+        // réponse 200 mais content indique échec : on log et fallback
+        console.warn("Worker returned non-success payload:", serverResp.json || serverResp.text);
+      }
+    } else {
+      // erreur HTTP / timeout / réseau
+      console.warn("Envoi au serveur échoué :", serverResp);
+    }
+
+    // Si on arrive ici -> sauvegarde locale en fallback
+    const saved = saveLocally(payload);
+
+    if (serverResp.reason && serverResp.reason !== "no-worker-configured") {
+      // détail utile pour debug
+      console.warn("Détail erreur serveur :", serverResp);
+    }
+
+    if (saved) {
+      resultEl.textContent = (serverResp.reason === "no-worker-configured")
+        ? "Aucun serveur configuré — votre message a été téléchargé en local (fichier JSON)."
+        : "Le serveur est indisponible — votre message a été sauvegardé en local (fichier JSON).";
+      resultEl.style.color = "orange";
+      // vider le formulaire
+      nameEl.value = "";
+      emailEl.value = "";
+      msgEl.value = "";
+    } else {
+      resultEl.textContent = "Erreur : impossible d'enregistrer le message localement.";
+      resultEl.style.color = "crimson";
+    }
+
+    submitBtn.disabled = false;
+    if (mailBtn) mailBtn.disabled = false;
+    submitBtn.textContent = prevSubmitText;
+  });
+})();
+  </script>
+<script>
+  // Menus déroulants robustes :
+  // - restent ouverts pendant le passage du bouton au sous-menu
+  // - s'ouvrent aussi au clic
+  // - se ferment avec un léger délai pour éviter les fermetures accidentelles
+  document.addEventListener("DOMContentLoaded", () => {
+    const menus = document.querySelectorAll(".menu-projets, .menu-culture, .menu-CG");
+    let closeTimer = null;
+
+    function closeAll(except = null) {
+      menus.forEach(menu => {
+        if (menu !== except) menu.classList.remove("is-open");
+      });
+    }
+
+    menus.forEach(menu => {
+      const button = menu.querySelector(":scope > a");
+
+      const openMenu = () => {
+        clearTimeout(closeTimer);
+        closeAll(menu);
+        menu.classList.add("is-open");
+      };
+
+      const scheduleClose = () => {
+        clearTimeout(closeTimer);
+        closeTimer = setTimeout(() => {
+          menu.classList.remove("is-open");
+        }, 300);
+      };
+
+      menu.addEventListener("mouseenter", openMenu);
+      menu.addEventListener("mouseleave", scheduleClose);
+
+      menu.addEventListener("focusin", openMenu);
+      menu.addEventListener("focusout", () => {
+        setTimeout(() => {
+          if (!menu.contains(document.activeElement)) {
+            menu.classList.remove("is-open");
+          }
+        }, 0);
+      });
+
+      if (button) {
+        button.addEventListener("click", (event) => {
+          event.preventDefault();
+          const willOpen = !menu.classList.contains("is-open");
+          closeAll();
+          menu.classList.toggle("is-open", willOpen);
+        });
+      }
+    });
+
+    document.addEventListener("click", (event) => {
+      if (![...menus].some(menu => menu.contains(event.target))) {
+        closeAll();
+      }
+    });
+  });
+</script>
+<script>
+  // Sous-menus de Curiosités : survol, clic, clavier, mobile, écran étroit.
+  document.addEventListener('DOMContentLoaded', function () {
+    const root = document.querySelector('.menu-CG');
+    if (!root) return;
+    const topButton = root.querySelector('.CG-btn');
+    const groups = Array.from(root.querySelectorAll('.CG-group'));
+    const smallScreen = window.matchMedia('(max-width: 900px)');
+
+    function collapseGroups(except) {
+      groups.forEach(group => {
+        if (group === except) return;
+        group.classList.remove('is-open');
+        group.querySelector('.CG-group-toggle').setAttribute('aria-expanded', 'false');
+      });
+    }
+    function reposition(group) {
+      const submenu = group.querySelector('.CG-submenu');
+      submenu.classList.remove('open-left');
+      if (smallScreen.matches) return;
+      // Une largeur approximative est suffisante même si le sous-menu est masqué.
+      const right = group.getBoundingClientRect().right;
+      const width = Math.max(submenu.offsetWidth, 225);
+      if (right + width > window.innerWidth - 18) submenu.classList.add('open-left');
+    }
+
+    groups.forEach(group => {
+      const button = group.querySelector('.CG-group-toggle');
+      button.addEventListener('click', function () {
+        const opening = !group.classList.contains('is-open');
+        collapseGroups(group);
+        group.classList.toggle('is-open', opening);
+        button.setAttribute('aria-expanded', String(opening));
+        if (opening) reposition(group);
+      });
+      group.addEventListener('mouseenter', () => {
+        reposition(group);
+        if (!smallScreen.matches) collapseGroups(group);
+      });
+      group.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+          event.stopPropagation();
+          group.classList.remove('is-open');
+          button.setAttribute('aria-expanded', 'false');
+          button.focus();
+        }
+      });
+    });
+
+    // Mettre à jour l'état accessible de l'entrée principale.
+    if (topButton) {
+      topButton.addEventListener('click', () => {
+        setTimeout(() => {
+          const opened = root.classList.contains('is-open');
+          topButton.setAttribute('aria-expanded', String(opened));
+          if (!opened) collapseGroups();
+        }, 0);
+      });
+    }
+    document.addEventListener('click', event => {
+      if (!root.contains(event.target)) {
+        collapseGroups();
+        if (topButton) topButton.setAttribute('aria-expanded', 'false');
+      }
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') {
+        collapseGroups();
+        root.classList.remove('is-open');
+        if (topButton) { topButton.setAttribute('aria-expanded', 'false'); topButton.focus(); }
+      }
+    });
+    window.addEventListener('resize', () => groups.forEach(reposition));
+  });
+</script>
+</body>
+</html>
