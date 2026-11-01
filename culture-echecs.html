@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#8b0000">
-<meta name="description" content="Explorer les échecs : la défense Caro-Kann et le gambit de la dame. Échiquier interactif, analyse Stockfish, arbre des variantes, coups de maîtres et FEN/PGN.">
+<meta name="description" content="Explorer les échecs : la défense Caro-Kann et le gambit de la dame. Échiquier interactif, graphe des branches, 40 coups, coups légaux, FEN et PGN.">
 <title>Échecs · L'atelier des ouvertures — Blog de l'intranquilité</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -40,11 +40,10 @@
 #variants-grid:empty:after{content:'Aucune variante trouvée.';font-size:13px;color:var(--muted)}
 
 .branch-map{margin:24px 0 36px}.branch-map .graph-shell{background:white;border:1px solid var(--line);border-radius:16px;overflow:auto;max-height:760px;box-shadow:inset 0 1px 0 #fff}.branch-map .graph-toolbar{display:flex;gap:14px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin:0 0 14px}.branch-map .graph-stats{font-size:12px;color:var(--muted);font-weight:700}.branch-map .graph-note{font-size:12px;color:var(--muted);margin-top:10px}.graph-svg{display:block;min-width:100%;background:linear-gradient(180deg,#fffdfb 0%,#faf7f2 100%)}.graph-edge{stroke:#c7b8a6;stroke-width:1.6;fill:none}.graph-node{cursor:pointer}.graph-node circle{fill:#fff;stroke:#8b0000;stroke-width:1.6}.graph-node text{font-family:'DM Sans',system-ui,sans-serif;fill:#3d3f3b}.graph-node .mv{font-size:12px;font-weight:700}.graph-node .ct{font-size:10px;fill:#8a877f}.graph-node.root circle{fill:#8b0000}.graph-node.root .mv,.graph-node.root .ct{fill:#fff}.graph-node.current circle{fill:#f5e0c8;stroke:#9b5c34;stroke-width:2.2}.graph-node:hover circle{fill:#f8f0e5}.graph-legend{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:#6f726d}.legend-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid #e1dbd1;border-radius:999px;background:#fff}.legend-dot{width:10px;height:10px;border-radius:50%;display:inline-block;background:#8b0000}.legend-dot.current{background:#c49058}.graph-empty{padding:22px;color:var(--muted);font-size:13px}
-.coach-picker{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:9px 0 13px;color:#555c55;font-size:12px;font-weight:700}.coach-picker select{min-width:120px;max-width:210px;padding:8px 10px;border-radius:8px;border:1px solid #d9cec1;background:#fff;color:#4b3028}.square.suggested-from:not(.selected){box-shadow:inset 0 0 0 4px #2e734dd8}.square.suggested-to:not(.selected){box-shadow:inset 0 0 0 4px #2e734d80}.square .suggest-label{position:absolute;right:2px;top:2px;font-size:10px;line-height:1;font-weight:900;color:#155b39;background:#d8f1db;padding:2px 3px;border-radius:3px;z-index:3;pointer-events:none}.coach-tip{font-size:12px;margin-top:8px;color:#6b675f}
 @media(max-width:920px){.quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:540px){.quick-grid{grid-template-columns:1fr 1fr}.quick-link{padding:8px}.quick-section{padding:15px}.catalog-tools>*{width:100%;max-width:none}}
 
-.engine-panel{background:#fdfaf6}.engine-status{margin-top:13px!important;font-size:12px!important;color:#785547!important}.engine-lines{margin-top:12px;display:grid;gap:7px}.engine-row{display:flex;align-items:center;gap:10px;padding:9px 11px;background:white;border:1px solid #eadfd1;border-radius:9px;flex-wrap:wrap}.engine-row .eval{font-size:12px;font-weight:700;color:#7e1915;min-width:62px}.engine-row .variation{font-size:11px;color:#6c706a;flex:1;min-width:125px}.engine-row button{font:700 12px 'DM Sans',sans-serif;color:#7e1915;background:#fff7ed;border:1px solid #dec6a8;border-radius:8px;padding:6px 10px}.engine-credits{font-size:11px!important;margin-top:15px!important;color:#85817b!important}.engine-credits a{text-decoration:underline}.engine-time{width:100%;padding:8px;border:1px solid #d9cabb;background:white;border-radius:8px;margin-top:5px}.masters-panel{background:#fff}.graph-note{line-height:1.6}
+#opponent-panel{background:#fcf8f3;border-left:4px solid #b28c56}#opponent-choices .choice{border-color:#d5bfa2;background:#fff9f0}#opponent-choices .choice:hover{background:#f9ead5}#opponent-choices .choice.best{background:#f2e5d5;border-color:#ac8465}.branch-note{font-size:11px;color:var(--muted);margin:8px 0 0}
 </style>
 </head>
 <body>
@@ -52,9 +51,9 @@
 <main class="wrapper">
 <nav class="breadcrumb" aria-label="Fil d'Ariane"><a href="index.html">Accueil</a><span>›</span><a href="index.html#culture">Culture</a><span>›</span><em>Échecs</em></nav>
 <section class="hero" aria-labelledby="hero-title"><div class="hero-copy"><span class="eyebrow">Culture · Stratégie · Jeux d'esprit</span><h1 id="hero-title">L'art des<br><em>64 cases.</em></h1><p>Deux ouvertures, une infinité de décisions : le gambit de la dame avec les Blancs et la Caro-Kann avec les Noirs. Rejouez les grandes idées, changez les réponses de l'adversaire et étudiez les positions qui en découlent.</p><a class="hero-chip" href="#atelier"><span class="dots"></span> Entrer dans l'atelier interactif ↓</a></div><div class="hero-art" aria-hidden="true"><div class="chess-art"><span>♞</span></div><div class="art-tag">L'atelier des ouvertures</div></div></section>
-<div class="intro-strip"><div class="intro-stat"><strong>2</strong><span>ouvertures étudiées</span></div><div class="intro-stat"><strong id="stat-lines">77</strong><span>branches théoriques étudiées</span></div><div class="intro-stat"><strong>40</strong><span>coups visés, puis jeu libre</span></div><div class="intro-stat"><strong>♟</strong><span>Stockfish pour les deux camps</span></div></div>
+<div class="intro-strip"><div class="intro-stat"><strong>2</strong><span>ouvertures étudiées</span></div><div class="intro-stat"><strong id="stat-lines">106</strong><span>lignes théoriques et réponses adverses</span></div><div class="intro-stat"><strong>40</strong><span>coups visés, puis jeu libre</span></div><div class="intro-stat"><strong>∞</strong><span>réponses légales jouables</span></div></div>
 <section id="atelier" class="lab" aria-labelledby="lab-title">
-<div class="section-head"><div><span class="eyebrow">Le laboratoire</span><h2 id="lab-title">Un échiquier qui s'adapte.</h2><p>Des coups sont proposés automatiquement pour le camp que tu étudies : les Blancs avec le gambit de la dame, les Noirs avec la Caro-Kann. Tu peux changer de camp, déplacer les deux joueurs et activer Stockfish pour une analyse calculée. Les propositions théoriques ne sont jamais présentées comme des certitudes mathématiques.</p></div></div>
+<div class="section-head"><div><span class="eyebrow">Le laboratoire</span><h2 id="lab-title">Un échiquier qui s'adapte.</h2><p>Vous jouez les coups des deux camps. Appuyez sur « Avancer » pour rejouer une variante, ou choisissez une autre réponse adverse : le guide bifurque vers la ligne correspondante. Hors répertoire, tous les coups légaux restent jouables jusqu’au milieu de partie et au-delà.</p></div></div>
 <div class="lab-header"><div class="segmented" role="group" aria-label="Choisir l'ouverture"><button id="mode-queen" class="active" aria-pressed="true" type="button">♙ Gambit de la dame</button><button id="mode-caro" type="button" aria-pressed="false">♟ Défense Caro-Kann</button></div><div class="selectors"><label for="variation">Variante étudiée</label><select id="variation" aria-label="Choisir une variante"></select></div></div>
 <div class="quick-section"><div class="quick-title"><strong>Positions clés à explorer</strong><span>Choisissez une bifurcation puis jouez la réponse adverse.</span></div><div id="quick-positions" class="quick-grid"></div></div>
 <div class="lab-body">
@@ -62,27 +61,23 @@
 <div class="board-heading"><span class="turn-pill" id="turn-label">Aux Blancs de jouer</span><span class="muted" id="move-progress" style="font-size:12px;font-weight:700">0 / 40 coups</span></div>
 <div class="progress" aria-hidden="true"><div class="progress-fill" id="progress-fill"></div></div>
 <div class="board-frame"><div class="chessboard" id="board" role="group" aria-label="Échiquier interactif, 64 cases"></div></div>
-<div class="board-controls"><button class="btn" id="back" type="button" title="Revenir d'un demi-coup">← Retour</button><button class="btn" id="forward" type="button" title="Rejouer le coup annulé">Avancer →</button><button class="btn primary" id="suggest" type="button">Jouer le coup du guide</button><button class="btn" id="flip" type="button">↕ Retourner</button><button class="btn" id="reset" type="button">↺ Recommencer</button></div>
+<div class="board-controls"><button class="btn" id="back" type="button" title="Revenir d'un demi-coup">← Retour</button><button class="btn" id="forward" type="button" title="Avancer dans la variante choisie ou rejouer un coup">Avancer →</button><button class="btn primary" id="suggest" type="button">Coup du guide</button><button class="btn" id="flip" type="button">↕ Retourner</button><button class="btn" id="reset" type="button">↺ Recommencer</button></div>
 <p class="board-help">Cliquez sur une pièce puis sa destination en surbrillance. Vous pouvez aussi la faire glisser. Les coups des <strong>Blancs et des Noirs</strong> sont jouables, roques et promotions compris.</p><div id="toast" class="toast" role="status" aria-live="polite"></div>
 </div>
 <div class="side-area">
 <section class="panel"><div class="mini-kicker" id="side-eyebrow">Le plan des Blancs</div><h3 id="active-title">Gambit de la dame</h3><p id="opening-intro"></p><div class="cue" id="strategy-box"></div><p id="last-feedback" class="status-line" style="margin-top:13px"></p></section>
-<section class="panel"><div class="mini-kicker">Guide interactif</div><h3>Coups proposés pour ton camp</h3><label class="coach-picker" for="coach-side">Je veux des conseils pour <select id="coach-side" aria-label="Camp conseillé"><option value="1">les Blancs</option><option value="-1">les Noirs</option><option value="0">les deux camps</option></select></label><p id="reco-text" aria-live="polite"></p><div id="book-choices" class="choice-list"></div><details style="margin-top:15px"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--wine)">Afficher tous les coups légaux</summary><div class="choice-list all-legal" id="legal-choices"></div></details></section>
-<section class="panel engine-panel"><div class="mini-kicker">Analyse vérifiable</div><h3>Stockfish · Coups calculés</h3><p>Les coups du moteur sont calculés pour le camp au trait. Sans moteur, le guide affiche immédiatement les coups des variantes théoriques et, hors répertoire, peut consulter les parties de maîtres. Aucun coup n’est présenté comme optimal sans analyse.</p>
-<div class="tools-grid"><button class="btn primary" type="button" id="engine-start">Activer Stockfish</button><button class="btn" type="button" id="engine-play" disabled>Jouer le 1er choix Stockfish</button><button class="btn" type="button" id="engine-auto" disabled>Faire jouer les deux camps</button><button class="btn" type="button" id="engine-pause" disabled>Pause</button></div>
-<label for="engine-time" class="mini-kicker" style="display:block;margin-top:15px">Temps de réflexion par coup</label><select id="engine-time" class="engine-time"><option value="1000">1 seconde · rapide</option><option value="2500" selected>2,5 secondes · équilibré</option><option value="5000">5 secondes · plus précis</option></select>
-<p id="engine-status" class="engine-status" role="status" aria-live="polite">Moteur non activé. Aucun coup n'est présenté comme optimal sans calcul.</p><div id="engine-lines" class="engine-lines"></div><p class="engine-credits">Stockfish 19 Lite (WASM, secours ASM-JS). Nécessite Internet. <a href="https://github.com/nmrugg/stockfish.js" target="_blank" rel="noopener noreferrer">Moteur libre GPL-3.0</a>. Un score de moteur n’est pas une preuve de perfection.</p></section>
-<section class="panel masters-panel"><div class="mini-kicker">Parties de maîtres</div><h3>Coups fréquemment joués</h3><p>Consulte la base des parties de maîtres de Lichess à la position exacte de l’échiquier. La fréquence n’est pas une évaluation Stockfish.</p><button type="button" class="btn" id="masters-load">Consulter les parties de maîtres</button><p class="engine-status" id="masters-status" role="status">Une requête est effectuée seulement quand tu cliques.</p><div class="choice-list" id="masters-choices"></div></section>
+<section class="panel"><div class="mini-kicker">Réponses adaptées à la position</div><h3>Quelles suites choisir ?</h3><p id="reco-text"></p><div id="book-choices" class="choice-list"></div><details style="margin-top:15px"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--wine)">Afficher tous les coups légaux</summary><div class="choice-list all-legal" id="legal-choices"></div></details></section>
+<section class="panel" id="opponent-panel"><div class="mini-kicker">Variantes de l'adversaire</div><h3 id="opponent-title">Choisir la réponse adverse</h3><p id="opponent-help">Les principales réponses théoriques à cette position sont indiquées ici.</p><div class="choice-list" id="opponent-choices"></div></section>
 <section class="panel"><div class="mini-kicker">Votre partie</div><h3>Historique des coups</h3><div id="history" class="move-history" aria-live="polite"></div><p id="game-status" class="status-line" style="margin-top:9px"></p></section>
 <section class="panel"><div class="mini-kicker">Outils d'analyse</div><h3>Importer, exporter</h3><div class="tools-grid"><button id="fen-copy" class="btn tiny" type="button">Copier la FEN</button><button id="pgn-copy" class="btn tiny" type="button">Copier le PGN</button><button id="pgn-save" class="btn tiny" type="button">Télécharger PGN</button><button id="jump" class="btn tiny" type="button">Aller au tournant</button></div><label for="fen-input" style="display:block;margin-top:15px;font-weight:700;font-size:12px">Charger une position FEN</label><input id="fen-input" class="fen-field" placeholder="Collez ici une FEN complète (6 champs)"><button id="fen-load" class="btn tiny" type="button">Charger la position</button></section>
 </div></div></section>
 <section class="variants" id="bibliotheque"><div class="variants-head"><div><span class="eyebrow">Carnet théorique</span><h2>Explorer les grandes variantes</h2><p class="muted" style="font-size:13px">Choisissez une carte pour charger la ligne et la rejouer, ou introduisez votre propre réponse sur l'échiquier.</p></div></div><div class="catalog-tools"><label for="variant-search" class="visually-hidden">Chercher une variante</label><input id="variant-search" type="search" placeholder="Rechercher : d4, e5, Panov, Albin…" autocomplete="off"><label for="variant-filter" class="visually-hidden">Filtrer les variantes</label><select id="variant-filter" aria-label="Filtrer les variantes"><option value="all">Toutes les branches</option></select><span id="variant-count" aria-live="polite"></span></div><div id="variants-grid" class="variants-grid"></div></section>
-<section class="branch-map" id="graphe-branches"><div class="section-head"><div><span class="eyebrow">Vision d'ensemble</span><h2>Le graphe des branches du répertoire</h2><p>Ce graphe montre toutes les branches actuellement visibles dans la base pour l’ouverture sélectionnée. Il suit les filtres du catalogue : tu peux donc isoler la théorie principale, les réponses en ...e5, les gambits acceptés ou les réponses étudiées.</p></div></div><div class="graph-toolbar"><div class="graph-legend"><span class="legend-chip"><span class="legend-dot"></span>Nœud du répertoire</span><span class="legend-chip"><span class="legend-dot current"></span>Suite actuellement jouée</span></div><div id="graph-stats" class="graph-stats" aria-live="polite"></div></div><div class="graph-shell"><svg id="branch-graph" class="graph-svg" role="img" aria-label="Arbre des branches du répertoire"></svg><div id="graph-empty" class="graph-empty" hidden>Aucune branche ne correspond au filtre actuel.</div></div><p class="graph-note">Astuce : clique sur un nœud pour charger la position atteinte à ce stade de la variante. Le graphe rassemble les branches théoriques stockées et les branches de maîtres que tu as consultées. Il ne représente pas tous les coups légaux possibles.</p></section>
+<section class="branch-map" id="graphe-branches"><div class="section-head"><div><span class="eyebrow">Vision d'ensemble</span><h2>Le graphe des branches du répertoire</h2><p>Ce graphe montre toutes les branches actuellement visibles dans la base pour l’ouverture sélectionnée. Il suit les filtres du catalogue : tu peux donc isoler la théorie principale, les réponses en ...e5 et les gambits acceptés.</p></div></div><div class="graph-toolbar"><div class="graph-legend"><span class="legend-chip"><span class="legend-dot"></span>Nœud du répertoire</span><span class="legend-chip"><span class="legend-dot current"></span>Suite actuellement jouée</span></div><div id="graph-stats" class="graph-stats" aria-live="polite"></div></div><div class="graph-shell"><svg id="branch-graph" class="graph-svg" role="img" aria-label="Arbre des branches du répertoire"></svg><div id="graph-empty" class="graph-empty" hidden>Aucune branche ne correspond au filtre actuel.</div></div><p class="graph-note">Astuce : clique sur un nœud pour charger la position atteinte à ce stade de la variante. Le graphe représente les branches stockées dans la base, pas l’ensemble infini de tous les coups légaux possibles aux échecs.</p></section>
 
 <section aria-labelledby="principes"><span class="eyebrow">Trois principes à retenir</span><h2 id="principes">Comprendre avant de mémoriser.</h2><div class="lesson-cards"><article class="lesson"><small>01 · Le centre</small><h3>Ce qui compte, ce sont les cases.</h3><p>Le centre e4, d4, e5 et d5 gouverne la mobilité des pièces. Un pion offert peut être moins important que le temps de développement gagné.</p></article><article class="lesson"><small>02 · Le tempo</small><h3>Développer sans se disperser.</h3><p>Sortir les pièces, mettre son roi à l'abri, puis relier les tours. Ne pars pas à la chasse aux pions si cela laisse ton roi exposé.</p></article><article class="lesson"><small>03 · La réponse</small><h3>Aucun coup n'est automatique.</h3><p>À chaque nouveau coup adverse, examine la menace, les captures et les échecs. Le répertoire illustre des plans, il ne remplace pas un calcul concret.</p></article></div></section>
 <section class="faq"><details open><summary>Les Noirs prennent c4 après 1.d4 d5 2.c4 ?</summary><p>On obtient le <strong>gambit de la dame accepté</strong>. Un plan facile pour les Blancs est <strong>3.e3</strong>, suivi de <strong>Fxc4</strong> quand cela est possible. Si les Noirs défendent c4 par ...b5, réponds souvent <strong>a4</strong> pour attaquer le soutien du pion. Sélectionne « Gambit accepté · les Noirs gardent c4 » pour visualiser cette idée.</p></details><details open><summary>Comment jouer la Caro-Kann avec les Noirs ?</summary><p>Après <strong>1.e4 c6 2.d4 d5</strong>, réponds à 3.Cc3 ou 3.Cd2 par <strong>...dxe4</strong> puis souvent <strong>...Ff5</strong>. Contre 3.e5, développe généralement le fou en <strong>f5</strong>, puis prépare <strong>...e6</strong> et <strong>...c5</strong> pour attaquer la chaîne de pions.</p></details></section>
 <section class="faq"><details><summary>Que faire si les Blancs jouent 2.d4 dans la Caro-Kann ?</summary><p>La réponse de principe est <strong>2...d5</strong>. Ensuite, il faut distinguer <strong>3.e5</strong> (pion avancé, attaquer d4 par ...c5), <strong>3.Cc3 / 3.Cd2</strong> (souvent ...dxe4), <strong>3.exd5</strong> (recapturer ...cxd5) et <strong>3.f3</strong> (variante fantaisie). Vous pouvez aussi analyser la transposition <strong>1.d4 c6 2.e4 d5</strong>.</p></details><details><summary>Que signifie ...e5 contre le gambit de la dame ?</summary><p>Après <strong>1.d4 d5 2.c4 e5</strong>, c’est le <strong>contre-gambit Albin</strong>. Après <strong>3.dxe5 d4</strong>, les Noirs obtiennent un pion avancé dangereux ; comparez <strong>4.Cf3</strong>, <strong>4.a3</strong> et <strong>4.e3</strong>. Attention : <strong>1.d4 e5</strong> correspond au gambit Englund et <strong>1.d4 Cf6 2.c4 e5</strong> au gambit de Budapest.</p></details></section>
-<footer class="site-footer">Blog de l'intranquilité · Culture · Échecs. Le répertoire contient des variantes théoriques éditoriales. Le guide propose automatiquement des coups connus pour le camp choisi. Pour les évaluer, activez Stockfish ; les coups de maîtres proviennent de Lichess et ne garantissent pas à eux seuls le meilleur jeu. Stockfish est un moteur de forte qualité mais ne démontre pas le jeu parfait. Le compteur va jusqu’à 40 coups ; le jeu libre reste possible au-delà. Références : <a href="https://lichess.org/analysis" target="_blank" rel="noopener noreferrer">Lichess Analyse</a> et <a href="https://lichess.org/opening" target="_blank" rel="noopener noreferrer">Lichess Ouvertures</a>. La page valide les coups légaux et peut lancer Stockfish pour calculer des continuations depuis la position choisie.</footer>
+<footer class="site-footer">Blog de l'intranquilité · Culture · Échecs. Les variantes ont été choisies comme exemples théoriques ; elles ne constituent pas toutes des meilleurs coups certifiés par moteur. Le répertoire met l’accent sur les coups pertinents d’ouverture ; le compteur va jusqu’à 40 coups, puis le jeu libre peut continuer au-delà. Références : <a href="https://lichess.org/analysis" target="_blank" rel="noopener noreferrer">Lichess Analyse</a> et <a href="https://lichess.org/opening" target="_blank" rel="noopener noreferrer">Lichess Ouvertures</a>. Les coups suggérés appartiennent à un répertoire théorique ; la page ne certifie pas l’optimalité exacte de chaque coup.</footer>
 </main>
 <div id="promotion-overlay" class="promotion-overlay" role="dialog" aria-modal="true" aria-labelledby="promotion-title"><div class="promotion-dialog"><h3 id="promotion-title">Choisir la promotion</h3><p class="muted">Par quelle pièce voulez-vous remplacer votre pion ?</p><div id="promotion-choices" class="promotion-choices"></div><button class="btn" id="promotion-cancel" type="button" style="margin-top:14px">Annuler</button></div></div>
 <script>
@@ -273,9 +268,44 @@ repertoire.caro.lines.push(
  {"id":"caro-2nc3-d4","name":"Caro-Kann : 2.Cc3 puis d4","tag":"Sans 2.d4 immédiat","moves":"e2e4 c7c6 b1c3 d7d5 d2d4 d5e4 c3e4 c8f5","note":"Les Blancs peuvent retarder d4 sans éviter une transposition vers la variante classique."},
  {"id":"caro-2nf3-d4","name":"Caro-Kann : 2.Cf3 puis d4","tag":"Sans 2.d4 immédiat","moves":"e2e4 c7c6 g1f3 d7d5 d2d4 d5e4 f3g5 g8f6","note":"L’ordre de coups change les ressources tactiques : après ...dxe4, il faut vérifier la recapture."}
 );
+
+/* Branches adverses supplémentaires : suites d’ouverture classiques,
+   courtes et légalement vérifiées. Aucune extension aléatoire. */
+repertoire.caro.lines.push(
+ {id:'branch-ca-4bd3',name:'Avance : 4.Fd3 contre ...Ff5',tag:'Choix blancs · Avance',moves:'e2e4 c7c6 d2d4 d7d5 e4e5 c8f5 f1d3 f5d3 d1d3 e7e6 g1f3 c6c5',note:'Le fou blanc propose l’échange. Les Noirs peuvent reprendre du jeu en attaquant la base d4 par ...c5.'},
+ {id:'branch-ca-4c4',name:'Avance : 4.c4, attaque immédiate',tag:'Choix blancs · Avance',moves:'e2e4 c7c6 d2d4 d7d5 e4e5 c8f5 c2c4 e7e6 b1c3 b8d7',note:'La poussée c4 fragilise la structure et ouvre une bataille de pions au centre.'},
+ {id:'branch-ca-4nd2',name:'Avance : 4.Cd2',tag:'Choix blancs · Avance',moves:'e2e4 c7c6 d2d4 d7d5 e4e5 c8f5 b1d2 e7e6 g1f3 c6c5',note:'Développement souple ; ...c5 reste le contre-jeu noir contre d4.'},
+ {id:'branch-ca-4a3',name:'Avance : 4.a3',tag:'Choix blancs · Avance',moves:'e2e4 c7c6 d2d4 d7d5 e4e5 c8f5 a2a3 e7e6 g1f3 c6c5',note:'Un coup d’attente moins direct ; ...e6 et ...c5 attaquent immédiatement le centre.'},
+ {id:'branch-ca-4be2',name:'Avance : 4.Fe2',tag:'Choix blancs · Avance',moves:'e2e4 c7c6 d2d4 d7d5 e4e5 c8f5 f1e2 e7e6 g1f3 c6c5',note:'Le plan Short, avec la même pression noire sur d4.'},
+ {id:'branch-ca-6nf3',name:'Classique : 6.Cf3 après ...Fg6',tag:'Choix blancs · Classique',moves:'e2e4 c7c6 d2d4 d7d5 b1c3 d5e4 c3e4 c8f5 e4g3 f5g6 g1f3 b8d7',note:'Les Blancs développent calmement au lieu de pousser h4.'},
+ {id:'branch-ca-6bd3',name:'Classique : 6.Fd3 après ...Fg6',tag:'Choix blancs · Classique',moves:'e2e4 c7c6 d2d4 d7d5 b1c3 d5e4 c3e4 c8f5 e4g3 f5g6 f1d3 g8f6',note:'Le fou blanc se développe, les Noirs continuent leur développement.'},
+ {id:'branch-ca-6ne2',name:'Classique : 6.Ce2 après ...Fg6',tag:'Choix blancs · Classique',moves:'e2e4 c7c6 d2d4 d7d5 b1c3 d5e4 c3e4 c8f5 e4g3 f5g6 g1e2 b8d7',note:'Les Blancs gardent plusieurs possibilités de développement.'},
+ {id:'branch-ca-nf3-ex',name:'Échange : 4.Cf3',tag:'Choix blancs · Échange',moves:'e2e4 c7c6 d2d4 d7d5 e4d5 c6d5 g1f3 b8c6 f1d3 c8g4',note:'Plan calme et cohérent : ...Cc6 et ...Fg4 mettent les Blancs sous pression.'},
+ {id:'branch-ca-nc3-ex',name:'Échange : 4.Cc3',tag:'Choix blancs · Échange',moves:'e2e4 c7c6 d2d4 d7d5 e4d5 c6d5 b1c3 g8f6 g1f3 b8c6',note:'Les Blancs développent rapidement et les Noirs luttent pour les cases centrales.'},
+ {id:'branch-ca-two-nf6',name:'Deux cavaliers : ...dxe4 et ...Cf6',tag:'Choix blancs · Deux cavaliers',moves:'e2e4 c7c6 b1c3 d7d5 g1f3 d5e4 c3e4 g8f6 e4f6 e7f6',note:'Une autre défense noire contre l’attaque des deux cavaliers.'},
+ {id:'branch-ca-two-bf5',name:'Deux cavaliers : ...dxe4 et ...Ff5',tag:'Choix blancs · Deux cavaliers',moves:'e2e4 c7c6 b1c3 d7d5 g1f3 d5e4 c3e4 c8f5 e4g3 f5g6',note:'Développement du fou avant ...e6, plan thématique.'},
+ {id:'branch-ca-2c4',name:'Blancs : 2.c4, Panov accéléré',tag:'Autre 2e coup blanc',moves:'e2e4 c7c6 c2c4 d7d5 e4d5 c6d5 c4d5 d8d5 b1c3',note:'2.c4 impose une autre structure ; la priorité noire reste ...d5.'},
+ {id:'branch-ca-2g3',name:'Blancs : 2.g3, fianchetto',tag:'Autre 2e coup blanc',moves:'e2e4 c7c6 g2g3 d7d5 f1g2 d5e4 g2e4 g8f6',note:'Les Blancs préparent Fg2 ; les Noirs disputent le centre par ...d5.'}
+);
+repertoire.queen.lines.push(
+ {id:'branch-qg-1nf6',name:'Contre 1.d4 : ...Cf6 et ...e6',tag:'Choix noirs · Défense indienne',moves:'d2d4 g8f6 c2c4 e7e6 g1f3 d7d5 b1c3 f8e7',note:'Ordre de coups indien transposant vers le gambit refusé.'},
+ {id:'branch-qg-1e6',name:'Contre 1.d4 : ...e6',tag:'Choix noirs · Transposition',moves:'d2d4 e7e6 c2c4 d7d5 b1c3 g8f6 g1f3',note:'...e6 avant ...d5 permet de transposer dans le gambit refusé.'},
+ {id:'branch-qg-1c6',name:'Contre 1.d4 : ...c6, puis ...d5',tag:'Choix noirs · Slave',moves:'d2d4 c7c6 c2c4 d7d5 g1f3 g8f6',note:'Une voie vers la slave en changeant l’ordre de coups.'},
+ {id:'branch-qg-1f5',name:'Contre 1.d4 : ...f5, défense hollandaise',tag:'Choix noirs · Hollandaise',moves:'d2d4 f7f5 c2c4 g8f6 g1f3 e7e6 g2g3',note:'La hollandaise n’est pas un gambit de la dame : repère cette transposition défensive.'},
+ {id:'branch-qg-2c5',name:'Gambit : 2...c5',tag:'Choix noirs · Centre',moves:'d2d4 d7d5 c2c4 c7c5 c4d5 d8d5 g1f3',note:'Contestation immédiate du centre par ...c5.'},
+ {id:'branch-qg-2bf5',name:'Gambit : 2...Ff5, défense balte',tag:'Choix noirs · Défense balte',moves:'d2d4 d7d5 c2c4 c8f5 b1c3 e7e6 d1b3',note:'Développement précoce du fou c8 : la pression sur b7 augmente.'},
+ {id:'branch-qg-qgd-3c5',name:'Gambit refusé : 3...c5, Tarrasch',tag:'Choix noirs · Tarrasch',moves:'d2d4 d7d5 c2c4 e7e6 b1c3 c7c5 c4d5 e6d5',note:'Les Noirs contestent immédiatement d4 ; surveille les structures à pion isolé.'},
+ {id:'branch-qg-qgd-3bb4',name:'Gambit refusé : 3...Fb4',tag:'Choix noirs · Clouage',moves:'d2d4 d7d5 c2c4 e7e6 b1c3 f8b4 g1f3 g8f6',note:'Le fou attaque le cavalier blanc et augmente la tension centrale.'},
+ {id:'branch-qg-qgd-3dc4',name:'Gambit refusé : 3...dxc4',tag:'Choix noirs · Prise c4',moves:'d2d4 d7d5 c2c4 e7e6 b1c3 d5c4 e2e3 g8f6 f1c4',note:'Les Noirs peuvent accepter le pion c4 après avoir joué ...e6.'},
+ {id:'branch-qg-qgd-4bg5',name:'Gambit refusé : 4.Fg5',tag:'Choix blancs · Pression',moves:'d2d4 d7d5 c2c4 e7e6 b1c3 g8f6 c1g5 f8e7 e2e3 e8g8',note:'Développement du fou avec clouage sur la dame noire.'},
+ {id:'branch-qg-qgd-4e3',name:'Gambit refusé : 4.e3',tag:'Choix blancs · Développement',moves:'d2d4 d7d5 c2c4 e7e6 b1c3 g8f6 e2e3 f8e7 g1f3',note:'Développement souple sans dévoiler trop tôt le fou.'},
+ {id:'branch-qg-qga-c5',name:'Gambit accepté : 3...c5',tag:'Choix noirs · Prise c4',moves:'d2d4 d7d5 c2c4 d5c4 e2e3 c7c5 g1f3 g8f6 f1c4',note:'Les Noirs peuvent chercher immédiatement ...c5 sans conserver longtemps le pion c4.'},
+ {id:'branch-qg-qga-e5',name:'Gambit accepté : 3...e5',tag:'Choix noirs · Prise c4',moves:'d2d4 d7d5 c2c4 d5c4 e2e3 e7e5 f1c4 e5d4 e3d4',note:'Les Noirs frappent le centre tôt : reprends c4 puis surveille le pion isolé.'},
+ {id:'branch-qg-qga-c6',name:'Gambit accepté : 3...c6',tag:'Choix noirs · Prise c4',moves:'d2d4 d7d5 c2c4 d5c4 e2e3 c7c6 f1c4 g8f6',note:'Le pion c6 reste flexible et prépare la consolidation de l’aile dame.'},
+ {id:'branch-qg-albin-4nf3',name:'Albin : 4.Cf3 et ...Fb4+',tag:'Choix noirs · Albin',moves:'d2d4 d7d5 c2c4 e7e5 d4e5 d5d4 g1f3 f8b4 c1d2 b4d2 d1d2',note:'Une réponse noire fréquente dans le contre-gambit Albin.'}
+);
 if(typeof module!=='undefined')module.exports=repertoire;
 
-/* Seules les lignes théoriques éditoriales sont conservées. Le meilleur coup est calculé par Stockfish. */
 
 (function(){
 'use strict';
@@ -284,130 +314,9 @@ const GLYPH={K:'♔',Q:'♕',R:'♖',B:'♗',N:'♘',P:'♙',k:'♚',q:'♛',r:'
 const PIECES={k:'roi',q:'dame',r:'tour',b:'fou',n:'cavalier',p:'pion'};
 const $=id=>document.getElementById(id);
 const posKey=s=>R.positionKey(s);
-let family='queen',selected='qgd',flipped=false,selectedSquare=-1,promotionMoves=null,coachSide=1;
+let family='queen',selected='qgd',flipped=false,selectedSquare=-1,promotionMoves=null;
 let states=[R.parseFen(R.initial)],moves=[],cursor=0,customFEN=false,notice='',lastMoveWasInBook=true;
 const books=new Map();let allLines=[];
-const engine={worker:null,url:null,loading:false,ready:false,mode:0,pending:null,cache:new Map(),auto:false,latest:null,error:''};
-const mastersCache=new Map(),mastersBranches=new Map(),autoMasterRequested=new Set();
-function positionFen(){return R.fen(current());}
-function getEngineMoves(){return engine.cache.get(positionFen())||null;}
-function engineMoveFor(s,uci){return R.legal(s).find(m=>R.key(m)===uci);}
-function updateEngineUI(){
- const active=engine.loading||engine.ready;
- $('engine-start').disabled=active;
- $('engine-start').textContent=engine.ready?'Moteur actif':engine.loading?'Chargement…':'Activer Stockfish';
- const entry=getEngineMoves(),finished=R.status(states.slice(0,cursor+1)).end;
- $('engine-play').disabled=!engine.ready||!entry?.best||finished||!!engine.pending;
- $('engine-auto').disabled=!engine.ready||finished||engine.auto;
- $('engine-pause').disabled=!engine.auto;
- $('engine-auto').textContent='Jouer les deux camps jusqu’à 40 coups';
- const lines=$('engine-lines');lines.innerHTML='';
- if(entry?.variants?.length){
-  for(const v of entry.variants.slice(0,3)){
-   const m=engineMoveFor(current(),v.uci);if(!m)continue;
-   const row=document.createElement('div');row.className='engine-row';
-   const btn=document.createElement('button');btn.type='button';btn.textContent=R.san(current(),m);btn.title='Jouer ce coup calculé par Stockfish';btn.addEventListener('click',()=>{engine.auto=false;commit(m);});
-   const evalTxt=document.createElement('span');evalTxt.className='eval';evalTxt.textContent=v.mate!==undefined?(v.mate>0?'Mat en '+v.mate:'Mat subi en '+Math.abs(v.mate)):v.cp!==undefined?((v.cp>=0?'+':'')+(v.cp/100).toFixed(2)):'—';
-   const desc=document.createElement('span');desc.className='variation';desc.textContent='Profondeur '+v.depth+' · score du camp au trait';
-   row.append(btn,evalTxt,desc);lines.append(row);
-  }
- }
- $('engine-status').textContent=engine.error?engine.error:engine.loading?'Chargement du moteur d’analyse…':engine.pending?'Stockfish calcule le meilleur coup pour '+(current().t===1?'les Blancs':'les Noirs')+'…':engine.ready?(entry?.best?'Analyse calculée pour le camp au trait.':'Moteur prêt. Analyse en attente…'):'Moteur non activé. Aucun coup n’est déclaré optimal sans calcul.';
-}
-function stopEngine(){engine.auto=false;if(engine.pending){engine.pending.stale=true;engine.worker?.postMessage('stop');}updateEngineUI();}
-function engineFail(reason){
- engine.error=reason;engine.loading=false;engine.ready=false;engine.pending=null;engine.auto=false;
- if(engine.worker){engine.worker.terminate();engine.worker=null;}
- if(engine.url){URL.revokeObjectURL(engine.url);engine.url=null;}
- if(engine.mode===0){engine.mode=1;startEngine(true);return;}
- updateEngineUI();renderAdvice();
-}
-function startEngine(retry=false){
- if(engine.loading||engine.ready)return;
- engine.loading=true;engine.error='';engine.pending=null;
- const base='https://cdn.jsdelivr.net/npm/stockfish@19.0.1/bin/';
- const file=engine.mode===0?'stockfish-19-lite-single.js':'stockfish-19-asm.js';
- const boot=engine.mode===0?`self.Module={locateFile:function(f){return '${base}'+f;}};importScripts('${base}${file}');`:`importScripts('${base}${file}');`;
- try{
-  engine.url=URL.createObjectURL(new Blob([boot],{type:'text/javascript'}));
-  const w=engine.worker=new Worker(engine.url);
-  const check=setTimeout(()=>{if(engine.worker===w&&!engine.ready)engineFail('Impossible de charger le moteur. Vérifie la connexion et recharge la page.');},18000);
-  w.addEventListener('message',e=>{
-   if(engine.worker!==w)return;
-   const out=String(e.data||'');
-   if(out.startsWith('uciok')){w.postMessage('setoption name MultiPV value 3');w.postMessage('isready');return;}
-   if(out.startsWith('readyok')){clearTimeout(check);engine.loading=false;engine.ready=true;engine.error='';updateEngineUI();requestEngine();return;}
-   if(out.startsWith('info ')&&engine.pending){
-    const pv=out.match(/\bpv\s+([a-h][1-8][a-h][1-8][qrbn]?)/);
-    const depth=out.match(/\bdepth\s+(\d+)/),idx=out.match(/\bmultipv\s+(\d+)/),cp=out.match(/\bscore cp\s+(-?\d+)/),mate=out.match(/\bscore mate\s+(-?\d+)/);
-    if(pv&&depth&&(cp||mate)){const v={uci:pv[1],depth:Number(depth[1])};if(cp)v.cp=Number(cp[1]);if(mate)v.mate=Number(mate[1]);engine.pending.pv.set(Number(idx?.[1]||1),v);}
-   }
-   if(out.startsWith('bestmove ')&&engine.pending){
-    const job=engine.pending;engine.pending=null;
-    const best=out.match(/bestmove\s+([a-h][1-8][a-h][1-8][qrbn]?|\(none\))/)?.[1];
-    if(!job.stale&&best&&best!=='(none)'&&job.fen===positionFen()){
-     let vars=[...job.pv.entries()].sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
-     if(!vars.some(v=>v.uci===best))vars.unshift({uci:best,depth:0});
-     engine.cache.set(job.fen,{best,variants:vars});
-     renderAdvice();
-     if(engine.auto&&cursor<80&&!R.status(states.slice(0,cursor+1)).end){const m=engineMoveFor(current(),best);if(m){commit(m);return;}}
-     if(engine.auto){engine.auto=false;notice='Démonstration terminée : 40 coups ou fin de partie.';}
-    }
-    if(engine.ready)requestEngine();else updateEngineUI();
-   }
-  });
-  w.addEventListener('error',()=>{clearTimeout(check);engineFail('Erreur lors du chargement de Stockfish.');});
-  w.postMessage('uci');
-  updateEngineUI();
- }catch(e){engineFail('Le navigateur ne peut pas lancer Stockfish : '+e.message);}
-}
-function requestEngine(){
- if(!engine.ready)return;
- if(R.status(states.slice(0,cursor+1)).end){engine.auto=false;updateEngineUI();return;}
- const fen=positionFen();
- if(engine.pending){if(engine.pending.fen!==fen&&!engine.pending.stale){engine.pending.stale=true;engine.worker.postMessage('stop');}updateEngineUI();return;}
- if(engine.cache.has(fen)&&!engine.auto){updateEngineUI();return;}
- engine.pending={fen,stale:false,pv:new Map()};
- engine.worker.postMessage('position fen '+fen);
- engine.worker.postMessage('go movetime '+Number($('engine-time').value||2500));
- updateEngineUI();
-}
-async function loadMasters(){
- const status=$('masters-status'),choices=$('masters-choices');choices.innerHTML='';
- if(customFEN||R.fen(states[0])!==R.initial){status.textContent='La base de maîtres est consultée uniquement à partir de la position initiale.';return;}
- const path=moves.slice(0,cursor).map(m=>m.uci).join(',');
- const key=path||'start';
- if(mastersCache.has(key)){drawMasters(mastersCache.get(key),key);return;}
- status.textContent='Chargement des coups joués par les maîtres…';$('masters-load').disabled=true;
- try{
-  const response=await fetch('https://explorer.lichess.ovh/masters?play='+encodeURIComponent(path),{headers:{Accept:'application/json'}});
-  if(!response.ok)throw Error('HTTP '+response.status);
-  const data=await response.json();
-  if(!Array.isArray(data.moves))throw Error('Réponse non reconnue');
-  mastersCache.set(key,data);
-  drawMasters(data,key);
- }catch(e){status.textContent='Base indisponible : '+e.message+' ; aucun conseil inventé.';}
- finally{$('masters-load').disabled=false;}
-}
-function drawMasters(data,key){
- const status=$('masters-status'),el=$('masters-choices');el.innerHTML='';
- const currentKey=moves.slice(0,cursor).map(m=>m.uci).join(',')||'start';
- if(key!==currentKey){status.textContent='Position modifiée depuis la requête. Refaire la recherche pour cette position.';return;}
- const ms=data.moves.filter(m=>m.white+m.draws+m.black>=3).slice(0,10);
- const total=ms.reduce((sum,m)=>sum+m.white+m.draws+m.black,0);
- status.textContent=ms.length?ms.length+' coups observés · '+total.toLocaleString('fr')+' parties au total dans ces coups.':'Aucun coup de maîtres suffisamment documenté pour cette position.';
- const prefix=key==='start'?[]:key.split(',');
- mastersBranches.set(key,ms.map(m=>({moves:[...prefix,m.uci],n:m.white+m.draws+m.black})));
- for(const v of ms){
-  const m=engineMoveFor(current(),v.uci);if(!m)continue;
-  const b=document.createElement('button');b.className='choice';b.type='button';
-  const n=v.white+v.draws+v.black;b.textContent=R.san(current(),m)+' · '+n.toLocaleString('fr')+' parties';
-  b.title='Fréquence observée chez les maîtres, non garanti meilleur coup';
-  b.addEventListener('click',()=>{engine.auto=false;commit(m);});el.append(b);
- }
- renderGraph();renderAdvice();renderBoard();
-}
-
 function initBook(){
  for(const [familyId,entry] of Object.entries(repertoire)){
   for(const variation of entry.lines){
@@ -433,32 +342,8 @@ function bookCandidates(s){
  for(const c of list){let v=d.get(c.move);if(!v){v={...c,also:[c.variation.name],ids:new Set([c.variation.id])};d.set(c.move,v);}else{v.also.push(c.variation.name);v.ids.add(c.variation.id);if(c.variation.id===selected){v.variation=c.variation;v.ply=c.ply;}}}
  return Array.from(d.values()).sort((a,b)=>Number(b.ids.has(selected))-Number(a.ids.has(selected))||b.also.length-a.also.length||a.san.localeCompare(b.san));
 }
-/* Choix traçables : moteur > théorie répertoriée > fréquence dans les parties de maîtres.
-   Jamais de recommandation heuristique inventée ; tout coup est revérifié comme légal. */
-function masterCandidates(s){
- const key=moves.slice(0,cursor).map(m=>m.uci).join(',')||'start';
- const data=mastersCache.get(key);if(!data?.moves)return [];
- return data.moves.filter(v=>v.white+v.draws+v.black>=3)
-  .sort((a,b)=>(b.white+b.draws+b.black)-(a.white+a.draws+a.black))
-  .map(v=>({...v,m:engineMoveFor(s,v.uci)})).filter(v=>!!v.m).slice(0,3);
-}
-function candidateSuggestions(s){
- const analysis=getEngineMoves();
- if(analysis?.variants?.length){const arr=analysis.variants.map(v=>({m:engineMoveFor(s,v.uci),source:'moteur',detail:v.depth?'Profondeur '+v.depth:'Analyse Stockfish'})).filter(v=>v.m);if(arr.length)return arr.slice(0,3);}
- const theory=bookCandidates(s).slice(0,3).map(v=>({m:engineMoveFor(s,v.move),source:'théorie',detail:v.also.length+' ligne'+(v.also.length>1?'s':'')+' du répertoire',note:v.variation.note})).filter(v=>v.m);
- if(theory.length)return theory;
- return masterCandidates(s).map(v=>({m:v.m,source:'maîtres',detail:(v.white+v.draws+v.black).toLocaleString('fr-FR')+' parties'}));
-}
-function autoLoadMasterIfNeeded(){
- const s=current();if(s.t!==coachSide&&coachSide!==0)return;
- if(R.status(states.slice(0,cursor+1)).end||candidateSuggestions(s).length||customFEN||R.fen(states[0])!==R.initial)return;
- const key=moves.slice(0,cursor).map(m=>m.uci).join(',')||'start';
- if(autoMasterRequested.has(key)||mastersCache.has(key))return;
- autoMasterRequested.add(key);
- setTimeout(()=>{const cur=moves.slice(0,cursor).map(m=>m.uci).join(',')||'start';if(cur===key&&!engine.pending&&!candidateSuggestions(current()).length)loadMasters();},250);
-}
-function reset(){stopEngine();states=[R.parseFen(R.initial)];moves=[];cursor=0;selectedSquare=-1;promotionMoves=null;customFEN=false;notice='';lastMoveWasInBook=true;render();requestEngine();}
-function changeFamily(f){if(!repertoire[f])return;family=f;selected=repertoire[f].lines[0].id;flipped=repertoire[f].side==='b';coachSide=f==='queen'?1:-1;$('coach-side').value=String(coachSide);reset();resetCatalogue();renderVariants();renderSelect();renderQuick();render();}
+function reset(){states=[R.parseFen(R.initial)];moves=[];cursor=0;selectedSquare=-1;promotionMoves=null;customFEN=false;notice='';lastMoveWasInBook=true;render();}
+function changeFamily(f){if(!repertoire[f])return;family=f;selected=repertoire[f].lines[0].id;flipped=repertoire[f].side==='b';reset();resetCatalogue();renderVariants();renderSelect();renderQuick();render();}
 function chooseVariation(id){const line=allLines.find(x=>x.id===id&&x.familyId===family);if(!line)return;selected=id;reset();renderVariants();renderSelect();notice='Variante chargée : '+line.variation.name;render();document.getElementById('atelier').scrollIntoView({behavior:'smooth',block:'start'});}
 function jumpToFork(){
  const l=selectedLine();if(!l)return;
@@ -474,12 +359,22 @@ function commit(m,shouldRender=true){
  const french=R.san(s,found),english=toEnglishSAN(s,found);
  states=states.slice(0,cursor+1);moves=moves.slice(0,cursor);
  states.push(R.apply(s,found));moves.push({move:found,san:french,pgn:english,side:s.t,num:s.full,uci:R.key(found),book:lastMoveWasInBook});cursor++;
- selectedSquare=-1;notice=lastMoveWasInBook?'Coup connu dans le répertoire.':'Coup légal joué : exploration libre.';
- if(shouldRender){render();requestEngine();}
+ const keep=selectedLine();
+ if(!keep||!prefixMatches(keep)){
+   const matching=allLines.filter(x=>x.familyId===family&&prefixMatches(x));
+   if(matching.length){matching.sort((a,b)=>b.moves.length-a.moves.length);selected=matching[0].id;renderSelect();}
+ }
+ selectedSquare=-1;notice=lastMoveWasInBook?'Coup théorique : le guide suit désormais la branche jouée.':'Coup légal joué : exploration libre.';
+ if(shouldRender)render();
 }
 function toEnglishSAN(s,m){const txt=R.san(s,m);return txt.replace(/^([CFTDR])(?=[a-h1-8xO])/,(a)=>({C:'N',F:'B',T:'R',D:'Q',R:'K'})[a]).replace(/=([CFTDR])/,(_,letter)=>'='+({C:'N',F:'B',T:'R',D:'Q',R:'K'})[letter]);}
-function goto(i){if(i<0||i>=states.length)return;cursor=i;selectedSquare=-1;promotionMoves=null;notice='';render();requestEngine();}
-function advance(){goto(Math.min(states.length-1,cursor+1));}
+function goto(i){if(i<0||i>=states.length)return;cursor=i;selectedSquare=-1;promotionMoves=null;notice='';render();}
+function advance(){
+ if(cursor<states.length-1){goto(cursor+1);return;}
+ const hint=guidedCandidate();if(!hint){announce('Aucune suite théorique disponible ici.');return;}
+ const m=R.legal(current()).find(x=>R.key(x)===hint.move);
+ if(m)commit(m);
+}
 function back(){goto(Math.max(0,cursor-1));}
 function announce(msg){notice=msg;$('toast').textContent=msg;}
 function tryMove(from,to){
@@ -509,12 +404,11 @@ function renderBoard(){
  const board=$('board'),s=current(),legals=R.legal(s),status=R.status(states.slice(0,cursor+1));
  const targets=legals.filter(m=>m[0]===selectedSquare).map(m=>m[1]);
  const prev=cursor?moves[cursor-1].move:null;
- const proposed=candidateSuggestions(s)[0]?.m||null;
  board.innerHTML='';
  const order=Array.from({length:64},(_,j)=>flipped?(7-(j>>3))*16+(7-(j&7)):(j>>3)*16+(j&7));
  for(const [j,i] of order.entries()){
   const p=s.b[i],r=i>>4,c=i&7,button=document.createElement('button');button.type='button';
-  button.className='square'+((r+c)%2?' dark':'')+(selectedSquare===i?' selected':'')+(prev&&(prev[0]===i||prev[1]===i)?' last':'')+(p.toLowerCase()==='k'&&R.side(p)===s.t&&R.checked(s)?' is-check':'')+(proposed&&i===proposed[0]?' suggested-from':'')+(proposed&&i===proposed[1]?' suggested-to':'');
+  button.className='square'+((r+c)%2?' dark':'')+(selectedSquare===i?' selected':'')+(prev&&(prev[0]===i||prev[1]===i)?' last':'')+(p.toLowerCase()==='k'&&R.side(p)===s.t&&R.checked(s)?' is-check':'');
   button.dataset.square=R.sq(i);button.setAttribute('aria-label',R.sq(i)+(p==='.'?' vide':', '+PIECES[p.toLowerCase()]+' '+(p===p.toUpperCase()?'blanc':'noir')));
   if(p!=='.'){
    const span=document.createElement('span');span.className='piece '+(R.side(p)===1?'white':'black');span.textContent=GLYPH[p];button.append(span);
@@ -533,7 +427,7 @@ function renderBoard(){
  const count=cursor;
  $('move-progress').textContent=(count/2).toLocaleString('fr-FR',{maximumFractionDigits:1})+' / 40 coups';
  $('progress-fill').style.width=Math.min(100,count/80*100)+'%';
- $('back').disabled=cursor===0;$('forward').disabled=cursor>=states.length-1;
+ $('back').disabled=cursor===0;$('forward').disabled=false;
  $('reset').disabled=states.length===1&&cursor===0;
  $('toast').textContent=notice;
 }
@@ -560,50 +454,66 @@ function contextualTip(s){
  if(s.full>10)return 'En Caro-Kann, préparez les ruptures libératrices <strong>...c5</strong> ou <strong>...e5</strong>, et vérifiez que votre roi reste en sécurité.';
  return 'Cherchez un bon développement du fou c8, une structure de pions solide et une attaque du centre par <strong>...c5</strong> au bon moment.';
 }
+function prefixMatches(line){
+ const path=line.variation.moves.trim().split(/\s+/);
+ if(cursor>path.length)return false;
+ for(let i=0;i<cursor;i++)if(moves[i].uci!==path[i])return false;
+ return true;
+}
+function guidedCandidate(){
+ const s=current(),candidates=bookCandidates(s),active=selectedLine();
+ if(active&&prefixMatches(active)){
+  const u=active.variation.moves.trim().split(/\s+/)[cursor];
+  if(u){const found=candidates.find(x=>x.move===u);if(found)return found;}
+ }
+ return candidates[0]||null;
+}
+function opponentTurn(){return current().t===(family==='caro'?1:-1);}
 function renderAdvice(){
- const s=current(),entry=activeEntry(),status=R.status(states.slice(0,cursor+1)),selectedEntry=selectedLine();
- const tips=candidateSuggestions(s),myTurn=coachSide===0||s.t===coachSide;
+ const s=current(),entry=activeEntry(),book=bookCandidates(s),status=R.status(states.slice(0,cursor+1)),selectedEntry=selectedLine();
  $('side-eyebrow').textContent=family==='caro'?'Le plan des Noirs':'Le plan des Blancs';
  $('active-title').textContent=selectedEntry?.variation.name||entry.name;
  $('opening-intro').textContent=entry.intro;
  $('strategy-box').innerHTML=contextualTip(s);
- $('last-feedback').textContent=cursor&&moves[cursor-1]?.book?'Ce coup figure dans le répertoire. Sa qualité n’est pas automatiquement garantie.':cursor?'Coup légal hors du répertoire local : Stockfish ou les parties de maîtres peuvent fournir des indications.':'Choisis ton camp ; les coups documentés apparaissent immédiatement.';
- $('last-feedback').classList.toggle('danger',false);
+ $('last-feedback').textContent=cursor&&moves[cursor-1]?.book?'Dernier coup : présent dans les variantes étudiées.':cursor?'Dernier coup : légal, hors des lignes commentées.':'Cliquez sur « Avancer » pour découvrir les coups de la variante.';
+ $('last-feedback').classList.toggle('danger',cursor>0&&!moves[cursor-1]?.book);
  const el=$('book-choices');el.innerHTML='';
- let explanation='';
- if(status.end){explanation='La partie est terminée. Reviens en arrière pour reprendre l’analyse.';}
- else if(tips.length){
-  const src=tips[0].source;
-  if(myTurn){
-   explanation=src==='moteur'?'Propositions de Stockfish pour '+(s.t===1?'les Blancs':'les Noirs')+' à profondeur limitée :':
-     src==='théorie'?'Coups issus des variantes théoriques pour '+(s.t===1?'les Blancs':'les Noirs')+' (non classés par qualité moteur) :':
-     'Coups observés dans les parties de maîtres : ils sont classés par fréquence, pas par qualité calculée.';
-  }else{explanation='C’est au tour de l’adversaire. Voici des réponses documentées pour simuler son jeu ; les conseils pour ton camp apparaîtront ensuite.';}
-  for(const v of tips){
-   const b=document.createElement('button');b.className='choice';b.type='button';
-   const label=document.createElement('strong');label.textContent=R.moveLabel(s,v.m);
-   const desc=document.createElement('span');desc.textContent=(v.source==='moteur'?'Stockfish · ':v.source==='maîtres'?'Maîtres · ':'Théorie · ')+v.detail;
-   b.append(label,desc);b.title=v.source==='moteur'?'Suggestion calculée à profondeur limitée':v.source==='théorie'?'Continuation documentée ; pas une garantie du meilleur coup':'Coup observé dans des parties de maîtres';
-   b.addEventListener('click',()=>{engine.auto=false;commit(v.m);});el.append(b);
+ const opponent=$('opponent-panel'),oppList=$('opponent-choices');oppList.innerHTML='';
+ const opp=opponentTurn();opponent.hidden=!opp;
+ $('opponent-title').textContent=family==='caro'?'Quel coup joue ton adversaire blanc ?':'Quel coup joue ton adversaire noir ?';
+ if(status.end){$('reco-text').textContent='Partie terminée.';}
+ else if(book.length){
+  $('reco-text').textContent=book.length+' continuation'+(book.length>1?'s':'')+' théorique'+(book.length>1?'s':'')+'. Avancer joue la ligne choisie ; un autre bouton permet de changer de branche.';
+  const next=guidedCandidate();
+  for(const cand of book){
+   const m=R.legal(s).find(x=>R.key(x)===cand.move);if(!m)continue;
+   const b=document.createElement('button');b.type='button';b.className='choice'+(cand.move===next?.move?' best':'');
+   const title=document.createElement('strong');title.textContent=R.moveLabel(s,m);
+   const desc=document.createElement('span');desc.textContent=cand.move===next?.move?'ligne choisie':cand.also.length+' variante'+(cand.also.length>1?'s':'');
+   b.append(title,desc);b.title=cand.also.join(' · ')+' — '+cand.variation.note;
+   b.addEventListener('click',()=>commit(m));el.append(b);
   }
- }else if(engine.pending||engine.loading){explanation='Analyse en cours. Aucun coup n’est encore calculé ; recherche des variantes documentées.';}
- else if(engine.ready){explanation='Stockfish prépare une analyse pour cette position.';}
- else{explanation=myTurn?'Hors du répertoire pour ce camp : recherche dans les parties de maîtres si disponible. Active Stockfish pour une recommandation calculée.':'Joue une réponse adverse légale pour revenir au tour de ton camp.';}
- $('reco-text').textContent=explanation;
+  if(opp){
+   oppList.innerHTML='';for(const cand of book){const m=R.legal(s).find(x=>R.key(x)===cand.move);if(!m)continue;const b=document.createElement('button');b.type='button';b.className='choice'+(cand.move===next?.move?' best':'');const name=document.createElement('strong');name.textContent=R.moveLabel(s,m);const sub=document.createElement('span');sub.textContent=cand.also.length+' ligne'+(cand.also.length>1?'s':'');b.append(name,sub);b.title=cand.also.join(' · ');b.addEventListener('click',()=>commit(m));oppList.append(b);}
+   $('opponent-help').textContent='Clique sur une réponse adverse pour bifurquer, ou sur « Avancer » pour la réponse de la variante actuellement sélectionnée.';
+  }
+ }else{
+  $('reco-text').textContent='Aucune continuation théorique répertoriée pour cette position. Tu peux déplacer librement les pièces ou choisir une autre variante ; aucun coup arbitraire n’est proposé.';
+  if(opp)$('opponent-help').textContent='Il n’existe pas encore de branche commentée ici. Tu peux jouer un coup légal librement.';
+ }
  const list=$('legal-choices');list.innerHTML='';
  if(!status.end)for(const m of R.legal(s)){
-  const b=document.createElement('button');b.className='choice';b.type='button';b.textContent=R.san(s,m);b.title='Coup légal, pas nécessairement bon';b.addEventListener('click',()=>{engine.auto=false;if(m[2]){promotionMoves=R.legal(s).filter(x=>x[0]===m[0]&&x[1]===m[1]);renderPromotion();}else commit(m);});list.append(b);
+  const b=document.createElement('button');b.className='choice';b.type='button';b.textContent=R.san(s,m);b.title='Jouer '+R.moveLabel(s,m);b.addEventListener('click',()=>{if(m[2]){promotionMoves=R.legal(s).filter(x=>x[0]===m[0]&&x[1]===m[1]);renderPromotion();}else commit(m);});list.append(b);
  }
- const suggested=tips[0]||null;
- $('suggest').disabled=!suggested||status.end;
- $('suggest').textContent=suggested?((myTurn?'Jouer le coup proposé':'Jouer une réponse adverse')+' : '+R.san(s,suggested.m)):'Aucun coup conseillé pour cette position';
- $('suggest').title=suggested?(suggested.source==='moteur'?'Calcul Stockfish':'Proposition issue du '+(suggested.source==='théorie'?'répertoire':'corpus de maîtres')):'Active Stockfish ou explore les variantes';
+ const hint=guidedCandidate();$('suggest').disabled=!hint||status.end;
+ $('suggest').textContent=hint?'Jouer '+hint.san:'Pas de coup du guide';
+ $('forward').disabled=cursor>=states.length-1&&(!hint||status.end);
+ $('forward').title=cursor<states.length-1?'Rejouer le coup annulé':'Jouer le coup suivant de la variante';
  $('game-status').textContent=status.text+(status.claim?' · Nulle réclamable : '+status.claim:'');
- updateEngineUI();
 }
 function renderHistory(){
  const el=$('history');el.innerHTML='';
- if(!moves.length){el.innerHTML='<p class="empty-history" style="grid-column:1/-1">Aucun coup joué. Appuyez sur « Jouer le coup du guide » ou déplacez une pièce.</p>';return;}
+ if(!moves.length){el.innerHTML='<p class="empty-history" style="grid-column:1/-1">Aucun coup joué. Appuyez sur « Avancer » pour suivre la variante ou déplacez une pièce.</p>';return;}
  for(let i=0;i<moves.length;i+=2){
   const first=moves[i],second=moves[i+1];
   const rank=document.createElement('div');rank.className='move-n';rank.textContent=first.side===1?first.num+'.':first.num+'…';el.append(rank);
@@ -657,12 +567,6 @@ function renderGraph(lines=visibleLines()){
    node=node.children.get(k);node.count++;s=R.apply(s,m);
   }
  }
- for(const ext of mastersBranches.values())for(const line of ext){
-  if(family==='queen'&&line.moves[0]!=='d2d4')continue;
-  if(family==='caro'&&line.moves[0]!=='e2e4')continue;
-  let node=root,st=R.parseFen(R.initial),prefix=[];
-  for(const uci of line.moves){const m=R.legal(st).find(x=>R.key(x)===uci);if(!m)break;prefix.push(uci);const path=prefix.join(' ');if(!node.children.has(uci))node.children.set(uci,{san:R.san(st,m),path,depth:node.depth+1,count:0,children:new Map()});node=node.children.get(uci);st=R.apply(st,m);}
- }
  const leaves=[];
  function place(node){const kids=[...node.children.values()];if(!kids.length){node.y=leaves.length*34+34;leaves.push(node);return node.y;}const ys=kids.map(place);node.y=ys.reduce((a,b)=>a+b,0)/ys.length;return node.y;}
  place(root);
@@ -670,7 +574,7 @@ function renderGraph(lines=visibleLines()){
  function collect(node,parent=null){maxDepth=Math.max(maxDepth,node.depth);maxY=Math.max(maxY,node.y||0);nodes.push({node,parent});for(const child of node.children.values())collect(child,node);}collect(root);
  const currentPath=moves.slice(0,cursor).map(m=>m.uci).join(' ');
  const xGap=170,width=(maxDepth+1)*xGap+230,height=Math.max(180,maxY+24),ns='http://www.w3.org/2000/svg';
- svg.setAttribute('viewBox',`0 0 ${width} ${height}`);svg.style.width=width+'px';svg.style.height=height+'px';
+ svg.setAttribute('viewBox',`0 0 ${width} ${height}`);svg.style.height=Math.min(760,height)+'px';
  for(const {node,parent} of nodes){if(!parent)continue;const edge=document.createElementNS(ns,'path');const x1=parent.depth*xGap+40,y1=parent.y,x2=node.depth*xGap+40,y2=node.y;edge.setAttribute('class','graph-edge');edge.setAttribute('d',`M ${x1+14} ${y1} C ${x1+70} ${y1}, ${x2-70} ${y2}, ${x2-14} ${y2}`);svg.append(edge);}
  for(const {node} of nodes){
   const g=document.createElementNS(ns,'g');let cls='graph-node'+(node===root?' root':'');if(node.path&&currentPath.startsWith(node.path))cls+=' current';g.setAttribute('class',cls);g.setAttribute('transform',`translate(${node.depth*xGap+40},${node.y})`);
@@ -680,13 +584,13 @@ function renderGraph(lines=visibleLines()){
   const t2=document.createElementNS(ns,'text');t2.setAttribute('class','ct');t2.setAttribute('x','22');t2.setAttribute('y',node===root?18:12);t2.textContent=node.count+' branche'+(node.count>1?'s':'');g.append(t2);
   svg.append(g);
  }
- $('graph-stats').textContent=lines.length+' lignes théoriques · '+(nodes.length-1)+' nœuds de coups (+ maîtres consultés)';
+ $('graph-stats').textContent=lines.length+' branche'+(lines.length>1?'s':'')+' visibles · '+(nodes.length-1)+' nœuds de coups';
 }
 function loadPath(path){
  states=[R.parseFen(R.initial)];moves=[];cursor=0;selectedSquare=-1;promotionMoves=null;customFEN=false;
  if(path.trim())for(const uci of path.trim().split(/\s+/)){const s=current(),m=R.legal(s).find(x=>R.key(x)===uci);if(!m)break;commit(m,false);}
  notice='Position chargée depuis le graphe du répertoire.';render();
- $('atelier').scrollIntoView({behavior:'smooth',block:'start'});requestEngine();
+ $('atelier').scrollIntoView({behavior:'smooth',block:'start'});
 }
 const quicks={
  queen:[['albin-nf3',4,'2...e5','Contre-gambit Albin'],['albin-nf3',6,'3...d4','Pion noir avancé'],['albin-e3',8,'4.e3','Piège à étudier'],['qga',4,'2...dxc4','Gambit accepté']],
@@ -700,7 +604,7 @@ function renderQuick(){const el=$('quick-positions');el.innerHTML='';for(const [
 function render(){
  $('mode-queen').classList.toggle('active',family==='queen');$('mode-caro').classList.toggle('active',family==='caro');
  $('mode-queen').setAttribute('aria-pressed',family==='queen');$('mode-caro').setAttribute('aria-pressed',family==='caro');
- renderBoard();renderAdvice();renderHistory();renderGraph();requestEngine();autoLoadMasterIfNeeded();
+ renderBoard();renderAdvice();renderHistory();renderGraph();
 }
 async function copyText(text,label){try{await navigator.clipboard.writeText(text);announce(label+' copié.');}catch{
  const el=document.createElement('textarea');el.value=text;el.style.position='fixed';el.style.left='-9999px';document.body.append(el);el.select();try{document.execCommand('copy');announce(label+' copié.');}catch(e){announce('Copie impossible : sélectionnez le texte manuellement.');}el.remove();
@@ -711,14 +615,7 @@ function savePgn(){const blob=new Blob([pgn()],{type:'application/x-chess-pgn;ch
 $('mode-queen').addEventListener('click',()=>{changeFamily('queen');});
 $('mode-caro').addEventListener('click',()=>{changeFamily('caro');});
 $('variation').addEventListener('change',e=>chooseVariation(e.target.value));
-$('suggest').addEventListener('click',()=>{const suggested=candidateSuggestions(current())[0];if(suggested){engine.auto=false;commit(suggested.m);}});
-$('coach-side').addEventListener('change',e=>{coachSide=Number(e.target.value);render();});
-$('engine-start').addEventListener('click',()=>startEngine());
-$('engine-play').addEventListener('click',()=>{const m=engineMoveFor(current(),getEngineMoves()?.best);if(m){engine.auto=false;commit(m);}});
-$('engine-auto').addEventListener('click',()=>{if(!engine.ready)return;engine.auto=true;const entry=getEngineMoves();if(entry?.best&&cursor<80){const m=engineMoveFor(current(),entry.best);if(m){commit(m);return;}}requestEngine();updateEngineUI();});
-$('engine-pause').addEventListener('click',stopEngine);
-$('engine-time').addEventListener('change',()=>{engine.cache.clear();if(engine.pending){engine.pending.stale=true;engine.worker?.postMessage('stop');}requestEngine();});
-$('masters-load').addEventListener('click',loadMasters);
+$('suggest').addEventListener('click',advance);
 $('back').addEventListener('click',back);$('forward').addEventListener('click',advance);$('reset').addEventListener('click',reset);
 $('flip').addEventListener('click',()=>{flipped=!flipped;renderBoard();});
 $('jump').addEventListener('click',jumpToFork);
@@ -730,7 +627,7 @@ $('promotion-cancel').addEventListener('click',closePromotion);
 $('promotion-overlay').addEventListener('click',e=>{if(e.target===$('promotion-overlay'))closePromotion();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&promotionMoves){closePromotion();return;}if(['INPUT','SELECT','TEXTAREA','BUTTON'].includes(document.activeElement?.tagName))return;if(e.key==='ArrowLeft'){e.preventDefault();back();}if(e.key==='ArrowRight'){e.preventDefault();advance();}});
 $('variant-search').addEventListener('input',renderVariants);$('variant-filter').addEventListener('change',renderVariants);
-$('coach-side').value=String(coachSide);initBook();resetCatalogue();renderSelect();renderVariants();renderQuick();render();updateEngineUI();
+initBook();resetCatalogue();renderSelect();renderVariants();renderQuick();render();
 })();
 
 </script>
