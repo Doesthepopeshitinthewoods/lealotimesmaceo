@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#8b0000">
-<meta name="description" content="Explorer les échecs : la défense Caro-Kann et le gambit de la dame. Échiquier interactif, variantes, 20 coups, coups légaux, FEN et PGN.">
+<meta name="description" content="Explorer les échecs : la défense Caro-Kann et le gambit de la dame. Échiquier interactif, variantes, 100 coups, coups légaux, FEN et PGN.">
 <title>Échecs · L'atelier des ouvertures — Blog de l'intranquilité</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -47,14 +47,14 @@
 <main class="wrapper">
 <nav class="breadcrumb" aria-label="Fil d'Ariane"><a href="index.html">Accueil</a><span>›</span><a href="index.html#culture">Culture</a><span>›</span><em>Échecs</em></nav>
 <section class="hero" aria-labelledby="hero-title"><div class="hero-copy"><span class="eyebrow">Culture · Stratégie · Jeux d'esprit</span><h1 id="hero-title">L'art des<br><em>64 cases.</em></h1><p>Deux ouvertures, une infinité de décisions : le gambit de la dame avec les Blancs et la Caro-Kann avec les Noirs. Rejouez les grandes idées, changez les réponses de l'adversaire et étudiez les positions qui en découlent.</p><a class="hero-chip" href="#atelier"><span class="dots"></span> Entrer dans l'atelier interactif ↓</a></div><div class="hero-art" aria-hidden="true"><div class="chess-art"><span>♞</span></div><div class="art-tag">L'atelier des ouvertures</div></div></section>
-<div class="intro-strip"><div class="intro-stat"><strong>2</strong><span>ouvertures étudiées</span></div><div class="intro-stat"><strong id="stat-lines">77</strong><span>branches théoriques validées</span></div><div class="intro-stat"><strong>20</strong><span>coups à explorer et au-delà</span></div><div class="intro-stat"><strong>∞</strong><span>réponses légales jouables</span></div></div>
+<div class="intro-strip"><div class="intro-stat"><strong>2</strong><span>ouvertures étudiées</span></div><div class="intro-stat"><strong id="stat-lines">177</strong><span>lignes : 77 théoriques + 100 entraînements</span></div><div class="intro-stat"><strong>100</strong><span>coups et au-delà en jeu libre</span></div><div class="intro-stat"><strong>∞</strong><span>réponses légales jouables</span></div></div>
 <section id="atelier" class="lab" aria-labelledby="lab-title">
-<div class="section-head"><div><span class="eyebrow">Le laboratoire</span><h2 id="lab-title">Un échiquier qui s'adapte.</h2><p>Vous jouez les coups des deux camps. Les suggestions suivent les 77 branches commentées, même lorsque vous modifiez la réponse adverse. Hors répertoire, tous les coups légaux restent jouables jusqu’au milieu de partie et au-delà.</p></div></div>
+<div class="section-head"><div><span class="eyebrow">Le laboratoire</span><h2 id="lab-title">Un échiquier qui s'adapte.</h2><p>Vous jouez les coups des deux camps. Les suggestions suivent 77 variantes commentées et 100 suites d’entraînement légales, même lorsque vous modifiez la réponse adverse. Hors répertoire, tous les coups légaux restent jouables jusqu’au milieu de partie et au-delà.</p></div></div>
 <div class="lab-header"><div class="segmented" role="group" aria-label="Choisir l'ouverture"><button id="mode-queen" class="active" aria-pressed="true" type="button">♙ Gambit de la dame</button><button id="mode-caro" type="button" aria-pressed="false">♟ Défense Caro-Kann</button></div><div class="selectors"><label for="variation">Variante étudiée</label><select id="variation" aria-label="Choisir une variante"></select></div></div>
 <div class="quick-section"><div class="quick-title"><strong>Positions clés à explorer</strong><span>Choisissez une bifurcation puis jouez la réponse adverse.</span></div><div id="quick-positions" class="quick-grid"></div></div>
 <div class="lab-body">
 <div class="board-area">
-<div class="board-heading"><span class="turn-pill" id="turn-label">Aux Blancs de jouer</span><span class="muted" id="move-progress" style="font-size:12px;font-weight:700">0 / 20 coups</span></div>
+<div class="board-heading"><span class="turn-pill" id="turn-label">Aux Blancs de jouer</span><span class="muted" id="move-progress" style="font-size:12px;font-weight:700">0 / 100 coups</span></div>
 <div class="progress" aria-hidden="true"><div class="progress-fill" id="progress-fill"></div></div>
 <div class="board-frame"><div class="chessboard" id="board" role="group" aria-label="Échiquier interactif, 64 cases"></div></div>
 <div class="board-controls"><button class="btn" id="back" type="button" title="Revenir d'un demi-coup">← Retour</button><button class="btn" id="forward" type="button" title="Rejouer le coup annulé">Avancer →</button><button class="btn primary" id="suggest" type="button">Jouer le coup du guide</button><button class="btn" id="flip" type="button">↕ Retourner</button><button class="btn" id="reset" type="button">↺ Recommencer</button></div>
@@ -70,7 +70,7 @@
 <section aria-labelledby="principes"><span class="eyebrow">Trois principes à retenir</span><h2 id="principes">Comprendre avant de mémoriser.</h2><div class="lesson-cards"><article class="lesson"><small>01 · Le centre</small><h3>Ce qui compte, ce sont les cases.</h3><p>Le centre e4, d4, e5 et d5 gouverne la mobilité des pièces. Un pion offert peut être moins important que le temps de développement gagné.</p></article><article class="lesson"><small>02 · Le tempo</small><h3>Développer sans se disperser.</h3><p>Sortir les pièces, mettre son roi à l'abri, puis relier les tours. Ne pars pas à la chasse aux pions si cela laisse ton roi exposé.</p></article><article class="lesson"><small>03 · La réponse</small><h3>Aucun coup n'est automatique.</h3><p>À chaque nouveau coup adverse, examine la menace, les captures et les échecs. Le répertoire illustre des plans, il ne remplace pas un calcul concret.</p></article></div></section>
 <section class="faq"><details open><summary>Les Noirs prennent c4 après 1.d4 d5 2.c4 ?</summary><p>On obtient le <strong>gambit de la dame accepté</strong>. Un plan facile pour les Blancs est <strong>3.e3</strong>, suivi de <strong>Fxc4</strong> quand cela est possible. Si les Noirs défendent c4 par ...b5, réponds souvent <strong>a4</strong> pour attaquer le soutien du pion. Sélectionne « Gambit accepté · les Noirs gardent c4 » pour visualiser cette idée.</p></details><details open><summary>Comment jouer la Caro-Kann avec les Noirs ?</summary><p>Après <strong>1.e4 c6 2.d4 d5</strong>, réponds à 3.Cc3 ou 3.Cd2 par <strong>...dxe4</strong> puis souvent <strong>...Ff5</strong>. Contre 3.e5, développe généralement le fou en <strong>f5</strong>, puis prépare <strong>...e6</strong> et <strong>...c5</strong> pour attaquer la chaîne de pions.</p></details></section>
 <section class="faq"><details><summary>Que faire si les Blancs jouent 2.d4 dans la Caro-Kann ?</summary><p>La réponse de principe est <strong>2...d5</strong>. Ensuite, il faut distinguer <strong>3.e5</strong> (pion avancé, attaquer d4 par ...c5), <strong>3.Cc3 / 3.Cd2</strong> (souvent ...dxe4), <strong>3.exd5</strong> (recapturer ...cxd5) et <strong>3.f3</strong> (variante fantaisie). Vous pouvez aussi analyser la transposition <strong>1.d4 c6 2.e4 d5</strong>.</p></details><details><summary>Que signifie ...e5 contre le gambit de la dame ?</summary><p>Après <strong>1.d4 d5 2.c4 e5</strong>, c’est le <strong>contre-gambit Albin</strong>. Après <strong>3.dxe5 d4</strong>, les Noirs obtiennent un pion avancé dangereux ; comparez <strong>4.Cf3</strong>, <strong>4.a3</strong> et <strong>4.e3</strong>. Attention : <strong>1.d4 e5</strong> correspond au gambit Englund et <strong>1.d4 Cf6 2.c4 e5</strong> au gambit de Budapest.</p></details></section>
-<footer class="site-footer">Blog de l'intranquilité · Culture · Échecs. Les lignes sont des exemples pédagogiques non forcés, et ne représentent pas exhaustivement toutes les parties possibles en 20 coups. Références : <a href="https://lichess.org/analysis" target="_blank" rel="noopener noreferrer">Lichess Analyse</a> et <a href="https://lichess.org/opening" target="_blank" rel="noopener noreferrer">Lichess Ouvertures</a>. Le jeu valide les coups légaux mais ne calcule pas les meilleurs coups comme un moteur d'échecs.</footer>
+<footer class="site-footer">Blog de l'intranquilité · Culture · Échecs. Les 77 variantes classiques sont pédagogiques et les 100 suites supplémentaires illustrent des réponses légales, sans garantie de qualité stratégique. Le jeu libre va au-delà de 100 coups : aucun répertoire ne contient toutes les parties possibles. Références : <a href="https://lichess.org/analysis" target="_blank" rel="noopener noreferrer">Lichess Analyse</a> et <a href="https://lichess.org/opening" target="_blank" rel="noopener noreferrer">Lichess Ouvertures</a>. Le jeu valide les coups légaux mais ne calcule pas les meilleurs coups comme un moteur d'échecs.</footer>
 </main>
 <div id="promotion-overlay" class="promotion-overlay" role="dialog" aria-modal="true" aria-labelledby="promotion-title"><div class="promotion-dialog"><h3 id="promotion-title">Choisir la promotion</h3><p class="muted">Par quelle pièce voulez-vous remplacer votre pion ?</p><div id="promotion-choices" class="promotion-choices"></div><button class="btn" id="promotion-cancel" type="button" style="margin-top:14px">Annuler</button></div></div>
 <script>
@@ -263,6 +263,86 @@ repertoire.caro.lines.push(
 );
 if(typeof module!=='undefined')module.exports=repertoire;
 
+/* Supplément d'entraînement : 100 suites originales légales. Ces suites illustrent
+   des réponses possibles et ne sont pas des analyses d'un moteur d'échecs. */
+function trainingScore(R,s,m){
+ const piece=s.b[m[0]].toLowerCase(),target=s.b[m[1]].toLowerCase();
+ const sq=R.sq(m[1]),file='abcdefgh'.indexOf(sq[0]),rank=Number(sq[1]);
+ const center=3.5-Math.abs(file-3.5)+3.5-Math.abs(rank-4.5);
+ const value={p:1,n:3,b:3,r:5,q:9,k:0};
+ let score=center*0.32+(target!=='.'?value[target]*1.4-value[piece]*0.2:0);
+ if(piece==='n'||piece==='b')score+=s.full<=8?2.5:0.6;
+ if(piece==='p'){if(['d','e','c'].includes(sq[0]))score+=2;else if(['a','h'].includes(sq[0]))score-=1.4;
+   if(Math.abs(m[1]-m[0])===32)score+=0.7;}
+ if(piece==='k')score+=m[3]==='castle'?7:-8;
+ if(piece==='q'&&s.full<8)score-=2.5;
+ if(piece==='r'&&s.full<7)score-=2.0;
+ if(m[2])score+=9;
+ if(R.checked(R.apply(s,m)))score+=1.4;
+ return score;
+}
+function createPracticeExtensions(R,book,n=100){
+ const bases={queen:book.queen.lines.slice(),caro:book.caro.lines.slice()};
+ const known=new Set(),made=new Set(),goals={queen:Math.floor(n/2),caro:n-Math.floor(n/2)};
+ for(const f of ['queen','caro'])for(const v of bases[f]){
+  let s=R.parseFen(R.initial);
+  for(const uci of v.moves.trim().split(/\s+/)){
+   known.add(f+'|'+R.positionKey(s)+'|'+uci);
+   const m=R.legal(s).find(x=>R.key(x)===uci);
+   if(!m)throw Error('Ancienne variante illégale : '+v.id+' '+uci);
+   s=R.apply(s,m);
+  }
+ }
+ for(const familyId of ['caro','queen']){
+  const scored=bases[familyId].slice().sort((a,b)=>{
+   const pr=v=>familyId==='queen'?(/albin|budapest|englund|qga/.test(v.id)?-1:1):(/caro-.*|classical|advance|panov|fantasy/.test(v.id)?-1:1);
+   return pr(a)-pr(b);
+  });
+  const records=[],forkSeen=new Set();
+  for(let round=0;round<4&&records.length<goals[familyId];round++){
+   for(const v of scored){
+    if(records.length>=goals[familyId])break;
+    const src=v.moves.trim().split(/\s+/),positions=[R.parseFen(R.initial)];
+    let cur=positions[0];
+    for(const uci of src){const m=R.legal(cur).find(x=>R.key(x)===uci);cur=R.apply(cur,m);positions.push(cur);}
+    const depths=[];
+    for(let k=2;k<=Math.min(src.length-2,14);k++)depths.push(k);
+    if(!depths.length)continue;
+    depths.sort((a,b)=>Math.abs(a-(4+round*2))-Math.abs(b-(4+round*2))||a-b);
+    for(const k of depths){
+     if(records.length>=goals[familyId])break;
+     const s=positions[k],pkey=familyId+'|'+R.positionKey(s);
+     const options=R.legal(s).filter(m=>!known.has(pkey+'|'+R.key(m))&&!forkSeen.has(pkey+'|'+R.key(m)))
+       .sort((x,y)=>trainingScore(R,s,y)-trainingScore(R,s,x)||R.key(x).localeCompare(R.key(y)));
+     const eligible=options.filter(m=>trainingScore(R,s,m)>0.45);
+     if(!eligible.length)continue;
+     const m=eligible[Math.min(round,eligible.length-1)];
+     const decision=pkey+'|'+R.key(m);
+     forkSeen.add(decision);
+     const prefix=src.slice(0,k),sequence=[...prefix,R.key(m)];
+     let t=R.apply(s,m),loops=0;
+     while(loops++<Math.max(4,Math.min(10,16-k))){
+      if(R.status([t]).end)break;
+      const nextMoves=R.legal(t).sort((x,y)=>trainingScore(R,t,y)-trainingScore(R,t,x)||R.key(x).localeCompare(R.key(y)));
+      if(!nextMoves.length)break;
+      const choice=nextMoves[(loops+round+k)%5===0&&nextMoves.length>1?1:0];
+      sequence.push(R.key(choice));t=R.apply(t,choice);
+     }
+     const text=sequence.join(' ');
+     if(made.has(familyId+'|'+text))continue;
+     made.add(familyId+'|'+text);
+     const number=s.full+(s.t===1?'. ':'... ')+R.san(s,m);
+     records.push({id:'practice-'+familyId+'-'+(records.length+1),name:'Alternative '+number+' · '+v.name,tag:'Entraînement · coups possibles',moves:text,note:'Au '+number+', cette réponse illustre une autre suite légale. Les coups suivants sont des exemples d’entraînement, pas une recommandation d’un moteur ; contrôlez les menaces et les tactiques.'});
+     break; // répartir les nouvelles lignes entre toutes les variantes de départ
+    }
+   }
+  }
+  if(records.length!==goals[familyId])throw Error('Variantes de pratique insuffisantes : '+familyId+' '+records.length+'/'+goals[familyId]);
+  book[familyId].lines.push(...records);
+ }
+}
+createPracticeExtensions(ChessRules,repertoire,100);
+
 (function(){
 'use strict';
 const R=ChessRules, files='abcdefgh';
@@ -371,8 +451,8 @@ function renderBoard(){
  }
  $('turn-label').textContent=status.text;
  const count=cursor;
- $('move-progress').textContent=(count/2).toLocaleString('fr-FR',{maximumFractionDigits:1})+' / 20 coups';
- $('progress-fill').style.width=Math.min(100,count/40*100)+'%';
+ $('move-progress').textContent=(count/2).toLocaleString('fr-FR',{maximumFractionDigits:1})+' / 100 coups';
+ $('progress-fill').style.width=Math.min(100,count/200*100)+'%';
  $('back').disabled=cursor===0;$('forward').disabled=cursor>=states.length-1;
  $('reset').disabled=states.length===1&&cursor===0;
  $('toast').textContent=notice;
@@ -417,13 +497,17 @@ function renderAdvice(){
    const desc=document.createElement('span');desc.textContent=cand.ids.has(selected)?'dans la ligne sélectionnée':'autre branche';
    b.append(label,desc);b.title=cand.also.join(' · ')+' — '+cand.variation.note;b.addEventListener('click',()=>commit(m));el.append(b);
   }
- }else{$('reco-text').textContent='Cette position sort des variantes enregistrées. L’échiquier reste entièrement jouable : examinez les menaces, les échecs et les captures avant de choisir.';}
+ }else{
+  $('reco-text').textContent='Hors répertoire : voici trois idées légales classées par critères simples (développement, centre, captures). Ce ne sont PAS les meilleurs coups validés par un moteur.';
+  const candidates=R.legal(s).sort((a,b)=>trainingScore(R,s,b)-trainingScore(R,s,a)||R.key(a).localeCompare(R.key(b))).slice(0,3);
+  for(const m of candidates){const b=document.createElement('button');b.className='choice';b.type='button';const title=document.createElement('strong');title.textContent=R.moveLabel(s,m);const desc=document.createElement('span');desc.textContent='Piste pédagogique';b.append(title,desc);b.title='Idée légale indicative, sans évaluation du moteur';b.addEventListener('click',()=>{if(m[2]){promotionMoves=R.legal(s).filter(x=>x[0]===m[0]&&x[1]===m[1]);renderPromotion();}else commit(m);});el.append(b);}
+ }
  const list=$('legal-choices');list.innerHTML='';
  if(!status.end)for(const m of R.legal(s)){
   const b=document.createElement('button');b.className='choice';b.type='button';b.textContent=R.san(s,m);b.title='Jouer '+R.moveLabel(s,m);b.addEventListener('click',()=>{if(m[2]){promotionMoves=R.legal(s).filter(x=>x[0]===m[0]&&x[1]===m[1]);renderPromotion();}else commit(m);});list.append(b);
  }
- const hint=book.find(x=>x.ids.has(selected))||book[0];$('suggest').disabled=!hint||status.end;
- $('suggest').textContent=hint?'Jouer '+hint.san:'Hors répertoire';
+ const hint=book.find(x=>x.ids.has(selected))||book[0],practice=!hint&&!status.end?R.legal(s).sort((a,b)=>trainingScore(R,s,b)-trainingScore(R,s,a))[0]:null;$('suggest').disabled=(!hint&&!practice)||status.end;
+ $('suggest').textContent=hint?'Jouer '+hint.san:practice?'Piste indicative : '+R.san(s,practice):'Fin de partie';
  $('game-status').textContent=status.text+(status.claim?' · Nulle réclamable : '+status.claim:'');
 }
 function renderHistory(){
@@ -444,7 +528,7 @@ function renderSelect(){const select=$('variation'),lines=activeEntry().lines;se
 function searchable(v){return (v.name+' '+v.tag+' '+v.note+' '+v.moves).toLocaleLowerCase('fr').normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
 function resetCatalogue(){
  $('variant-search').value='';const select=$('variant-filter');select.innerHTML='';
- const options=family==='queen'?[['all','Toutes les branches'],['albin','Albin · ...e5'],['autres ...e5','Englund / Budapest / autres ...e5'],['gambit accepté','Gambit accepté · ...dxc4'],['gambit refusé','Gambit refusé'],['slave','Slave et semi-slave']]:[['all','Toutes les branches'],['après 2.d4','Après 2.d4'],['transposition depuis 1.d4','Contre 1.d4'],['sans 2.d4','Sans 2.d4 immédiat']];
+ const options=family==='queen'?[['all','Toutes les branches'],['entrainement','100 nouvelles suites de pratique'],['albin','Albin · ...e5'],['autres ...e5','Englund / Budapest / autres ...e5'],['gambit accepté','Gambit accepté · ...dxc4'],['gambit refusé','Gambit refusé'],['slave','Slave et semi-slave']]:[['all','Toutes les branches'],['entrainement','100 nouvelles suites de pratique'],['après 2.d4','Après 2.d4'],['transposition depuis 1.d4','Contre 1.d4'],['sans 2.d4','Sans 2.d4 immédiat']];
  for(const [val,label] of options){const option=document.createElement('option');option.value=val;option.textContent=label;select.append(option);}
  select.value='all';
 }
@@ -453,7 +537,8 @@ function renderVariants(){
  grid.innerHTML='';let visible=0;
  for(const [j,v] of activeEntry().lines.entries()){
   if(search&&!searchable(v).includes(search))continue;
-  if(filter!=='all'&&!((filter==='albin'&&(v.id.startsWith('albin')||v.id==='albin'))||(v.tag.toLocaleLowerCase('fr').includes(filter.toLocaleLowerCase('fr'))||(filter==='gambit accepté'&&v.id.startsWith('qga')))||(filter==='gambit refusé'&&v.id.startsWith('qgd'))||(filter==='slave'&&(v.id.startsWith('slav')||v.id==='semi'))||(filter==='après 2.d4'&&v.moves.startsWith('e2e4 c7c6 d2d4'))||(filter==='transposition depuis 1.d4'&&v.moves.startsWith('d2d4 c7c6'))||(filter==='sans 2.d4'&&!v.moves.startsWith('e2e4 c7c6 d2d4')&&!v.moves.startsWith('d2d4 c7c6'))))continue;
+  if(filter==='entrainement'&&!v.tag.startsWith('Entraînement'))continue;
+  if(filter!=='entrainement'&&filter!=='all'&&!((filter==='albin'&&(v.id.startsWith('albin')||v.id==='albin'))||(v.tag.toLocaleLowerCase('fr').includes(filter.toLocaleLowerCase('fr'))||(filter==='gambit accepté'&&v.id.startsWith('qga')))||(filter==='gambit refusé'&&v.id.startsWith('qgd'))||(filter==='slave'&&(v.id.startsWith('slav')||v.id==='semi'))||(filter==='après 2.d4'&&v.moves.startsWith('e2e4 c7c6 d2d4'))||(filter==='transposition depuis 1.d4'&&v.moves.startsWith('d2d4 c7c6'))||(filter==='sans 2.d4'&&!v.moves.startsWith('e2e4 c7c6 d2d4')&&!v.moves.startsWith('d2d4 c7c6'))))continue;
   visible++;
   const b=document.createElement('button');b.className='variant-card'+(v.id===selected?' active':'');b.type='button';const n=document.createElement('span');n.className='variant-number';n.textContent=String(j+1).padStart(2,'0')+' · '+v.tag;const title=document.createElement('strong');title.textContent=v.name;const desc=document.createElement('small');desc.textContent=v.note;const footer=document.createElement('span');footer.className='load';footer.textContent='Étudier cette ligne ↗';b.append(n,title,desc,footer);b.addEventListener('click',()=>chooseVariation(v.id));grid.append(b);
  }
@@ -482,7 +567,7 @@ function savePgn(){const blob=new Blob([pgn()],{type:'application/x-chess-pgn;ch
 $('mode-queen').addEventListener('click',()=>{changeFamily('queen');});
 $('mode-caro').addEventListener('click',()=>{changeFamily('caro');});
 $('variation').addEventListener('change',e=>chooseVariation(e.target.value));
-$('suggest').addEventListener('click',()=>{const s=current(),cs=bookCandidates(s),m=(cs.find(x=>x.ids.has(selected))||cs[0]);if(!m)return;const move=R.legal(s).find(x=>R.key(x)===m.move);if(move)commit(move);});
+$('suggest').addEventListener('click',()=>{const s=current(),cs=bookCandidates(s),m=(cs.find(x=>x.ids.has(selected))||cs[0]);const move=m?R.legal(s).find(x=>R.key(x)===m.move):R.legal(s).sort((a,b)=>trainingScore(R,s,b)-trainingScore(R,s,a))[0];if(move){if(move[2]){promotionMoves=R.legal(s).filter(x=>x[0]===move[0]&&x[1]===move[1]);renderPromotion();}else commit(move);}});
 $('back').addEventListener('click',back);$('forward').addEventListener('click',advance);$('reset').addEventListener('click',reset);
 $('flip').addEventListener('click',()=>{flipped=!flipped;renderBoard();});
 $('jump').addEventListener('click',jumpToFork);
