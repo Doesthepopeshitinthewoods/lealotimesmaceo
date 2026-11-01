@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#8b0000">
+<meta name="description" content="Explorer les échecs : la défense Caro-Kann et le gambit de la dame. Échiquier interactif, variantes, 20 coups, coups légaux, FEN et PGN.">
+<title>Échecs · L'atelier des ouvertures — Blog de l'intranquilité</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#252724;--body:#434744;--muted:#777d78;--paper:#fafaf8;--surface:#fff;--wine:#8b0000;--wine-dark:#670000;--line:#e6e3dd;--sage:#566d5b;--gold:#b28c56;--cream:#f3eee7;--max:1240px;--light:#ede0c9;--dark:#a87f60}
+*,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}a{color:inherit;text-decoration:none}a:hover{text-decoration:underline}button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.42;cursor:not-allowed}a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #e6bb73;outline-offset:3px}p{margin:0 0 14px}h1,h2,h3{font-family:Merriweather,Georgia,serif;letter-spacing:-.045em;line-height:1.25}h1{font-size:clamp(36px,5vw,64px);margin:0 0 18px}h2{font-size:clamp(24px,2.6vw,34px);margin:0 0 15px}h3{font-size:20px;margin:0 0 12px}.muted{color:var(--muted)}.eyebrow{text-transform:uppercase;font-size:11px;letter-spacing:.18em;font-weight:700;color:var(--wine)}
+.site-header{background:var(--wine);color:#fff;box-shadow:0 2px 12px #3600001c;position:relative;z-index:12}.site-inner{max-width:var(--max);margin:auto;padding:18px 26px;display:flex;justify-content:space-between;align-items:center;gap:24px}.brand{font:700 19px Merriweather,Georgia,serif;letter-spacing:-.6px;white-space:nowrap}.main-nav{display:flex;gap:20px;flex-wrap:wrap;align-items:center}.main-nav a{font-weight:600;font-size:13px;opacity:.95}.main-nav .active-link{border:1px solid #ffffff80;border-radius:99px;padding:6px 13px}.wrapper{max-width:var(--max);padding:0 26px;margin:auto}.breadcrumb{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:12px;margin:22px 0;color:var(--muted)}.breadcrumb em{font-style:normal;color:var(--wine)}
+.hero{border:1px solid #e7ded4;background:#f2ece3;border-radius:18px;display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,.8fr);overflow:hidden;min-height:350px}.hero-copy{padding:48px 50px;align-self:center}.hero-copy p{max-width:590px;color:#56554f;font-size:16px}.hero-copy h1 em{font-style:normal;color:var(--wine)}.hero-art{position:relative;display:grid;place-items:center;background:radial-gradient(circle at 30% 20%,#fcf7ef 0%,#e5d5bf 54%,#c7ae95 100%);overflow:hidden}.chess-art{width:270px;height:270px;transform:rotate(-10deg);background:conic-gradient(#7d4639 25%,#e9d7bc 0 50%,#7d4639 0 75%,#e9d7bc 0) 0 0 / 67.5px 67.5px;box-shadow:13px 26px 50px #33251542;border:12px solid #62433a;position:relative;display:flex;align-items:center;justify-content:center}.chess-art span{font-size:150px;color:#fdf9f0;text-shadow:5px 6px 1px #51332b,8px 12px 12px #271c1b80;line-height:1}.art-tag{position:absolute;bottom:28px;right:32px;background:#fffefaed;padding:10px 14px;border-radius:9px;border:1px solid #fff;transform:rotate(7deg);font:700 12px 'DM Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#604d40}.hero-chip{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;background:#fffaf2;border:1px solid #e4d1b7;border-radius:99px;font-size:12px;color:#645647;font-weight:700;margin-top:10px}.dots{width:6px;height:6px;background:var(--wine);border-radius:50%;display:inline-block}
+.intro-strip{margin:22px 0 40px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.intro-stat{background:white;border:1px solid var(--line);border-radius:12px;padding:18px 17px}.intro-stat strong{display:block;font:700 25px Merriweather,serif;color:var(--wine);line-height:1.1}.intro-stat span{font-size:12px;color:var(--muted)}.section-head{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:18px}.section-head p{color:var(--muted);margin:0;max-width:670px}.lab{scroll-margin-top:20px;margin-top:6px}.lab-header{display:flex;gap:18px;justify-content:space-between;align-items:center;flex-wrap:wrap;background:white;border:1px solid var(--line);border-radius:15px 15px 0 0;padding:16px 20px}.segmented{display:flex;flex-wrap:wrap;gap:6px}.segmented button{border:1px solid #e9e0da;background:#faf8f5;border-radius:8px;padding:10px 15px;font-weight:700;font-size:13px}.segmented button.active{background:var(--wine);color:white;border-color:var(--wine)}.selectors{display:flex;align-items:center;gap:11px;flex-wrap:wrap}.selectors label{font-size:12px;font-weight:700;color:var(--muted)}.selectors select{max-width:320px;min-height:40px;border:1px solid #d8d5cd;background:white;border-radius:8px;padding:8px 13px;font-size:13px;font-weight:600;color:#333}
+.lab-body{display:grid;grid-template-columns:minmax(0,1.04fr) minmax(330px,.96fr);gap:0;border:1px solid var(--line);border-top:0;border-radius:0 0 15px 15px;overflow:hidden;background:white}.board-area{padding:25px;background:#fff;border-right:1px solid var(--line)}.board-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:11px}.turn-pill{font-size:12px;font-weight:700;color:#684b38;background:#f5eddf;border-radius:99px;padding:6px 11px}.progress{height:5px;border-radius:20px;overflow:hidden;background:#eee9e2;margin-bottom:14px}.progress-fill{background:var(--wine);height:100%;width:0;transition:width .2s}.board-frame{max-width:600px;margin:auto;box-shadow:0 10px 30px #3d2b251d;overflow:hidden;border:9px solid #594037;border-radius:8px;background:#594037}.chessboard{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));aspect-ratio:1;width:100%;user-select:none;-webkit-user-select:none;touch-action:manipulation}.square{display:flex;align-items:center;justify-content:center;position:relative;width:100%;aspect-ratio:1;border:0;border-radius:0;padding:0;background:var(--light);line-height:1;min-width:0;min-height:0}.square.dark{background:var(--dark)}.square:focus-visible{outline:3px solid #b40000;outline-offset:-4px;z-index:2}.square.selected{box-shadow:inset 0 0 0 5px #dfbb55}.square.last{background-image:linear-gradient(#efd96d55,#efd96d55)}.square.is-check{background-image:radial-gradient(ellipse,#cb4d50ac 0%,#cf626e3d 70%,transparent 80%)}.piece{font-size:clamp(22px,4.3vw,55px);font-family:'DejaVu Sans','Segoe UI Symbol','Arial Unicode MS',serif;z-index:1;filter:drop-shadow(0 2px 1px #0004);pointer-events:none}.piece.white{color:#fffefa;-webkit-text-stroke:1px #3d342a;text-shadow:0 0 1px #493b34}.piece.black{color:#181d1e;-webkit-text-stroke:.7px #fff8ed}.target-dot{position:absolute;width:27%;height:27%;border-radius:50%;background:#355b41a0;z-index:0;pointer-events:none}.target-ring{position:absolute;inset:6%;border:5px solid #2f7245a1;border-radius:50%;pointer-events:none}.square .coord{position:absolute;font-size:clamp(8px,.8vw,11px);font-weight:700;opacity:.75;z-index:2;pointer-events:none}.coord.rank{top:3px;left:4px}.coord.file{right:4px;bottom:2px}.square.dark .coord{color:#fff6e9}.square:not(.dark) .coord{color:#684f3e}
+.board-controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:17px 0 9px}.btn{border-radius:9px;padding:10px 13px;font-weight:700;font-size:12px;border:1px solid #ddd6ce;background:#fff;color:#3a3834;min-height:40px}.btn:hover:not(:disabled){border-color:#bca99d;background:#faf5ef}.btn.primary{background:var(--wine);color:white;border-color:var(--wine)}.btn.primary:hover:not(:disabled){background:var(--wine-dark)}.btn.tiny{font-size:11px;padding:8px 10px;min-height:34px}.board-help{text-align:center;font-size:12px;color:var(--muted);max-width:490px;margin:8px auto 0}.toast{font-size:12px;color:var(--wine);text-align:center;min-height:19px;margin-top:7px}
+.side-area{display:flex;flex-direction:column;min-width:0}.panel{padding:22px 25px;border-bottom:1px solid var(--line)}.panel:last-child{border-bottom:0}.panel h3{font-family:Merriweather,serif;font-size:19px;margin:0 0 9px}.panel p{color:#5b5d57;font-size:13px;line-height:1.7;margin:0 0 9px}.panel .mini-kicker{font-size:10px;letter-spacing:.15em;font-weight:700;color:var(--wine);text-transform:uppercase;margin-bottom:7px}.cue{background:#f8f3ec;border-left:3px solid var(--wine);padding:12px 14px;border-radius:0 9px 9px 0;margin-top:12px;font-size:13px;line-height:1.6}.cue strong{color:#7b1a13}.choice-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}.choice{border:1px solid #e6dfd7;background:white;border-radius:9px;padding:8px 11px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px}.choice:hover{background:#f9f2e9;border-color:#b98a50}.choice span{font-size:10px;color:#80766b;font-weight:500}.all-legal{max-height:125px;overflow:auto}.all-legal .choice{font-size:11px;padding:6px 9px}.move-history{display:grid;grid-template-columns:35px 1fr 1fr;gap:4px;max-height:205px;overflow:auto;align-items:center}.move-n{color:#888;font:600 12px 'DM Sans',sans-serif;text-align:right;padding-right:8px}.move-button{border:1px solid transparent;border-radius:6px;background:#f8f7f4;font-size:12px;text-align:left;padding:6px 10px;font-weight:600}.move-button:hover{background:#f2e9de}.move-button.current{background:#f1e2d0;border-color:#bca085;color:#7c1817}.empty-history{font-size:12px;color:#98918a;margin-bottom:0}.tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.tools-grid .btn{width:100%}.fen-field{width:100%;border-radius:8px;border:1px solid #dcd7ce;padding:9px 11px;color:#555;font-size:11px;margin:9px 0 6px;min-width:0}.status-line{font-size:12px;color:var(--sage);font-weight:700}.status-line.danger{color:var(--wine)}
+.variants{margin:55px 0}.variants-head{display:flex;align-items:end;justify-content:space-between;gap:15px;margin-bottom:17px}.variants-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.variant-card{background:white;border:1px solid var(--line);border-radius:13px;padding:20px;text-align:left;display:flex;flex-direction:column;align-items:start;gap:11px;min-height:175px}.variant-card:hover{border-color:#c7a486;background:#fffdf9;transform:translateY(-2px);box-shadow:0 8px 18px #3120120a}.variant-card.active{border-color:var(--wine);box-shadow:inset 0 0 0 1px #8b000020}.variant-card strong{font:700 16px Merriweather,serif;line-height:1.4}.variant-card small{line-height:1.55;color:#6c6c65;font-size:12px}.variant-number{font-size:11px;letter-spacing:.1em;color:var(--wine);font-weight:700}.variant-card .load{font-size:11px;color:var(--wine);font-weight:700;margin-top:auto}.lesson-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:17px;margin:24px 0 55px}.lesson{background:#f3eee7;border:1px solid #e8ddce;border-radius:13px;padding:23px}.lesson small{color:var(--wine);font-weight:700;letter-spacing:.13em;text-transform:uppercase}.lesson h3{margin:12px 0 7px}.lesson p{font-size:13px;color:#575c55;margin:0;line-height:1.75}.faq{margin:25px 0 60px;display:grid;grid-template-columns:1fr 1fr;gap:20px}.faq details{border:1px solid var(--line);border-radius:10px;background:white;padding:15px 18px}.faq summary{cursor:pointer;font-weight:700;font-size:14px}.faq p{font-size:13px;line-height:1.8;margin-top:10px;color:#585b57}.site-footer{border-top:1px solid var(--line);padding:25px 0 40px;font-size:12px;color:var(--muted)}
+.promotion-overlay{position:fixed;inset:0;background:#1a1619ad;z-index:99;display:none;align-items:center;justify-content:center;padding:16px}.promotion-overlay.open{display:flex}.promotion-dialog{border-radius:14px;background:white;box-shadow:0 24px 80px #0003;max-width:450px;padding:27px;width:100%;text-align:center}.promotion-choices{display:flex;justify-content:center;gap:10px;margin-top:15px}.promotion-choices button{width:65px;height:67px;font-size:40px;border:1px solid #e4dfd8;border-radius:10px;background:#f7f2ea}.promotion-choices button:hover{background:#ead8bc}
+@media(max-width:1050px){.lab-body{grid-template-columns:minmax(0,1fr) minmax(300px,.84fr)}.board-area{padding:18px}.panel{padding:18px}.variants-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:850px){.hero{grid-template-columns:1fr}.hero-art{display:none}.hero-copy{padding:40px 31px}.intro-strip{grid-template-columns:repeat(2,1fr)}.lab-body{grid-template-columns:1fr}.board-area{border-right:0;border-bottom:1px solid var(--line)}.board-frame{max-width:560px}.piece{font-size:clamp(29px,8vw,60px)}.side-area{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.panel{border-right:1px solid var(--line)}.panel:first-child{grid-column:span 2}.main-nav{gap:12px}}@media(max-width:620px){.site-inner{flex-direction:column;align-items:start;padding:16px}.brand{font-size:17px}.wrapper{padding:0 15px}.hero-copy{padding:30px 24px}.hero-copy p{font-size:14px}.intro-stat{padding:12px}.intro-stat strong{font-size:22px}.lab-header{padding:13px}.selectors select{max-width:260px;width:100%}.board-area{padding:11px}.board-frame{border-width:5px}.piece{font-size:clamp(28px,9.2vw,52px)}.board-controls .btn{font-size:11px;padding:9px 10px}.side-area{display:flex}.panel{border-right:0;padding:18px}.variants-grid,.lesson-cards,.faq{grid-template-columns:1fr}.section-head{display:block}.variants{margin:40px 0}.variant-card{min-height:0}.hero h1{font-size:39px}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="site-inner"><a class="brand" href="index.html">Blog de l'intranquilité</a><nav class="main-nav" aria-label="Navigation principale"><a href="index.html">Accueil</a><a href="index.html#culture">Culture</a><a href="culture-films.html">Films</a><a href="culture-livres.html">Livres</a><a href="culture-musiques.html">Musiques</a><a class="active-link" href="#atelier" aria-current="page">Échecs</a></nav></div></header>
+<main class="wrapper">
+<nav class="breadcrumb" aria-label="Fil d'Ariane"><a href="index.html">Accueil</a><span>›</span><a href="index.html#culture">Culture</a><span>›</span><em>Échecs</em></nav>
+<section class="hero" aria-labelledby="hero-title"><div class="hero-copy"><span class="eyebrow">Culture · Stratégie · Jeux d'esprit</span><h1 id="hero-title">L'art des<br><em>64 cases.</em></h1><p>Deux ouvertures, une infinité de décisions : le gambit de la dame avec les Blancs et la Caro-Kann avec les Noirs. Rejouez les grandes idées, changez les réponses de l'adversaire et étudiez les positions qui en découlent.</p><a class="hero-chip" href="#atelier"><span class="dots"></span> Entrer dans l'atelier interactif ↓</a></div><div class="hero-art" aria-hidden="true"><div class="chess-art"><span>♞</span></div><div class="art-tag">L'atelier des ouvertures</div></div></section>
+<div class="intro-strip"><div class="intro-stat"><strong>2</strong><span>ouvertures étudiées</span></div><div class="intro-stat"><strong id="stat-lines">21</strong><span>variantes commentées</span></div><div class="intro-stat"><strong>20</strong><span>coups à explorer et plus</span></div><div class="intro-stat"><strong>∞</strong><span>réponses légales jouables</span></div></div>
+<section id="atelier" class="lab" aria-labelledby="lab-title">
+<div class="section-head"><div><span class="eyebrow">Le laboratoire</span><h2 id="lab-title">Un échiquier qui s'adapte.</h2><p>Vous jouez les coups des deux camps. Les suggestions suivent les variantes connues ; si vous inventez une autre réponse, la partie reste entièrement jouable.</p></div></div>
+<div class="lab-header"><div class="segmented" role="group" aria-label="Choisir l'ouverture"><button id="mode-queen" class="active" aria-pressed="true" type="button">♙ Gambit de la dame</button><button id="mode-caro" type="button" aria-pressed="false">♟ Défense Caro-Kann</button></div><div class="selectors"><label for="variation">Variante étudiée</label><select id="variation" aria-label="Choisir une variante"></select></div></div>
+<div class="lab-body">
+<div class="board-area">
+<div class="board-heading"><span class="turn-pill" id="turn-label">Aux Blancs de jouer</span><span class="muted" id="move-progress" style="font-size:12px;font-weight:700">0 / 20 coups</span></div>
+<div class="progress" aria-hidden="true"><div class="progress-fill" id="progress-fill"></div></div>
+<div class="board-frame"><div class="chessboard" id="board" role="group" aria-label="Échiquier interactif, 64 cases"></div></div>
+<div class="board-controls"><button class="btn" id="back" type="button" title="Revenir d'un demi-coup">← Retour</button><button class="btn" id="forward" type="button" title="Rejouer le coup annulé">Avancer →</button><button class="btn primary" id="suggest" type="button">Jouer le coup du guide</button><button class="btn" id="flip" type="button">↕ Retourner</button><button class="btn" id="reset" type="button">↺ Recommencer</button></div>
+<p class="board-help">Cliquez sur une pièce puis sa destination en surbrillance. Vous pouvez aussi la faire glisser. Les coups des <strong>Blancs et des Noirs</strong> sont jouables, roques et promotions compris.</p><div id="toast" class="toast" role="status" aria-live="polite"></div>
+</div>
+<div class="side-area">
+<section class="panel"><div class="mini-kicker" id="side-eyebrow">Le plan des Blancs</div><h3 id="active-title">Gambit de la dame</h3><p id="opening-intro"></p><div class="cue" id="strategy-box"></div><p id="last-feedback" class="status-line" style="margin-top:13px"></p></section>
+<section class="panel"><div class="mini-kicker">Réponses adaptées à la position</div><h3>Quelle suite choisir ?</h3><p id="reco-text"></p><div id="book-choices" class="choice-list"></div><details style="margin-top:15px"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--wine)">Afficher tous les coups légaux</summary><div class="choice-list all-legal" id="legal-choices"></div></details></section>
+<section class="panel"><div class="mini-kicker">Votre partie</div><h3>Historique des coups</h3><div id="history" class="move-history" aria-live="polite"></div><p id="game-status" class="status-line" style="margin-top:9px"></p></section>
+<section class="panel"><div class="mini-kicker">Outils d'analyse</div><h3>Importer, exporter</h3><div class="tools-grid"><button id="fen-copy" class="btn tiny" type="button">Copier la FEN</button><button id="pgn-copy" class="btn tiny" type="button">Copier le PGN</button><button id="pgn-save" class="btn tiny" type="button">Télécharger PGN</button><button id="jump" class="btn tiny" type="button">Aller au tournant</button></div><label for="fen-input" style="display:block;margin-top:15px;font-weight:700;font-size:12px">Charger une position FEN</label><input id="fen-input" class="fen-field" placeholder="Collez ici une FEN complète (6 champs)"><button id="fen-load" class="btn tiny" type="button">Charger la position</button></section>
+</div></div></section>
+<section class="variants" id="bibliotheque"><div class="variants-head"><div><span class="eyebrow">Carnet théorique</span><h2>Explorer les grandes variantes</h2><p class="muted" style="font-size:13px">Choisissez une carte pour charger la ligne et la rejouer, ou introduisez votre propre réponse sur l'échiquier.</p></div></div><div id="variants-grid" class="variants-grid"></div></section>
+<section aria-labelledby="principes"><span class="eyebrow">Trois principes à retenir</span><h2 id="principes">Comprendre avant de mémoriser.</h2><div class="lesson-cards"><article class="lesson"><small>01 · Le centre</small><h3>Ce qui compte, ce sont les cases.</h3><p>Le centre e4, d4, e5 et d5 gouverne la mobilité des pièces. Un pion offert peut être moins important que le temps de développement gagné.</p></article><article class="lesson"><small>02 · Le tempo</small><h3>Développer sans se disperser.</h3><p>Sortir les pièces, mettre son roi à l'abri, puis relier les tours. Ne pars pas à la chasse aux pions si cela laisse ton roi exposé.</p></article><article class="lesson"><small>03 · La réponse</small><h3>Aucun coup n'est automatique.</h3><p>À chaque nouveau coup adverse, examine la menace, les captures et les échecs. Le répertoire illustre des plans, il ne remplace pas un calcul concret.</p></article></div></section>
+<section class="faq"><details open><summary>Les Noirs prennent c4 après 1.d4 d5 2.c4 ?</summary><p>On obtient le <strong>gambit de la dame accepté</strong>. Un plan facile pour les Blancs est <strong>3.e3</strong>, suivi de <strong>Fxc4</strong> quand cela est possible. Si les Noirs défendent c4 par ...b5, réponds souvent <strong>a4</strong> pour attaquer le soutien du pion. Sélectionne « Gambit accepté · les Noirs gardent c4 » pour visualiser cette idée.</p></details><details open><summary>Comment jouer la Caro-Kann avec les Noirs ?</summary><p>Après <strong>1.e4 c6 2.d4 d5</strong>, réponds à 3.Cc3 ou 3.Cd2 par <strong>...dxe4</strong> puis souvent <strong>...Ff5</strong>. Contre 3.e5, développe généralement le fou en <strong>f5</strong>, puis prépare <strong>...e6</strong> et <strong>...c5</strong> pour attaquer la chaîne de pions.</p></details></section>
+<footer class="site-footer">Blog de l'intranquilité · Culture · Échecs. Les lignes sont des exemples pédagogiques et non des variantes forcées. Le jeu valide les coups légaux mais ne calcule pas les meilleurs coups comme un moteur d'échecs.</footer>
+</main>
+<div id="promotion-overlay" class="promotion-overlay" role="dialog" aria-modal="true" aria-labelledby="promotion-title"><div class="promotion-dialog"><h3 id="promotion-title">Choisir la promotion</h3><p class="muted">Par quelle pièce voulez-vous remplacer votre pion ?</p><div id="promotion-choices" class="promotion-choices"></div><button class="btn" id="promotion-cancel" type="button" style="margin-top:14px">Annuler</button></div></div>
+<script>
+/* Moteur de regles 0x88 - zero dependance, coups legaux complets. */
+const ChessRules = (() => {
+ const dirs = {n:[-33,-31,-18,-14,14,18,31,33],b:[-17,-15,15,17],r:[-16,-1,1,16],k:[-17,-16,-15,-1,1,15,16,17]};
+ const on = i => i>=0 && i<128 && !(i&0x88);
+ const side = p => !p||p==='.'?0:p===p.toUpperCase()?1:-1;
+ const sq = i => 'abcdefgh'[i&7]+(8-(i>>4));
+ const idx = s => (8-Number(s[1]))*16+'abcdefgh'.indexOf(s[0]);
+ const key = m => sq(m[0])+sq(m[1])+m[2];
+ const initial = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+ function parseFen(fen) {
+   const f=fen.trim().split(/\s+/),rows=(f[0]||'').split('/'),b=Array(128).fill('.');
+   if(rows.length!==8||!/^[wb]$/.test(f[1])||!/^(?:-|K?Q?k?q?)$/.test(f[2])||!/^(?:-|[a-h][36])$/.test(f[3])|| !/^\d+$/.test(f[4]||'0')|| !/^[1-9]\d*$/.test(f[5]||'1'))throw Error('FEN incorrecte : 6 champs attendus (position, trait, roques, prise en passant, compteurs).');
+   rows.forEach((row,r)=>{let c=0;for(const p of row){if(/^[1-8]$/.test(p))c+=Number(p);else{if(!/^[prnbqkPRNBQK]$/.test(p)||c>=8)throw Error('Rangée FEN incorrecte.');b[r*16+c++]=p;}}if(c!==8)throw Error('Rangée FEN incorrecte.');});
+   if(b.filter(p=>p==='K').length!==1||b.filter(p=>p==='k').length!==1)throw Error('Il faut exactement un roi blanc et un roi noir.');
+   for(let file=0;file<8;file++)if('pP'.includes(b[file])||'pP'.includes(b[112+file]))throw Error('Un pion se trouve sur une dernière rangée.');
+   const c=(f[2].includes('K')?1:0)|(f[2].includes('Q')?2:0)|(f[2].includes('k')?4:0)|(f[2].includes('q')?8:0);
+   const st={b,t:f[1]==='w'?1:-1,c,ep:f[3]==='-'?-1:idx(f[3]),half:Number(f[4]||0),full:Number(f[5]||1)};
+   if((c&1)&&(b[116]!=='K'||b[119]!=='R')||(c&2)&&(b[116]!=='K'||b[112]!=='R')||(c&4)&&(b[4]!=='k'||b[7]!=='r')||(c&8)&&(b[4]!=='k'||b[0]!=='r'))throw Error('Droits de roque incompatibles avec la position.');
+   if(attacked(st,b.indexOf(st.t===1?'k':'K'),st.t))throw Error('Position impossible : le roi qui vient de jouer est en échec.');
+   return st;
+ }
+ function fen(s){let r=[];for(let rank=0;rank<8;rank++){let part='',n=0;for(let file=0;file<8;file++){let p=s.b[rank*16+file];if(p==='.')n++;else{if(n)part+=n;n=0;part+=p;}}if(n)part+=n;r.push(part);}const cast=(s.c&1?'K':'')+(s.c&2?'Q':'')+(s.c&4?'k':'')+(s.c&8?'q':'');return r.join('/')+' '+(s.t===1?'w':'b')+' '+(cast||'-')+' '+(s.ep<0?'-':sq(s.ep))+' '+s.half+' '+s.full;}
+ function attacked(s,target,by){
+   for(let f=0;f<128;f++){
+     if(!on(f)||side(s.b[f])!==by)continue;
+     const p=s.b[f].toLowerCase();
+     if(p==='p'){if(target===f-16*by-1||target===f-16*by+1)return true;continue;}
+     for(const d of (dirs[p]||dirs.k))for(let t=f+d;on(t);t+=d){if(t===target)return true;if(s.b[t]!=='.'||p==='n'||p==='k')break;}
+   }
+   return false;
+ }
+ const checked=(s,color=s.t)=>attacked(s,s.b.indexOf(color===1?'K':'k'),-color);
+ function apply(s,m){
+   const [f,t,promo,flag]=m,b=s.b.slice(),piece=b[f],captured=b[t];let c=s.c;
+   b[f]='.';b[t]=promo?(s.t===1?promo.toUpperCase():promo):piece;
+   if(flag==='ep')b[t+16*s.t]='.';
+   if(flag==='castle'){const rf=t>f?f+3:f-4,rt=t>f?f+1:f-1;b[rt]=b[rf];b[rf]='.';}
+   if(piece==='K')c&=~3;if(piece==='k')c&=~12;
+   const bits={119:1,112:2,7:4,0:8};
+   if(piece.toLowerCase()==='r')c&=~(bits[f]||0);
+   if(captured.toLowerCase()==='r')c&=~(bits[t]||0);
+   return {b,t:-s.t,c,ep:piece.toLowerCase()==='p'&&Math.abs(t-f)===32?(t+f)/2:-1,half:piece.toLowerCase()==='p'||captured!=='.'||flag==='ep'?0:s.half+1,full:s.full+(s.t===-1?1:0)};
+ }
+ function pseudo(s){
+   const out=[];
+   for(let f=0;f<128;f++){
+     if(!on(f)||side(s.b[f])!==s.t)continue;
+     const p=s.b[f].toLowerCase();
+     const add=(t,flag='')=>{if(s.b[t].toLowerCase()==='k')return;if(p==='p'&&((t>>4)===0||(t>>4)===7)){for(const q of ['q','r','b','n'])out.push([f,t,q,flag]);}else out.push([f,t,'',flag]);};
+     if(p==='p'){
+       const t=f-16*s.t;
+       if(on(t)&&s.b[t]==='.'){add(t);const u=t-16*s.t;if((f>>4)===(s.t===1?6:1)&&s.b[u]==='.')add(u);}
+       for(const d of [-1,1]){const u=t+d;if(!on(u))continue;if(side(s.b[u])===-s.t)add(u);else if(u===s.ep&&s.b[u]==='.'&&s.b[u+16*s.t]===(s.t===1?'p':'P'))add(u,'ep');}
+     }else{
+       for(const d of (dirs[p]||dirs.k))for(let t=f+d;on(t);t+=d){if(side(s.b[t])===s.t)break;add(t);if(s.b[t]!=='.'||p==='n'||p==='k')break;}
+       const home=s.t===1?116:4,rook=s.t===1?'R':'r',bits=s.t===1?[1,2]:[4,8];
+       if(p==='k'&&f===home&&!checked(s)){
+         if((s.c&bits[0])&&s.b[f+3]===rook&&s.b[f+1]==='.'&&s.b[f+2]==='.'&&!attacked(s,f+1,-s.t)&&!attacked(s,f+2,-s.t))add(f+2,'castle');
+         if((s.c&bits[1])&&s.b[f-4]===rook&&s.b[f-1]==='.'&&s.b[f-2]==='.'&&s.b[f-3]==='.'&&!attacked(s,f-1,-s.t)&&!attacked(s,f-2,-s.t))add(f-2,'castle');
+       }
+     }
+   }
+   return out;
+ }
+ const legal=s=>pseudo(s).filter(m=>!checked(apply(s,m),s.t));
+ const fr={N:'C',B:'F',R:'T',Q:'D',K:'R'};
+ function san(s,m){
+   const [f,t,promo,flag]=m,p=s.b[f].toUpperCase(),capture=s.b[t]!=='.'||flag==='ep';let text='';
+   if(flag==='castle')text=t>f?'O-O':'O-O-O';else{
+     if(p!=='P'){
+       text=fr[p]||p;
+       const other=legal(s).filter(x=>x[0]!==f&&x[1]===t&&s.b[x[0]]===s.b[f]);
+       if(other.length)text+=!other.some(x=>(x[0]&7)===(f&7))?sq(f)[0]:!other.some(x=>(x[0]>>4)===(f>>4))?sq(f)[1]:sq(f);
+     }else if(capture)text=sq(f)[0];
+     text+=(capture?'x':'')+sq(t)+(promo?'='+(fr[promo.toUpperCase()]||promo.toUpperCase()):'');
+   }
+   const next=apply(s,m);
+   return text+(checked(next)?(legal(next).length?'+':'#'):'');
+ }
+ const moveLabel=(s,m)=>s.full+(s.t===1?'. ':'… ')+san(s,m);
+ function positionKey(s){return s.b.join('')+':'+s.t+':'+s.c+':'+(s.ep>=0&&legal(s).some(m=>m[3]==='ep')?s.ep:-1);}
+ function insufficient(s){
+   const pieces=[];for(let i=0;i<128;i++)if(on(i)&&s.b[i]!=='.'&&s.b[i].toLowerCase()!=='k')pieces.push([s.b[i].toLowerCase(),((i>>4)+(i&7))%2]);
+   return !pieces.length||(pieces.length===1&&['b','n'].includes(pieces[0][0]))||(pieces.every(p=>p[0]==='b')&&new Set(pieces.map(p=>p[1])).size===1);
+ }
+ function status(hist){
+   const s=hist[hist.length-1],moves=legal(s),check=checked(s),k=positionKey(s),repeats=hist.filter(p=>positionKey(p)===k).length;
+   if(!moves.length)return {end:true,text:check?'Échec et mat — victoire des '+(s.t===1?'Noirs':'Blancs'):'Pat — partie nulle',claim:''};
+   if(insufficient(s))return {end:true,text:'Nulle — matériel insuffisant',claim:''};
+   if(s.half>=150||repeats>=5)return {end:true,text:s.half>=150?'Nulle — règle des 75 coups':'Nulle — quintuple répétition',claim:''};
+   return {end:false,text:(s.t===1?'Aux Blancs':'Aux Noirs')+' de jouer'+(check?' · Échec':''),claim:repeats>=3?'Triple répétition':s.half>=100?'Règle des 50 coups':''};
+ }
+ return {initial,parseFen,fen,legal,apply,checked,san,moveLabel,positionKey,status,sq,idx,side,key};
+})();
+if(typeof module!=='undefined')module.exports=ChessRules;
+
+/* Répertoire illustratif. La plupart des lignes sont des tronçons théoriques;
+   leur longueur dépend de la variante. Le jeu libre accepte toujours tous les coups légaux. */
+const repertoire = {
+ queen:{name:'Le gambit de la dame',side:'w',intro:'Les Blancs proposent temporairement le pion c4 afin de détourner le pion d5, d’occuper le centre et de développer leurs pièces. Ce n’est pas un sacrifice forcé.',goal:'Après 1.d4 d5 2.c4, réponds à ...dxc4 par e3 puis Fxc4 (si possible). Contre ...e6, développe les pièces, roque et organise le jeu central.',lines:[
+ {id:'qgd',name:'Gambit refusé · orthodoxe',tag:'Ligne modèle · 20 coups',moves:'d2d4 d7d5 c2c4 e7e6 b1c3 g8f6 g1f3 f8e7 c1g5 e8g8 e2e3 h7h6 g5h4 b7b6 a1c1 c8b7 c4d5 e6d5 f1d3 b8d7 e1g1 c7c5 b2b3 f8e8 d1c2 a8c8 c2b1 a7a6 f1d1 f6e4 h4e7 d8e7 c3e2 c5d4 e2d4 d7c5 d3f1 e7f6 b1b2 a6a5',note:'Structure solide : pions d4/e3, pression sur la colonne c, puis coordination des tours.'},
+ {id:'qga',name:'Gambit accepté · reprendre c4',tag:'Ligne modèle',moves:'d2d4 d7d5 c2c4 d5c4 e2e3 g8f6 f1c4 e7e6 g1f3 c7c5 e1g1 b8c6 b1c3 a7a6 a2a4 b7b6 d1e2 c8b7 f1d1 f8e7',note:'Ne panique pas après ...dxc4. Prépare Fxc4 et termine ton développement.'},
+ {id:'qga-stubborn',name:'Gambit accepté · les Noirs gardent c4',tag:'Piège instructif',moves:'d2d4 d7d5 c2c4 d5c4 e2e3 b7b5 a2a4 c7c6 a4b5 c6b5 d1f3',note:'Après ...b5, a4! fragilise la chaîne ; sur ...c6 axb5 cxb5, Df3 attaque la tour a8.'},
+ {id:'qga-center',name:'Gambit accepté · centre immédiat',tag:'Alternative active',moves:'d2d4 d7d5 c2c4 d5c4 e2e4 g8f6 b1c3 e7e5 g1f3',note:'3.e4 prend de l’espace au centre ; les Noirs peuvent réagir avec ...e5.'},
+ {id:'slav',name:'Défense slave · ...c6',tag:'Développement harmonieux',moves:'d2d4 d7d5 c2c4 c7c6 g1f3 g8f6 b1c3 d5c4 a2a4 c8f5 e2e3 e7e6 f1c4 f8b4 e1g1 e8g8',note:'Le pion c6 défend d5. Reprendre c4 et contrôler e4 sont importants.'},
+ {id:'semi',name:'Semi-slave · ...e6 et ...c6',tag:'Centre fermé',moves:'d2d4 d7d5 c2c4 e7e6 b1c3 c7c6 g1f3 g8f6 e2e3 b8d7 f1d3 d5c4 d3c4 b7b5 c4d3 c8b7 e1g1 a7a6',note:'Évite de précipiter la poussée e4 : développe et examine la structure.'},
+ {id:'tarrasch',name:'Tarrasch · ...c5',tag:'Pion isolé possible',moves:'d2d4 d7d5 c2c4 e7e6 b1c3 c7c5 c4d5 e6d5 g1f3 b8c6',note:'La poussée ...c5 active les Noirs mais peut créer un pion isolé.'},
+ {id:'albin',name:'Contre-gambit Albin · ...e5',tag:'Attention au pion d4 noir',moves:'d2d4 d7d5 c2c4 e7e5 d4e5 d5d4 g1f3 b8c6 g2g3 c8e6',note:'Après ...e5, évite les prises automatiques et surveille les tactiques du pion avancé d4.'},
+ {id:'chigorin',name:'Défense Tchigorine · ...Cc6',tag:'Pression rapide',moves:'d2d4 d7d5 c2c4 b8c6 g1f3 c8g4 c4d5 d8d5 b1c3',note:'Les Noirs choisissent une activité immédiate des pièces plutôt que la structure classique.'},
+ {id:'baltic',name:'Défense balte · ...Ff5',tag:'Développement précoce du fou',moves:'d2d4 d7d5 c2c4 c8f5 b1c3 e7e6 d1b3',note:'La sortie du fou peut rendre b7 vulnérable : Db3 accentue la pression.'},
+ {id:'marshall',name:'Défense Marshall · ...Cf6',tag:'Centre sous tension',moves:'d2d4 d7d5 c2c4 g8f6 c4d5 f6d5 e2e4 d5f6 b1c3',note:'L’échange cxd5 et e4 gagne de l’espace central.'}
+ ]},
+ caro:{name:'La défense Caro-Kann',side:'b',intro:'Avec les Noirs, 1.e4 c6 prépare ...d5. L’idée est d’attaquer le centre blanc en conservant une structure de pions solide et en développant le fou c8 avant ...e6.',goal:'Après 1.e4 c6 2.d4 d5, adapte-toi : ...dxe4 et ...Ff5 contre Cc3/Cd2 ; ...Ff5 puis ...e6/...c5 contre e5 ; ...cxd5 contre exd5.',lines:[
+ {id:'classical',name:'Classique · 3.Cc3',tag:'Ligne modèle · 20 coups',moves:'e2e4 c7c6 d2d4 d7d5 b1c3 d5e4 c3e4 c8f5 e4g3 f5g6 h2h4 h7h6 g1f3 b8d7 h4h5 g6h7 f1d3 h7d3 d1d3 e7e6 c1d2 g8f6 e1c1 f8e7 d2f4 e8g8 c1b1 c6c5 d4c5 d7c5 d3e2 d8b6 f3e5 a8d8 f2f3 c5a4 f4c1 d8d1 e2d1 e7d6',note:'Le fou sort en f5 avant ...e6 ; surveille la poussée libératrice ...c5.'},
+ {id:'advance',name:'Avance · 3.e5',tag:'La chaîne de pions',moves:'e2e4 c7c6 d2d4 d7d5 e4e5 c8f5 g1f3 e7e6 f1e2 c6c5 e1g1 b8c6 c1e3 c5d4 f3d4 c6d4 e3d4 g8e7 b1d2 e7c6',note:'Contre e5, le plan noir vise la base d4 par ...c5 et développe le fou c8 hors chaîne.'},
+ {id:'exchange',name:'Échange · 3.exd5',tag:'Structure symétrique',moves:'e2e4 c7c6 d2d4 d7d5 e4d5 c6d5 f1d3 b8c6 c2c3 g8f6 c1f4 c8g4 d1b3 d8d7 b1d2 e7e6 g1f3 f8d6',note:'Les Blancs échangent au centre. Développe les pièces sans perdre de temps et vise ...e5.'},
+ {id:'panov',name:'Attaque Panov · 4.c4',tag:'Pion dame isolé',moves:'e2e4 c7c6 d2d4 d7d5 e4d5 c6d5 c2c4 g8f6 b1c3 e7e6 g1f3 f8e7 f1d3 e8g8 e1g1 d5c4 d3c4 b8c6 c1g5',note:'Après c4, les Blancs peuvent obtenir un pion isolé d4 en échange d’activité.'},
+ {id:'fantasy',name:'Variante fantaisie · 3.f3',tag:'Centre agressif',moves:'e2e4 c7c6 d2d4 d7d5 f2f3 d5e4 f3e4 e7e5 g1f3 e5d4 f1c4 g8f6 e1g1 f8c5 g1h1',note:'3.f3 est ambitieux mais affaiblit des cases. ...dxe4 suivi de ...e5 est thématique.'},
+ {id:'twoknights',name:'Deux cavaliers · 2.Cc3',tag:'Développement rapide',moves:'e2e4 c7c6 b1c3 d7d5 g1f3 c8g4 h2h3 g4f3 d1f3 e7e6 d2d4 b8d7 f1d3',note:'Développe les cavaliers tôt. Les Noirs disposent de ...Fg4 et ...d5.'},
+ {id:'tartakower',name:'Tartakower · ...Cf6',tag:'Structure asymétrique',moves:'e2e4 c7c6 d2d4 d7d5 b1c3 d5e4 c3e4 g8f6 e4f6 e7f6 g1f3 f8d6 f1d3 e8g8 e1g1 f8e8',note:'Avec ...Cf6, les Noirs acceptent souvent ...exf6 et une structure particulière contre la paire de fous.'},
+ {id:'modern',name:'Variante moderne · 3.Cd2',tag:'Transposition classique',moves:'e2e4 c7c6 d2d4 d7d5 b1d2 d5e4 d2e4 c8f5 e4g3 f5g6 g1f3',note:'3.Cd2 garde le même projet que 3.Cc3, tout en laissant c3 libre pour un pion.'},
+ {id:'quiet',name:'Développement souple · 2.Cf3',tag:'Réponse simple',moves:'e2e4 c7c6 g1f3 d7d5 b1c3 c8g4 h2h3 g4f3 d1f3',note:'2.Cf3 est flexible. ...d5 reste le coup de principe.'},
+ {id:'indian',name:'Attaque est-indienne · 2.d3',tag:'Plan tranquille des Blancs',moves:'e2e4 c7c6 d2d3 d7d5 b1d2 e7e5 g1f3 f8d6 g2g3 g8f6 f1g2 e8g8',note:'Les Blancs jouent lentement. Prends de l’espace central avec ...d5 puis ...e5.'}
+ ]}
+};
+if(typeof module!=='undefined')module.exports=repertoire;
+
+(function(){
+'use strict';
+const R=ChessRules, files='abcdefgh';
+const GLYPH={K:'♔',Q:'♕',R:'♖',B:'♗',N:'♘',P:'♙',k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟︎','.':''};
+const PIECES={k:'roi',q:'dame',r:'tour',b:'fou',n:'cavalier',p:'pion'};
+const $=id=>document.getElementById(id);
+const posKey=s=>R.positionKey(s);
+let family='queen',selected='qgd',flipped=false,selectedSquare=-1,promotionMoves=null;
+let states=[R.parseFen(R.initial)],moves=[],cursor=0,customFEN=false,notice='',lastMoveWasInBook=true;
+const books=new Map();let allLines=[];
+function initBook(){
+ for(const [familyId,entry] of Object.entries(repertoire)){
+  for(const variation of entry.lines){
+   const positions=[R.parseFen(R.initial)],moves=[];let s=positions[0];
+   for(const [j,uci] of variation.moves.trim().split(/\s+/).entries()){
+    const m=R.legal(s).find(x=>R.key(x)===uci);
+    if(!m){console.warn('Coup illégal ignoré dans le répertoire',variation.id,j+1,uci);break;}
+    let k=posKey(s);
+    if(!books.has(k))books.set(k,[]);
+    books.get(k).push({move:uci,variation, familyId,ply:j,san:R.san(s,m)});
+    moves.push(m);s=R.apply(s,m);positions.push(s);
+   }
+   allLines.push({id:variation.id,familyId,variation,positions,moves});
+  }
+ }
+ $('stat-lines').textContent=String(allLines.length);
+}
+function current(){return states[cursor];}
+function activeEntry(){return repertoire[family];}
+function selectedLine(){return allLines.find(x=>x.id===selected&&x.familyId===family);}
+function bookCandidates(s){
+ const list=(books.get(posKey(s))||[]).filter(x=>x.familyId===family),d=new Map();
+ for(const c of list){let v=d.get(c.move);if(!v){v={...c,also:[c.variation.name],ids:new Set([c.variation.id])};d.set(c.move,v);}else{v.also.push(c.variation.name);v.ids.add(c.variation.id);if(c.variation.id===selected){v.variation=c.variation;v.ply=c.ply;}}}
+ return Array.from(d.values()).sort((a,b)=>Number(b.ids.has(selected))-Number(a.ids.has(selected))||b.also.length-a.also.length||a.san.localeCompare(b.san));
+}
+function reset(){states=[R.parseFen(R.initial)];moves=[];cursor=0;selectedSquare=-1;promotionMoves=null;customFEN=false;notice='';lastMoveWasInBook=true;render();}
+function changeFamily(f){if(!repertoire[f])return;family=f;selected=repertoire[f].lines[0].id;flipped=repertoire[f].side==='b';reset();renderVariants();renderSelect();}
+function chooseVariation(id){const line=allLines.find(x=>x.id===id&&x.familyId===family);if(!line)return;selected=id;reset();renderVariants();renderSelect();notice='Variante chargée : '+line.variation.name;render();document.getElementById('atelier').scrollIntoView({behavior:'smooth',block:'start'});}
+function jumpToFork(){
+ const l=selectedLine();if(!l)return;
+ const fork=family==='queen'?Math.min(4,l.moves.length):Math.min(l.variation.id==='twoknights'||l.variation.id==='quiet'||l.variation.id==='indian'?2:4,l.moves.length);
+ states=[R.parseFen(R.initial)];moves=[];cursor=0;customFEN=false;
+ for(let i=0;i<fork;i++)commit(l.moves[i],false);
+ selectedSquare=-1;notice='Position charnière chargée : essayez plusieurs réponses.';render();
+}
+function commit(m,shouldRender=true){
+ if(promotionMoves)return;
+ const s=current();const found=R.legal(s).find(x=>R.key(x)===R.key(m));if(!found){announce('Coup illégal.');return;}
+ const candidates=bookCandidates(s);lastMoveWasInBook=candidates.some(x=>x.move===R.key(found));
+ const french=R.san(s,found),english=toEnglishSAN(s,found);
+ states=states.slice(0,cursor+1);moves=moves.slice(0,cursor);
+ states.push(R.apply(s,found));moves.push({move:found,san:french,pgn:english,side:s.t,num:s.full,uci:R.key(found),book:lastMoveWasInBook});cursor++;
+ selectedSquare=-1;notice=lastMoveWasInBook?'Coup connu dans le répertoire.':'Coup légal joué : exploration libre.';
+ if(shouldRender)render();
+}
+function toEnglishSAN(s,m){const txt=R.san(s,m);return txt.replace(/^([CFTDR])(?=[a-h1-8xO])/,(a)=>({C:'N',F:'B',T:'R',D:'Q',R:'K'})[a]).replace(/=([CFTDR])/,(_,letter)=>'='+({C:'N',F:'B',T:'R',D:'Q',R:'K'})[letter]);}
+function goto(i){if(i<0||i>=states.length)return;cursor=i;selectedSquare=-1;promotionMoves=null;notice='';render();}
+function advance(){goto(Math.min(states.length-1,cursor+1));}
+function back(){goto(Math.max(0,cursor-1));}
+function announce(msg){notice=msg;$('toast').textContent=msg;}
+function tryMove(from,to){
+ if(R.status(states.slice(0,cursor+1)).end)return;
+ const s=current(),pool=R.legal(s).filter(m=>m[0]===from&&m[1]===to);
+ if(!pool.length){announce('Déplacement impossible : le coup n’est pas légal.');return;}
+ if(pool.length>1){promotionMoves=pool;renderPromotion();return;}
+ commit(pool[0]);
+}
+function clickSquare(i){
+ const s=current();if(promotionMoves)return;
+ const status=R.status(states.slice(0,cursor+1));if(status.end)return;
+ if(selectedSquare>=0&&selectedSquare!==i){
+  const choices=R.legal(s).filter(m=>m[0]===selectedSquare&&m[1]===i);
+  if(choices.length){tryMove(selectedSquare,i);return;}
+ }
+ if(R.side(s.b[i])===s.t){selectedSquare=selectedSquare===i?-1:i;notice='';render();}
+ else if(selectedSquare>=0){announce('Choisissez une case autorisée en surbrillance.');}
+}
+function renderPromotion(){
+ const div=$('promotion-choices');div.innerHTML='';const color=current().t;
+ for(const m of promotionMoves){const b=document.createElement('button');b.type='button';b.textContent=GLYPH[color===1?m[2].toUpperCase():m[2]];b.title=({q:'Dame',r:'Tour',b:'Fou',n:'Cavalier'})[m[2]];b.addEventListener('click',()=>{promotionMoves=null;$('promotion-overlay').classList.remove('open');commit(m);});div.append(b);}
+ $('promotion-overlay').classList.add('open');
+}
+function closePromotion(){promotionMoves=null;$('promotion-overlay').classList.remove('open');}
+function renderBoard(){
+ const board=$('board'),s=current(),legals=R.legal(s),status=R.status(states.slice(0,cursor+1));
+ const targets=legals.filter(m=>m[0]===selectedSquare).map(m=>m[1]);
+ const prev=cursor?moves[cursor-1].move:null;
+ board.innerHTML='';
+ const order=Array.from({length:64},(_,j)=>flipped?(7-(j>>3))*16+(7-(j&7)):(j>>3)*16+(j&7));
+ for(const [j,i] of order.entries()){
+  const p=s.b[i],r=i>>4,c=i&7,button=document.createElement('button');button.type='button';
+  button.className='square'+((r+c)%2?' dark':'')+(selectedSquare===i?' selected':'')+(prev&&(prev[0]===i||prev[1]===i)?' last':'')+(p.toLowerCase()==='k'&&R.side(p)===s.t&&R.checked(s)?' is-check':'');
+  button.dataset.square=R.sq(i);button.setAttribute('aria-label',R.sq(i)+(p==='.'?' vide':', '+PIECES[p.toLowerCase()]+' '+(p===p.toUpperCase()?'blanc':'noir')));
+  if(p!=='.'){
+   const span=document.createElement('span');span.className='piece '+(R.side(p)===1?'white':'black');span.textContent=GLYPH[p];button.append(span);
+  }
+  if(targets.includes(i)){const dot=document.createElement('span');dot.className=p==='.'?'target-dot':'target-ring';button.append(dot);}
+  if(j%8===0){const label=document.createElement('span');label.className='coord rank';label.textContent=R.sq(i).slice(1);button.append(label);}
+  if(j>=56){const label=document.createElement('span');label.className='coord file';label.textContent=R.sq(i)[0];button.append(label);}
+  button.addEventListener('click',()=>clickSquare(i));
+  button.draggable=!status.end&&R.side(p)===s.t;
+  if(button.draggable)button.addEventListener('dragstart',ev=>{selectedSquare=i;ev.dataTransfer.setData('text/plain',String(i));ev.dataTransfer.effectAllowed='move';/* Conserver le noeud pendant le glisser-deposer. */});
+  button.addEventListener('dragover',ev=>{ev.preventDefault();ev.dataTransfer.dropEffect='move';});
+  button.addEventListener('drop',ev=>{ev.preventDefault();const from=Number(ev.dataTransfer.getData('text/plain'));if(Number.isInteger(from)&&from>=0&&from<128)tryMove(from,i);});
+  board.append(button);
+ }
+ $('turn-label').textContent=status.text;
+ const count=cursor;
+ $('move-progress').textContent=(count/2).toLocaleString('fr-FR',{maximumFractionDigits:1})+' / 20 coups';
+ $('progress-fill').style.width=Math.min(100,count/40*100)+'%';
+ $('back').disabled=cursor===0;$('forward').disabled=cursor>=states.length-1;
+ $('reset').disabled=states.length===1&&cursor===0;
+ $('toast').textContent=notice;
+}
+function contextualTip(s){
+ const b=s.b,ep=R.idx;
+ if(family==='queen'){
+  if(b[ep('c4')]==='p'){
+   if(b[ep('b5')]==='p'&&s.t===1&&b[ep('a2')]==='P')return 'Les Noirs cherchent à conserver c4 avec ...b5 : <strong>a4 !</strong> attaque le pion qui le défend. Si ...c6 puis axb5 cxb5, pensez à Df3.';
+   if(s.t===1&&b[ep('e2')]==='P')return 'Le pion c4 a été capturé : <strong>e3</strong> libère votre fou f1, qui peut ensuite reprendre en c4.';
+   return 'Après ...dxc4, veillez à récupérer le pion c4 au bon moment, sans négliger le développement et la sécurité du roi.';
+  }
+  if(b[ep('d4')]==='P'&&b[ep('d5')]==='p')return 'La tension <strong>d4–d5</strong> est le cœur de l’ouverture. Ne prenez pas automatiquement : regardez l’activité des cavaliers et la possibilité de jouer e3 puis Fd3.';
+  if(s.full>10)return 'À partir du milieu de partie : coordonnez tours et dame, cherchez une colonne ouverte, et évaluez les ruptures centrales e4 ou cxd5.';
+  return 'Idée : <strong>contrôler d4 et e4</strong>, développer Cc3/Cf3, sortir le fou et roquer. Adaptez-vous au dernier coup adverse.';
+ }
+ if(b[ep('e5')]==='P'&&b[ep('d5')]==='p')return 'La variante d’avance : le pion blanc <strong>e5</strong> gêne votre développement. Attaquez la base <strong>d4</strong>, souvent avec ...Ff5, ...e6 puis ...c5.';
+ if(b[ep('e4')]==='P'&&b[ep('c6')]==='p'&&b[ep('d5')]==='p')return 'Vous attaquez le centre e4 : si le pion blanc reste en e4, la capture <strong>...dxe4</strong> est souvent un choix principiel, avant le développement de ...Ff5.';
+ if(b[ep('c6')]==='p'&&b[ep('d7')]==='p')return 'Après 1.e4 c6, la suite de principe est <strong>...d5</strong>, afin de contester le centre. Ne bloquez pas votre fou c8 trop tôt.';
+ if(s.full>10)return 'En Caro-Kann, préparez les ruptures libératrices <strong>...c5</strong> ou <strong>...e5</strong>, et vérifiez que votre roi reste en sécurité.';
+ return 'Cherchez un bon développement du fou c8, une structure de pions solide et une attaque du centre par <strong>...c5</strong> au bon moment.';
+}
+function renderAdvice(){
+ const s=current(),start=activeEntry(),book=bookCandidates(s),status=R.status(states.slice(0,cursor+1)),selectedEntry=selectedLine();
+ $('side-eyebrow').textContent=family==='caro'?'Le plan des Noirs':'Le plan des Blancs';
+ $('active-title').textContent=selectedEntry?.variation.name||start.name;
+ $('opening-intro').textContent=start.intro;
+ $('strategy-box').innerHTML=contextualTip(s);
+ $('last-feedback').textContent=cursor&&moves[cursor-1]?.book?'Dernier coup : présent dans les variantes étudiées.':cursor?'Dernier coup : légal, hors des lignes commentées.':'Choisissez votre premier coup ou une variante.';
+ $('last-feedback').classList.toggle('danger',cursor>0&&!moves[cursor-1]?.book);
+ const el=$('book-choices');el.innerHTML='';
+ if(status.end){$('reco-text').textContent='La partie est terminée. Revenir en arrière permet de reprendre l’analyse.';}
+ else if(book.length){$('reco-text').textContent=`${book.length} continuation${book.length>1?'s':''} issue${book.length>1?'s':''} de notre répertoire. Ce sont des idées théoriques, pas une évaluation de moteur.`;
+  for(const cand of book.slice(0,7)){
+   const b=document.createElement('button');b.className='choice';b.type='button';const m=R.legal(s).find(x=>R.key(x)===cand.move);if(!m)continue;
+   const label=document.createElement('strong');label.textContent=R.moveLabel(s,m);
+   const desc=document.createElement('span');desc.textContent=cand.ids.has(selected)?'dans la ligne sélectionnée':'autre branche';
+   b.append(label,desc);b.title=cand.also.join(' · ');b.addEventListener('click',()=>commit(m));el.append(b);
+  }
+ }else{$('reco-text').textContent='Cette position sort des variantes enregistrées. L’échiquier reste entièrement jouable : examinez les menaces, les échecs et les captures avant de choisir.';}
+ const list=$('legal-choices');list.innerHTML='';
+ if(!status.end)for(const m of R.legal(s)){
+  const b=document.createElement('button');b.className='choice';b.type='button';b.textContent=R.san(s,m);b.title='Jouer '+R.moveLabel(s,m);b.addEventListener('click',()=>{if(m[2]){promotionMoves=R.legal(s).filter(x=>x[0]===m[0]&&x[1]===m[1]);renderPromotion();}else commit(m);});list.append(b);
+ }
+ const hint=book.find(x=>x.ids.has(selected))||book[0];$('suggest').disabled=!hint||status.end;
+ $('suggest').textContent=hint?'Jouer '+hint.san:'Hors répertoire';
+ $('game-status').textContent=status.text+(status.claim?' · Nulle réclamable : '+status.claim:'');
+}
+function renderHistory(){
+ const el=$('history');el.innerHTML='';
+ if(!moves.length){el.innerHTML='<p class="empty-history" style="grid-column:1/-1">Aucun coup joué. Appuyez sur « Jouer le coup du guide » ou déplacez une pièce.</p>';return;}
+ for(let i=0;i<moves.length;i+=2){
+  const first=moves[i],second=moves[i+1];
+  const rank=document.createElement('div');rank.className='move-n';rank.textContent=first.side===1?first.num+'.':first.num+'…';el.append(rank);
+  for(let j=0;j<2;j++){
+   const m=moves[i+j],cell=document.createElement('div');
+   if(m){const b=document.createElement('button');b.type='button';b.className='move-button'+(cursor===i+j+1?' current':'');b.textContent=m.san;b.title='Revenir à la position après '+m.san;b.addEventListener('click',()=>goto(i+j+1));cell.append(b);}
+   el.append(cell);
+  }
+ }
+ /* L'historique reste dans sa zone sans deplacer toute la page. */
+}
+function renderSelect(){const select=$('variation'),lines=activeEntry().lines;select.innerHTML='';for(const v of lines){const opt=document.createElement('option');opt.value=v.id;opt.textContent=v.name;select.append(opt);}select.value=selected;}
+function renderVariants(){const grid=$('variants-grid');grid.innerHTML='';for(const [j,v] of activeEntry().lines.entries()){
+ const b=document.createElement('button');b.className='variant-card'+(v.id===selected?' active':'');b.type='button';const n=document.createElement('span');n.className='variant-number';n.textContent=String(j+1).padStart(2,'0')+' · '+v.tag;const title=document.createElement('strong');title.textContent=v.name;const desc=document.createElement('small');desc.textContent=v.note;const footer=document.createElement('span');footer.className='load';footer.textContent='Étudier cette ligne ↗';b.append(n,title,desc,footer);b.addEventListener('click',()=>chooseVariation(v.id));grid.append(b);
+}}
+function render(){
+ $('mode-queen').classList.toggle('active',family==='queen');$('mode-caro').classList.toggle('active',family==='caro');
+ $('mode-queen').setAttribute('aria-pressed',family==='queen');$('mode-caro').setAttribute('aria-pressed',family==='caro');
+ renderBoard();renderAdvice();renderHistory();
+}
+async function copyText(text,label){try{await navigator.clipboard.writeText(text);announce(label+' copié.');}catch{
+ const el=document.createElement('textarea');el.value=text;el.style.position='fixed';el.style.left='-9999px';document.body.append(el);el.select();try{document.execCommand('copy');announce(label+' copié.');}catch(e){announce('Copie impossible : sélectionnez le texte manuellement.');}el.remove();
+}}
+function pgn(){const start=states[0];let head='[Event "Atelier des ouvertures"]\n[Site "Blog de l’intranquilité"]\n[Result "*"]\n';if(R.fen(start)!==R.initial)head+='[SetUp "1"]\n[FEN "'+R.fen(start)+'"]\n';
+ const tokens=[];for(let i=0;i<cursor;i++){const m=moves[i];if(m.side===1)tokens.push(m.num+'. '+m.pgn);else tokens.push((i===0?m.num+'... ':'')+m.pgn);}return head+'\n'+tokens.join(' ')+' *\n';}
+function savePgn(){const blob=new Blob([pgn()],{type:'application/x-chess-pgn;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='partie-echecs-'+family+'.pgn';document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);announce('Partie PGN téléchargée.');}
+$('mode-queen').addEventListener('click',()=>{changeFamily('queen');});
+$('mode-caro').addEventListener('click',()=>{changeFamily('caro');});
+$('variation').addEventListener('change',e=>chooseVariation(e.target.value));
+$('suggest').addEventListener('click',()=>{const s=current(),cs=bookCandidates(s),m=(cs.find(x=>x.ids.has(selected))||cs[0]);if(!m)return;const move=R.legal(s).find(x=>R.key(x)===m.move);if(move)commit(move);});
+$('back').addEventListener('click',back);$('forward').addEventListener('click',advance);$('reset').addEventListener('click',reset);
+$('flip').addEventListener('click',()=>{flipped=!flipped;renderBoard();});
+$('jump').addEventListener('click',jumpToFork);
+$('fen-copy').addEventListener('click',()=>copyText(R.fen(current()),'Position FEN'));
+$('pgn-copy').addEventListener('click',()=>copyText(pgn(),'Partie PGN'));
+$('pgn-save').addEventListener('click',savePgn);
+$('fen-load').addEventListener('click',()=>{try{const s=R.parseFen($('fen-input').value);states=[s];moves=[];cursor=0;selectedSquare=-1;promotionMoves=null;customFEN=true;notice='Position FEN chargée. Tous les coups légaux sont disponibles.';render();}catch(e){announce(e.message);}});
+$('promotion-cancel').addEventListener('click',closePromotion);
+$('promotion-overlay').addEventListener('click',e=>{if(e.target===$('promotion-overlay'))closePromotion();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&promotionMoves){closePromotion();return;}if(['INPUT','SELECT','TEXTAREA','BUTTON'].includes(document.activeElement?.tagName))return;if(e.key==='ArrowLeft'){e.preventDefault();back();}if(e.key==='ArrowRight'){e.preventDefault();advance();}});
+initBook();renderSelect();renderVariants();render();
+})();
+
+</script>
+</body>
+</html>
