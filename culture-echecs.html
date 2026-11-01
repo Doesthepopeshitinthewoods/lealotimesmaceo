@@ -21,6 +21,25 @@
 .variants{margin:55px 0}.variants-head{display:flex;align-items:end;justify-content:space-between;gap:15px;margin-bottom:17px}.variants-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.variant-card{background:white;border:1px solid var(--line);border-radius:13px;padding:20px;text-align:left;display:flex;flex-direction:column;align-items:start;gap:11px;min-height:175px}.variant-card:hover{border-color:#c7a486;background:#fffdf9;transform:translateY(-2px);box-shadow:0 8px 18px #3120120a}.variant-card.active{border-color:var(--wine);box-shadow:inset 0 0 0 1px #8b000020}.variant-card strong{font:700 16px Merriweather,serif;line-height:1.4}.variant-card small{line-height:1.55;color:#6c6c65;font-size:12px}.variant-number{font-size:11px;letter-spacing:.1em;color:var(--wine);font-weight:700}.variant-card .load{font-size:11px;color:var(--wine);font-weight:700;margin-top:auto}.lesson-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:17px;margin:24px 0 55px}.lesson{background:#f3eee7;border:1px solid #e8ddce;border-radius:13px;padding:23px}.lesson small{color:var(--wine);font-weight:700;letter-spacing:.13em;text-transform:uppercase}.lesson h3{margin:12px 0 7px}.lesson p{font-size:13px;color:#575c55;margin:0;line-height:1.75}.faq{margin:25px 0 60px;display:grid;grid-template-columns:1fr 1fr;gap:20px}.faq details{border:1px solid var(--line);border-radius:10px;background:white;padding:15px 18px}.faq summary{cursor:pointer;font-weight:700;font-size:14px}.faq p{font-size:13px;line-height:1.8;margin-top:10px;color:#585b57}.site-footer{border-top:1px solid var(--line);padding:25px 0 40px;font-size:12px;color:var(--muted)}
 .promotion-overlay{position:fixed;inset:0;background:#1a1619ad;z-index:99;display:none;align-items:center;justify-content:center;padding:16px}.promotion-overlay.open{display:flex}.promotion-dialog{border-radius:14px;background:white;box-shadow:0 24px 80px #0003;max-width:450px;padding:27px;width:100%;text-align:center}.promotion-choices{display:flex;justify-content:center;gap:10px;margin-top:15px}.promotion-choices button{width:65px;height:67px;font-size:40px;border:1px solid #e4dfd8;border-radius:10px;background:#f7f2ea}.promotion-choices button:hover{background:#ead8bc}
 @media(max-width:1050px){.lab-body{grid-template-columns:minmax(0,1fr) minmax(300px,.84fr)}.board-area{padding:18px}.panel{padding:18px}.variants-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:850px){.hero{grid-template-columns:1fr}.hero-art{display:none}.hero-copy{padding:40px 31px}.intro-strip{grid-template-columns:repeat(2,1fr)}.lab-body{grid-template-columns:1fr}.board-area{border-right:0;border-bottom:1px solid var(--line)}.board-frame{max-width:560px}.piece{font-size:clamp(29px,8vw,60px)}.side-area{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.panel{border-right:1px solid var(--line)}.panel:first-child{grid-column:span 2}.main-nav{gap:12px}}@media(max-width:620px){.site-inner{flex-direction:column;align-items:start;padding:16px}.brand{font-size:17px}.wrapper{padding:0 15px}.hero-copy{padding:30px 24px}.hero-copy p{font-size:14px}.intro-stat{padding:12px}.intro-stat strong{font-size:22px}.lab-header{padding:13px}.selectors select{max-width:260px;width:100%}.board-area{padding:11px}.board-frame{border-width:5px}.piece{font-size:clamp(28px,9.2vw,52px)}.board-controls .btn{font-size:11px;padding:9px 10px}.side-area{display:flex}.panel{border-right:0;padding:18px}.variants-grid,.lesson-cards,.faq{grid-template-columns:1fr}.section-head{display:block}.variants{margin:40px 0}.variant-card{min-height:0}.hero h1{font-size:39px}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+/* Enrichissements : navigation rapide et catalogue consultable */
+.quick-section{padding:18px 20px;background:#fcfaf7;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+.quick-title{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:9px}
+.quick-title strong{font:700 14px Merriweather,serif;color:#5a322c}
+.quick-title span{font-size:12px;color:var(--muted)}
+.quick-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.quick-link{border:1px solid #e5d7c9;background:#fff;padding:10px 12px;text-align:left;border-radius:9px;display:flex;flex-direction:column;gap:3px}
+.quick-link:hover{border-color:var(--wine);background:#fffaf5}
+.quick-link strong{font-size:12px;color:var(--wine)}
+.quick-link small{font-size:11px;color:#67645c;line-height:1.35}
+.catalog-tools{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:17px}
+.catalog-tools input,.catalog-tools select{background:#fff;border:1px solid #ded7ce;border-radius:9px;min-height:43px;padding:8px 12px;color:var(--ink);font-size:13px}
+.catalog-tools input{flex:1 1 250px}.catalog-tools select{flex:0 1 260px}
+#variant-count{color:var(--muted);font-size:12px;margin-left:auto}
+.visually-hidden{position:absolute;left:0;top:0;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+#variants-grid:empty:after{content:'Aucune variante trouvée.';font-size:13px;color:var(--muted)}
+@media(max-width:920px){.quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:540px){.quick-grid{grid-template-columns:1fr 1fr}.quick-link{padding:8px}.quick-section{padding:15px}.catalog-tools>*{width:100%;max-width:none}}
 </style>
 </head>
 <body>
@@ -28,10 +47,11 @@
 <main class="wrapper">
 <nav class="breadcrumb" aria-label="Fil d'Ariane"><a href="index.html">Accueil</a><span>›</span><a href="index.html#culture">Culture</a><span>›</span><em>Échecs</em></nav>
 <section class="hero" aria-labelledby="hero-title"><div class="hero-copy"><span class="eyebrow">Culture · Stratégie · Jeux d'esprit</span><h1 id="hero-title">L'art des<br><em>64 cases.</em></h1><p>Deux ouvertures, une infinité de décisions : le gambit de la dame avec les Blancs et la Caro-Kann avec les Noirs. Rejouez les grandes idées, changez les réponses de l'adversaire et étudiez les positions qui en découlent.</p><a class="hero-chip" href="#atelier"><span class="dots"></span> Entrer dans l'atelier interactif ↓</a></div><div class="hero-art" aria-hidden="true"><div class="chess-art"><span>♞</span></div><div class="art-tag">L'atelier des ouvertures</div></div></section>
-<div class="intro-strip"><div class="intro-stat"><strong>2</strong><span>ouvertures étudiées</span></div><div class="intro-stat"><strong id="stat-lines">21</strong><span>variantes commentées</span></div><div class="intro-stat"><strong>20</strong><span>coups à explorer et plus</span></div><div class="intro-stat"><strong>∞</strong><span>réponses légales jouables</span></div></div>
+<div class="intro-strip"><div class="intro-stat"><strong>2</strong><span>ouvertures étudiées</span></div><div class="intro-stat"><strong id="stat-lines">77</strong><span>branches théoriques validées</span></div><div class="intro-stat"><strong>20</strong><span>coups à explorer et au-delà</span></div><div class="intro-stat"><strong>∞</strong><span>réponses légales jouables</span></div></div>
 <section id="atelier" class="lab" aria-labelledby="lab-title">
-<div class="section-head"><div><span class="eyebrow">Le laboratoire</span><h2 id="lab-title">Un échiquier qui s'adapte.</h2><p>Vous jouez les coups des deux camps. Les suggestions suivent les variantes connues ; si vous inventez une autre réponse, la partie reste entièrement jouable.</p></div></div>
+<div class="section-head"><div><span class="eyebrow">Le laboratoire</span><h2 id="lab-title">Un échiquier qui s'adapte.</h2><p>Vous jouez les coups des deux camps. Les suggestions suivent les 77 branches commentées, même lorsque vous modifiez la réponse adverse. Hors répertoire, tous les coups légaux restent jouables jusqu’au milieu de partie et au-delà.</p></div></div>
 <div class="lab-header"><div class="segmented" role="group" aria-label="Choisir l'ouverture"><button id="mode-queen" class="active" aria-pressed="true" type="button">♙ Gambit de la dame</button><button id="mode-caro" type="button" aria-pressed="false">♟ Défense Caro-Kann</button></div><div class="selectors"><label for="variation">Variante étudiée</label><select id="variation" aria-label="Choisir une variante"></select></div></div>
+<div class="quick-section"><div class="quick-title"><strong>Positions clés à explorer</strong><span>Choisissez une bifurcation puis jouez la réponse adverse.</span></div><div id="quick-positions" class="quick-grid"></div></div>
 <div class="lab-body">
 <div class="board-area">
 <div class="board-heading"><span class="turn-pill" id="turn-label">Aux Blancs de jouer</span><span class="muted" id="move-progress" style="font-size:12px;font-weight:700">0 / 20 coups</span></div>
@@ -42,14 +62,15 @@
 </div>
 <div class="side-area">
 <section class="panel"><div class="mini-kicker" id="side-eyebrow">Le plan des Blancs</div><h3 id="active-title">Gambit de la dame</h3><p id="opening-intro"></p><div class="cue" id="strategy-box"></div><p id="last-feedback" class="status-line" style="margin-top:13px"></p></section>
-<section class="panel"><div class="mini-kicker">Réponses adaptées à la position</div><h3>Quelle suite choisir ?</h3><p id="reco-text"></p><div id="book-choices" class="choice-list"></div><details style="margin-top:15px"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--wine)">Afficher tous les coups légaux</summary><div class="choice-list all-legal" id="legal-choices"></div></details></section>
+<section class="panel"><div class="mini-kicker">Réponses adaptées à la position</div><h3>Quelles suites choisir ?</h3><p id="reco-text"></p><div id="book-choices" class="choice-list"></div><details style="margin-top:15px"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--wine)">Afficher tous les coups légaux</summary><div class="choice-list all-legal" id="legal-choices"></div></details></section>
 <section class="panel"><div class="mini-kicker">Votre partie</div><h3>Historique des coups</h3><div id="history" class="move-history" aria-live="polite"></div><p id="game-status" class="status-line" style="margin-top:9px"></p></section>
 <section class="panel"><div class="mini-kicker">Outils d'analyse</div><h3>Importer, exporter</h3><div class="tools-grid"><button id="fen-copy" class="btn tiny" type="button">Copier la FEN</button><button id="pgn-copy" class="btn tiny" type="button">Copier le PGN</button><button id="pgn-save" class="btn tiny" type="button">Télécharger PGN</button><button id="jump" class="btn tiny" type="button">Aller au tournant</button></div><label for="fen-input" style="display:block;margin-top:15px;font-weight:700;font-size:12px">Charger une position FEN</label><input id="fen-input" class="fen-field" placeholder="Collez ici une FEN complète (6 champs)"><button id="fen-load" class="btn tiny" type="button">Charger la position</button></section>
 </div></div></section>
-<section class="variants" id="bibliotheque"><div class="variants-head"><div><span class="eyebrow">Carnet théorique</span><h2>Explorer les grandes variantes</h2><p class="muted" style="font-size:13px">Choisissez une carte pour charger la ligne et la rejouer, ou introduisez votre propre réponse sur l'échiquier.</p></div></div><div id="variants-grid" class="variants-grid"></div></section>
+<section class="variants" id="bibliotheque"><div class="variants-head"><div><span class="eyebrow">Carnet théorique</span><h2>Explorer les grandes variantes</h2><p class="muted" style="font-size:13px">Choisissez une carte pour charger la ligne et la rejouer, ou introduisez votre propre réponse sur l'échiquier.</p></div></div><div class="catalog-tools"><label for="variant-search" class="visually-hidden">Chercher une variante</label><input id="variant-search" type="search" placeholder="Rechercher : d4, e5, Panov, Albin…" autocomplete="off"><label for="variant-filter" class="visually-hidden">Filtrer les variantes</label><select id="variant-filter" aria-label="Filtrer les variantes"><option value="all">Toutes les branches</option></select><span id="variant-count" aria-live="polite"></span></div><div id="variants-grid" class="variants-grid"></div></section>
 <section aria-labelledby="principes"><span class="eyebrow">Trois principes à retenir</span><h2 id="principes">Comprendre avant de mémoriser.</h2><div class="lesson-cards"><article class="lesson"><small>01 · Le centre</small><h3>Ce qui compte, ce sont les cases.</h3><p>Le centre e4, d4, e5 et d5 gouverne la mobilité des pièces. Un pion offert peut être moins important que le temps de développement gagné.</p></article><article class="lesson"><small>02 · Le tempo</small><h3>Développer sans se disperser.</h3><p>Sortir les pièces, mettre son roi à l'abri, puis relier les tours. Ne pars pas à la chasse aux pions si cela laisse ton roi exposé.</p></article><article class="lesson"><small>03 · La réponse</small><h3>Aucun coup n'est automatique.</h3><p>À chaque nouveau coup adverse, examine la menace, les captures et les échecs. Le répertoire illustre des plans, il ne remplace pas un calcul concret.</p></article></div></section>
 <section class="faq"><details open><summary>Les Noirs prennent c4 après 1.d4 d5 2.c4 ?</summary><p>On obtient le <strong>gambit de la dame accepté</strong>. Un plan facile pour les Blancs est <strong>3.e3</strong>, suivi de <strong>Fxc4</strong> quand cela est possible. Si les Noirs défendent c4 par ...b5, réponds souvent <strong>a4</strong> pour attaquer le soutien du pion. Sélectionne « Gambit accepté · les Noirs gardent c4 » pour visualiser cette idée.</p></details><details open><summary>Comment jouer la Caro-Kann avec les Noirs ?</summary><p>Après <strong>1.e4 c6 2.d4 d5</strong>, réponds à 3.Cc3 ou 3.Cd2 par <strong>...dxe4</strong> puis souvent <strong>...Ff5</strong>. Contre 3.e5, développe généralement le fou en <strong>f5</strong>, puis prépare <strong>...e6</strong> et <strong>...c5</strong> pour attaquer la chaîne de pions.</p></details></section>
-<footer class="site-footer">Blog de l'intranquilité · Culture · Échecs. Les lignes sont des exemples pédagogiques et non des variantes forcées. Le jeu valide les coups légaux mais ne calcule pas les meilleurs coups comme un moteur d'échecs.</footer>
+<section class="faq"><details><summary>Que faire si les Blancs jouent 2.d4 dans la Caro-Kann ?</summary><p>La réponse de principe est <strong>2...d5</strong>. Ensuite, il faut distinguer <strong>3.e5</strong> (pion avancé, attaquer d4 par ...c5), <strong>3.Cc3 / 3.Cd2</strong> (souvent ...dxe4), <strong>3.exd5</strong> (recapturer ...cxd5) et <strong>3.f3</strong> (variante fantaisie). Vous pouvez aussi analyser la transposition <strong>1.d4 c6 2.e4 d5</strong>.</p></details><details><summary>Que signifie ...e5 contre le gambit de la dame ?</summary><p>Après <strong>1.d4 d5 2.c4 e5</strong>, c’est le <strong>contre-gambit Albin</strong>. Après <strong>3.dxe5 d4</strong>, les Noirs obtiennent un pion avancé dangereux ; comparez <strong>4.Cf3</strong>, <strong>4.a3</strong> et <strong>4.e3</strong>. Attention : <strong>1.d4 e5</strong> correspond au gambit Englund et <strong>1.d4 Cf6 2.c4 e5</strong> au gambit de Budapest.</p></details></section>
+<footer class="site-footer">Blog de l'intranquilité · Culture · Échecs. Les lignes sont des exemples pédagogiques non forcés, et ne représentent pas exhaustivement toutes les parties possibles en 20 coups. Références : <a href="https://lichess.org/analysis" target="_blank" rel="noopener noreferrer">Lichess Analyse</a> et <a href="https://lichess.org/opening" target="_blank" rel="noopener noreferrer">Lichess Ouvertures</a>. Le jeu valide les coups légaux mais ne calcule pas les meilleurs coups comme un moteur d'échecs.</footer>
 </main>
 <div id="promotion-overlay" class="promotion-overlay" role="dialog" aria-modal="true" aria-labelledby="promotion-title"><div class="promotion-dialog"><h3 id="promotion-title">Choisir la promotion</h3><p class="muted">Par quelle pièce voulez-vous remplacer votre pion ?</p><div id="promotion-choices" class="promotion-choices"></div><button class="btn" id="promotion-cancel" type="button" style="margin-top:14px">Annuler</button></div></div>
 <script>
@@ -178,6 +199,68 @@ const repertoire = {
  {id:'indian',name:'Attaque est-indienne · 2.d3',tag:'Plan tranquille des Blancs',moves:'e2e4 c7c6 d2d3 d7d5 b1d2 e7e5 g1f3 f8d6 g2g3 g8f6 f1g2 e8g8',note:'Les Blancs jouent lentement. Prends de l’espace central avec ...d5 puis ...e5.'}
  ]}
 };
+/* Extension du repertoire : branches autour du pion d4 dans la Caro-Kann,
+   de ...e5 dans le gambit de la dame (Albin), et des transpositions. */
+repertoire.queen.lines.push(
+ {"id":"albin-nf3","name":"Albin : 4.Cf3 puis ...Cc6","tag":"Après ...e5","moves":"d2d4 d7d5 c2c4 e7e5 d4e5 d5d4 g1f3 b8c6 g2g3 c8e6 b1d2 d8d7 f1g2 e8c8 e1g1 h7h5","note":"La réponse 4.Cf3 évite de s’exposer immédiatement à ...Fb4+ ; surveille le pion noir d4 et la pression contre e5."},
+ {"id":"albin-a3","name":"Albin : 5.a3 contre ...Cc6","tag":"Après ...e5","moves":"d2d4 d7d5 c2c4 e7e5 d4e5 d5d4 g1f3 b8c6 a2a3 c8g4 b1d2 d8e7 g2g3 e8c8 f1g2","note":"5.a3 limite les incursions de fou en b4 ; les Blancs terminent leur développement."},
+ {"id":"albin-g3","name":"Albin : 5.g3, fianchetto","tag":"Après ...e5","moves":"d2d4 d7d5 c2c4 e7e5 d4e5 d5d4 g1f3 b8c6 g2g3 c8g4 f1g2 d8d7 e1g1","note":"Le fou g2 défend le centre et contribue à contrer le pion d4."},
+ {"id":"albin-nbd2","name":"Albin : 5.Cbd2, développement prudent","tag":"Après ...e5","moves":"d2d4 d7d5 c2c4 e7e5 d4e5 d5d4 g1f3 b8c6 b1d2 c8g4 g2g3 d8d7 f1g2","note":"Ne permet pas facilement les échecs tactiques sur b4 ; évite d’attaquer d4 sans préparation."},
+ {"id":"albin-e3","name":"Albin : 4.e3 et ...Fb4+","tag":"Après ...e5","moves":"d2d4 d7d5 c2c4 e7e5 d4e5 d5d4 e2e3 f8b4 c1d2 d4e3 d2b4 e3f2 e1e2 f2g1n","note":"Ligne tactique de référence pour la logique du piège de Lasker. La sous-promotion est possible et doit être calculée ; ne joue pas 4.e3 sans vérifier."},
+ {"id":"albin-e3-safe","name":"Albin : 4.e3, autre défense","tag":"Après ...e5","moves":"d2d4 d7d5 c2c4 e7e5 d4e5 d5d4 e2e3 f8b4 b1d2 d4e3 f2e3","note":"La défense par le cavalier ne supprime pas les concessions structurelles. Compare avec 4.Cf3."},
+ {"id":"albin-a3early","name":"Albin : 4.a3","tag":"Après ...e5","moves":"d2d4 d7d5 c2c4 e7e5 d4e5 d5d4 a2a3 b8c6 g1f3 c8e6 e2e3","note":"4.a3 empêche ...Fb4+ et conserve un développement flexible."},
+ {"id":"albin-3nc3","name":"Albin : 3.Cc3 au lieu de prendre","tag":"Après ...e5","moves":"d2d4 d7d5 c2c4 e7e5 b1c3 d5c4 e2e3 e5d4 e3d4 g8f6 f1c4","note":"On peut refuser ...e5 et développer le cavalier ; surveille la prise ...dxc4."},
+ {"id":"albin-3cxd5","name":"Albin : 3.cxd5","tag":"Après ...e5","moves":"d2d4 d7d5 c2c4 e7e5 c4d5 d8d5 b1c3 f8b4 e2e3 e5d4","note":"La prise cxd5 autorise ...Dxd5 ; la dame noire peut gagner un tempo sur le développement."},
+ {"id":"albin-3e3","name":"Albin : 3.e3","tag":"Après ...e5","moves":"d2d4 d7d5 c2c4 e7e5 e2e3 e5d4 e3d4 g8f6 b1c3 f8b4 g1f3 e8g8","note":"3.e3 maintient le centre mais permet aux Noirs de changer la structure."},
+ {"id":"albin-3nf3","name":"Albin : 3.Cf3","tag":"Après ...e5","moves":"d2d4 d7d5 c2c4 e7e5 g1f3 e5e4 f3d2 c7c6 b1c3 g8f6","note":"3.Cf3 protège certaines cases mais ...e4 gagne de l’espace. Lutte pour d4."},
+ {"id":"albin-trap-white","name":"Piège Albin : attention à ...Fb4+","tag":"Après ...e5","moves":"d2d4 d7d5 c2c4 e7e5 d4e5 d5d4 e2e3 f8b4 c1d2 d4e3 d2b4 e3f2 e1e2 f2g1n","note":"Piège historique : l’enchaînement ...dxe3, ...exf2+ puis sous-promotion tactique illustre le danger du pion passé."},
+ {"id":"albin-4nf3-bb4","name":"Albin : 4.Cf3 avec ...Fb4+","tag":"Après ...e5","moves":"d2d4 d7d5 c2c4 e7e5 d4e5 d5d4 g1f3 f8b4 c1d2 b4d2 d1d2 b8c6 g2g3","note":"Le fou blanc reprend en d2. Priorité au roi et au développement plutôt qu’à la conservation d’e5."},
+ {"id":"albin-3dxe5-quick","name":"Albin : 3.dxe5 et 3...Cc6","tag":"Après ...e5","moves":"d2d4 d7d5 c2c4 e7e5 d4e5 b8c6 g1f3 d5d4 g2g3 c8g4 f1g2","note":"Une alternative noire à ...d4 immédiat : le cavalier vient en c6."},
+ {"id":"englund","name":"Gambit Englund : 1...e5","tag":"Autres ...e5","moves":"d2d4 e7e5 d4e5 b8c6 g1f3 d8e7 b1c3 c6e5 f3e5 e7e5","note":"Si les Noirs jouent ...e5 dès le premier coup, c’est le gambit Englund et non le contre-gambit Albin."},
+ {"id":"englund-queen","name":"Gambit Englund : échec ...Db4+","tag":"Autres ...e5","moves":"d2d4 e7e5 d4e5 b8c6 g1f3 d8e7 c1f4 e7b4 f4d2 b4b2","note":"Une ligne tactique des Noirs ; développe tes pièces sans oublier b2 et les échecs de dame."},
+ {"id":"budapest","name":"Gambit de Budapest : ...e5 après ...Cf6","tag":"Autres ...e5","moves":"d2d4 g8f6 c2c4 e7e5 d4e5 f6g4 g1f3 b8c6 c1f4 f8b4 b1d2 d8e7","note":"Le Budapest survient après 1.d4 Cf6 2.c4 e5 ; différent du gambit de la dame classique."},
+ {"id":"budapest-g3","name":"Budapest : variante g3","tag":"Autres ...e5","moves":"d2d4 g8f6 c2c4 e7e5 d4e5 f6g4 g1f3 b8c6 g2g3 g4e5 f3e5 c6e5 f1g2","note":"La recapture sur e5 se fait par les cavaliers."},
+ {"id":"qga-3nf3","name":"Gambit accepté : 3.Cf3","tag":"Gambit accepté","moves":"d2d4 d7d5 c2c4 d5c4 g1f3 g8f6 e2e3 e7e6 f1c4 c7c5 e1g1 a7a6","note":"Développe d’abord un cavalier puis récupère c4 avec le fou."},
+ {"id":"qga-3e4","name":"Gambit accepté : 3.e4, grand centre","tag":"Gambit accepté","moves":"d2d4 d7d5 c2c4 d5c4 e2e4 g8f6 b1c3 e7e5 g1f3 e5d4 d1d4","note":"L’occupation agressive par e4 ouvre un combat central très concret."},
+ {"id":"qga-3e3-b5","name":"Gambit accepté : 3.e3 et ...b5","tag":"Gambit accepté","moves":"d2d4 d7d5 c2c4 d5c4 e2e3 b7b5 a2a4 c7c6 a4b5 c6b5 d1f3","note":"La chaîne ...b5, ...c6 peut être attaquée avec a4 puis Df3."},
+ {"id":"qga-3e3-a6","name":"Gambit accepté : 3.e3 puis ...a6","tag":"Gambit accepté","moves":"d2d4 d7d5 c2c4 d5c4 e2e3 a7a6 f1c4 b7b5 c4e2 c8b7 g1f3","note":"Le pion c4 revient au fou dès que les Noirs renoncent à ...b5 immédiat."},
+ {"id":"qgd-3nf3","name":"Gambit refusé : 3.Cf3","tag":"Gambit refusé","moves":"d2d4 d7d5 c2c4 e7e6 g1f3 g8f6 b1c3 f8e7 c1g5 e8g8 e2e3","note":"Une interversion fréquente dans le gambit refusé, sans changement de plan."},
+ {"id":"qgd-lasker","name":"Gambit refusé : défense Lasker","tag":"Gambit refusé","moves":"d2d4 d7d5 c2c4 e7e6 b1c3 g8f6 c1g5 f8e7 e2e3 e8g8 g1f3 h7h6 g5h4 f6e4 h4e7 d8e7","note":"Les Noirs cherchent la simplification par ...Ce4."},
+ {"id":"slav-early-e5","name":"Slave : pointe de centre e5","tag":"Slave","moves":"d2d4 d7d5 c2c4 c7c6 b1c3 g8f6 g1f3 d5c4 a2a4 c8f5 e2e3 e7e6 f1c4","note":"La pression sur e5 peut devenir importante même si le centre commence par ...d5."},
+ {"id":"chigorin-e5","name":"Tchigorine : rupture ...e5","tag":"Autres ...e5","moves":"d2d4 d7d5 c2c4 b8c6 b1c3 e7e5 d4e5 d5d4 c3d5 c8e6","note":"Les Noirs réagissent activement par ...e5, souvent au prix de déséquilibres."}
+);
+repertoire.caro.lines.push(
+ {"id":"caro-main-3e5-short","name":"2.d4 : avance, système Short","tag":"Après 2.d4","moves":"e2e4 c7c6 d2d4 d7d5 e4e5 c8f5 g1f3 e7e6 f1e2 c6c5 e1g1 b8c6 c1e3 c5d4 f3d4","note":"Les Blancs gardent e5, les Noirs attaquent d4 par ...c5. En règle générale, sors le fou c8 avant ...e6."},
+ {"id":"caro-advance-4h4","name":"2.d4 : avance et 4.h4","tag":"Après 2.d4","moves":"e2e4 c7c6 d2d4 d7d5 e4e5 c8f5 h2h4 h7h5 f1d3 f5d3 d1d3 e7e6","note":"4.h4 tente de gagner de l’espace et de gêner le fou noir. ...h5 bloque le pion h adverse."},
+ {"id":"caro-advance-4nc3","name":"2.d4 : avance, 4.Cc3 et g4","tag":"Après 2.d4","moves":"e2e4 c7c6 d2d4 d7d5 e4e5 c8f5 b1c3 e7e6 g2g4 f5g6 g1e2 c6c5 h2h4 h7h5","note":"Les Blancs chassent le fou. En réponse, contre-attaque la base d4 par ...c5."},
+ {"id":"caro-advance-4g4","name":"2.d4 : avance, 4.g4","tag":"Après 2.d4","moves":"e2e4 c7c6 d2d4 d7d5 e4e5 c8f5 g2g4 f5g6 h2h4 h7h5 f1d3 g6d3 d1d3 e7e6","note":"Les Blancs poussent les pions à l’aile roi, mais le centre peut devenir fragile."},
+ {"id":"caro-advance-c5","name":"2.d4 : avance et 3...c5","tag":"Après 2.d4","moves":"e2e4 c7c6 d2d4 d7d5 e4e5 c6c5 c2c3 b8c6 g1f3 c8g4 f1e2 e7e6 e1g1","note":"3...c5 attaque immédiatement la base d4 : une alternative crédible au développement ...Ff5."},
+ {"id":"caro-advance-c5take","name":"2.d4 : avance, 3...c5 4.dxc5","tag":"Après 2.d4","moves":"e2e4 c7c6 d2d4 d7d5 e4e5 c6c5 d4c5 b8c6 g1f3 c8g4 f1e2 e7e6 e1g1","note":"Le pion capturé c5 peut être regagné par les Noirs ; ne le défends pas au détriment du développement."},
+ {"id":"caro-advance-4nf3-qb6","name":"2.d4 : ...Db6 contre l’avance","tag":"Après 2.d4","moves":"e2e4 c7c6 d2d4 d7d5 e4e5 c8f5 g1f3 e7e6 f1e2 c6c5 e1g1 b8c6 c2c3 d8b6","note":"...Db6 attaque d4 et b2 : thème habituel de la Caro-Kann d’avance."},
+ {"id":"caro-classical-4nd7","name":"2.d4 : classique, variante Karpov","tag":"Après 2.d4","moves":"e2e4 c7c6 d2d4 d7d5 b1c3 d5e4 c3e4 b8d7 g1f3 g8f6 e4f6 d7f6 f1d3 c8g4 e1g1","note":"...Cd7 permet de reprendre en f6 par le cavalier et de conserver une structure plus saine."},
+ {"id":"caro-classical-5nf6","name":"2.d4 : classique, 4...Cf6 5.Cxf6+ exf6","tag":"Après 2.d4","moves":"e2e4 c7c6 d2d4 d7d5 b1c3 d5e4 c3e4 g8f6 e4f6 e7f6 g1f3 f8d6 f1d3 e8g8 e1g1","note":"La structure ...exf6 ouvre la colonne e et conserve une paire de fous active."},
+ {"id":"caro-classical-gxf6","name":"2.d4 : Bronstein-Larsen ...gxf6","tag":"Après 2.d4","moves":"e2e4 c7c6 d2d4 d7d5 b1c3 d5e4 c3e4 g8f6 e4f6 g7f6 g1f3 c8g4 f1e2 e7e6 e1g1","note":"...gxf6 crée un déséquilibre fort et la colonne g semi-ouverte."},
+ {"id":"caro-classical-3nd2","name":"2.d4 : 3.Cd2, variante moderne","tag":"Après 2.d4","moves":"e2e4 c7c6 d2d4 d7d5 b1d2 d5e4 d2e4 c8f5 e4g3 f5g6 g1f3 b8d7 h2h4","note":"3.Cd2 évite de bloquer le pion c. Les plans noirs ressemblent à ceux contre 3.Cc3."},
+ {"id":"caro-classical-3nc3-bf5","name":"2.d4 : classique ...Ff5 et h4","tag":"Après 2.d4","moves":"e2e4 c7c6 d2d4 d7d5 b1c3 d5e4 c3e4 c8f5 e4g3 f5g6 h2h4 h7h6 g1f3 b8d7 h4h5 g6h7","note":"Le fou noir reste actif ; la contre-attaque ...c5 demeure la priorité."},
+ {"id":"caro-panov-...g6","name":"2.d4 : Panov et ...g6","tag":"Après 2.d4","moves":"e2e4 c7c6 d2d4 d7d5 e4d5 c6d5 c2c4 g8f6 b1c3 g7g6 g1f3 f8g7 f1e2 e8g8 e1g1","note":"Fianchetto noir contre la pression blanche sur d5 ; vise la case d5 pour bloquer le pion isolé."},
+ {"id":"caro-panov-nc6","name":"2.d4 : Panov, ...Cc6","tag":"Après 2.d4","moves":"e2e4 c7c6 d2d4 d7d5 e4d5 c6d5 c2c4 g8f6 b1c3 b8c6 g1f3 e7e6 f1e2","note":"La pression des Noirs sur d4 et c4 permet parfois de simplifier."},
+ {"id":"caro-exchange-4bd3","name":"2.d4 : échange et 4.Fd3","tag":"Après 2.d4","moves":"e2e4 c7c6 d2d4 d7d5 e4d5 c6d5 f1d3 b8c6 c2c3 g8f6 c1f4 c8g4 d1b3 d8d7","note":"Dans l’échange, développement naturel et pression sur b7. Le fou c8 peut se développer avant ...e6."},
+ {"id":"caro-exchange-4nf3","name":"2.d4 : échange et 4.Cf3","tag":"Après 2.d4","moves":"e2e4 c7c6 d2d4 d7d5 e4d5 c6d5 g1f3 b8c6 f1d3 c8g4 e1g1 e7e6","note":"...Fg4 maintient la tension ; ne tombe pas dans la passivité."},
+ {"id":"caro-fantasy-3f3-ex","name":"2.d4 : fantaisie, 3.f3","tag":"Après 2.d4","moves":"e2e4 c7c6 d2d4 d7d5 f2f3 d5e4 f3e4 e7e5 g1f3 e5d4 d1d4 d8d4 f3d4","note":"Les Blancs renforcent e4 par f3, au prix de cases affaiblies ; ...e5 est une rupture centrale active."},
+ {"id":"caro-fantasy-3f3-e6","name":"2.d4 : fantaisie, réponse ...e6","tag":"Après 2.d4","moves":"e2e4 c7c6 d2d4 d7d5 f2f3 e7e6 b1c3 f8b4 e4e5 g8e7","note":"La réponse ...e6 conserve le centre et vise l’attaque sur d4."},
+ {"id":"caro-2d4-2g6","name":"2.d4 : réponse alternative ...g6","tag":"Après 2.d4","moves":"e2e4 c7c6 d2d4 g7g6 b1c3 d7d5 e4e5 f8g7 g1f3 g8h6","note":"Une formation hybride qui peut transposer ; ...d5 reste la rupture structurante."},
+ {"id":"caro-2d4-2d6","name":"2.d4 : alternative ...d6","tag":"Après 2.d4","moves":"e2e4 c7c6 d2d4 d7d6 g1f3 b8d7 f1d3 e7e5 e1g1 g8f6","note":"Les Noirs diffèrent la poussée ...d5 et peuvent adopter une formation type Pirc/Philidor."},
+ {"id":"caro-2d4-2e5","name":"2.d4 : tentative ...e5","tag":"Après 2.d4","moves":"e2e4 c7c6 d2d4 e7e5 g1f3 e5d4 f3d4 d7d5 e4d5 g8f6","note":"Une réponse non standard : il faut calculer le centre et non appliquer automatiquement ...Ff5."},
+ {"id":"caro-2d4-3bd3","name":"2.d4 : système 3.Fd3","tag":"Après 2.d4","moves":"e2e4 c7c6 d2d4 d7d5 f1d3 d5e4 d3e4 g8f6 e4d3 c8g4 g1f3 e7e6","note":"3.Fd3 laisse la possibilité ...dxe4 ; le fou blanc recapture."},
+ {"id":"caro-2d4-3f4","name":"2.d4 : attaque 3.f4","tag":"Après 2.d4","moves":"e2e4 c7c6 d2d4 d7d5 f2f4 d5e4 b1c3 g8f6 f1c4 c8f5","note":"3.f4 renforce l’espace blanc mais n’interdit pas ...dxe4."},
+ {"id":"caro-2d4-3nf3","name":"2.d4 : 3.Cf3","tag":"Après 2.d4","moves":"e2e4 c7c6 d2d4 d7d5 g1f3 d5e4 f3g5 g8f6 b1c3 c8f5","note":"3.Cf3 donne le pion e4 si les Blancs n’y prennent garde."},
+ {"id":"caro-2d4-3c4","name":"2.d4 : attaque 3.c4","tag":"Après 2.d4","moves":"e2e4 c7c6 d2d4 d7d5 c2c4 d5e4 b1c3 g8f6 c1g5 c8f5","note":"3.c4 renforce le centre mais peut mener à des positions ouvertes ; ...dxe4 est possible."},
+ {"id":"caro-1d4","name":"Contre 1.d4 : 1...c6 2.e4","tag":"Transposition depuis 1.d4","moves":"d2d4 c7c6 e2e4 d7d5 b1c3 d5e4 c3e4 c8f5","note":"Si tu joues 1...c6 contre 1.d4 et que les Blancs jouent e4, tu peux transposer vers une vraie Caro-Kann."},
+ {"id":"caro-1d4-slav","name":"Contre 1.d4 : 1...c6 2.c4","tag":"Transposition depuis 1.d4","moves":"d2d4 c7c6 c2c4 d7d5 b1c3 g8f6 g1f3 e7e6","note":"Après 1.d4 c6 2.c4 d5, on transpose plutôt vers la slave/semi-slave : ce n’est plus une Caro-Kann au sens strict."},
+ {"id":"caro-1d4-london","name":"Contre 1.d4 : système de Londres","tag":"Transposition depuis 1.d4","moves":"d2d4 c7c6 c1f4 d7d5 e2e3 g8f6 g1f3 c8f5","note":"Contre 1.d4 sans e4, ...c6 prépare ...d5 mais la structure est d’un autre type."},
+ {"id":"caro-2nc3-d4","name":"Caro-Kann : 2.Cc3 puis d4","tag":"Sans 2.d4 immédiat","moves":"e2e4 c7c6 b1c3 d7d5 d2d4 d5e4 c3e4 c8f5","note":"Les Blancs peuvent retarder d4 sans éviter une transposition vers la variante classique."},
+ {"id":"caro-2nf3-d4","name":"Caro-Kann : 2.Cf3 puis d4","tag":"Sans 2.d4 immédiat","moves":"e2e4 c7c6 g1f3 d7d5 d2d4 d5e4 f3g5 g8f6","note":"L’ordre de coups change les ressources tactiques : après ...dxe4, il faut vérifier la recapture."}
+);
 if(typeof module!=='undefined')module.exports=repertoire;
 
 (function(){
@@ -216,7 +299,7 @@ function bookCandidates(s){
  return Array.from(d.values()).sort((a,b)=>Number(b.ids.has(selected))-Number(a.ids.has(selected))||b.also.length-a.also.length||a.san.localeCompare(b.san));
 }
 function reset(){states=[R.parseFen(R.initial)];moves=[];cursor=0;selectedSquare=-1;promotionMoves=null;customFEN=false;notice='';lastMoveWasInBook=true;render();}
-function changeFamily(f){if(!repertoire[f])return;family=f;selected=repertoire[f].lines[0].id;flipped=repertoire[f].side==='b';reset();renderVariants();renderSelect();}
+function changeFamily(f){if(!repertoire[f])return;family=f;selected=repertoire[f].lines[0].id;flipped=repertoire[f].side==='b';reset();resetCatalogue();renderVariants();renderSelect();renderQuick();}
 function chooseVariation(id){const line=allLines.find(x=>x.id===id&&x.familyId===family);if(!line)return;selected=id;reset();renderVariants();renderSelect();notice='Variante chargée : '+line.variation.name;render();document.getElementById('atelier').scrollIntoView({behavior:'smooth',block:'start'});}
 function jumpToFork(){
  const l=selectedLine();if(!l)return;
@@ -297,6 +380,9 @@ function renderBoard(){
 function contextualTip(s){
  const b=s.b,ep=R.idx;
  if(family==='queen'){
+  if(b[ep('d4')]==='p'&&b[ep('e5')]==='P')return 'Contre-gambit <strong>Albin</strong> : les Noirs ont avancé leur pion en <strong>d4</strong>. La suite la plus pédagogique est <strong>Cf3</strong>, puis développement et roque. Méfiez-vous de <strong>e3?!</strong> : le piège <strong>...Fb4+</strong> est tactiquement dangereux.';
+  if(b[ep('e5')]==='p'&&b[ep('c4')]==='P'&&b[ep('d4')]==='P')return 'Après <strong>1.d4 d5 2.c4 e5</strong>, vous affrontez le contre-gambit <strong>Albin</strong>. Le coup le plus direct est <strong>dxe5</strong> ; anticipez <strong>...d4</strong>.';
+  if(b[ep('e5')]==='p'&&b[ep('d5')]==='.'&&b[ep('c4')]==='P')return 'Les Noirs jouent <strong>...e5</strong> contre votre centre : vérifiez les captures et l’activité du fou avant de pousser vos pions.';
   if(b[ep('c4')]==='p'){
    if(b[ep('b5')]==='p'&&s.t===1&&b[ep('a2')]==='P')return 'Les Noirs cherchent à conserver c4 avec ...b5 : <strong>a4 !</strong> attaque le pion qui le défend. Si ...c6 puis axb5 cxb5, pensez à Df3.';
    if(s.t===1&&b[ep('e2')]==='P')return 'Le pion c4 a été capturé : <strong>e3</strong> libère votre fou f1, qui peut ensuite reprendre en c4.';
@@ -306,6 +392,8 @@ function contextualTip(s){
   if(s.full>10)return 'À partir du milieu de partie : coordonnez tours et dame, cherchez une colonne ouverte, et évaluez les ruptures centrales e4 ou cxd5.';
   return 'Idée : <strong>contrôler d4 et e4</strong>, développer Cc3/Cf3, sortir le fou et roquer. Adaptez-vous au dernier coup adverse.';
  }
+ if(b[ep('d4')]==='P'&&b[ep('c6')]==='p'&&b[ep('d5')]==='p'&&s.t===1)return 'Après <strong>1.e4 c6 2.d4 d5</strong>, attendez le troisième coup blanc : sur <strong>3.e5</strong>, développez ...Ff5 ou attaquez directement par ...c5 ; sur <strong>3.Cc3</strong> et <strong>3.Cd2</strong>, ...dxe4 est fréquent ; sur <strong>3.exd5</strong>, ...cxd5.';
+ if(b[ep('d4')]==='P'&&b[ep('c6')]==='p'&&b[ep('d7')]==='p'&&s.t===-1)return 'Les Blancs ont joué <strong>d4</strong> : dans la Caro-Kann, répondez le plus souvent par <strong>...d5</strong> afin d’attaquer e4. Les autres coups ne transposent pas nécessairement dans la variante principale.';
  if(b[ep('e5')]==='P'&&b[ep('d5')]==='p')return 'La variante d’avance : le pion blanc <strong>e5</strong> gêne votre développement. Attaquez la base <strong>d4</strong>, souvent avec ...Ff5, ...e6 puis ...c5.';
  if(b[ep('e4')]==='P'&&b[ep('c6')]==='p'&&b[ep('d5')]==='p')return 'Vous attaquez le centre e4 : si le pion blanc reste en e4, la capture <strong>...dxe4</strong> est souvent un choix principiel, avant le développement de ...Ff5.';
  if(b[ep('c6')]==='p'&&b[ep('d7')]==='p')return 'Après 1.e4 c6, la suite de principe est <strong>...d5</strong>, afin de contester le centre. Ne bloquez pas votre fou c8 trop tôt.';
@@ -323,11 +411,11 @@ function renderAdvice(){
  const el=$('book-choices');el.innerHTML='';
  if(status.end){$('reco-text').textContent='La partie est terminée. Revenir en arrière permet de reprendre l’analyse.';}
  else if(book.length){$('reco-text').textContent=`${book.length} continuation${book.length>1?'s':''} issue${book.length>1?'s':''} de notre répertoire. Ce sont des idées théoriques, pas une évaluation de moteur.`;
-  for(const cand of book.slice(0,7)){
+  for(const cand of book.slice(0,12)){
    const b=document.createElement('button');b.className='choice';b.type='button';const m=R.legal(s).find(x=>R.key(x)===cand.move);if(!m)continue;
    const label=document.createElement('strong');label.textContent=R.moveLabel(s,m);
    const desc=document.createElement('span');desc.textContent=cand.ids.has(selected)?'dans la ligne sélectionnée':'autre branche';
-   b.append(label,desc);b.title=cand.also.join(' · ');b.addEventListener('click',()=>commit(m));el.append(b);
+   b.append(label,desc);b.title=cand.also.join(' · ')+' — '+cand.variation.note;b.addEventListener('click',()=>commit(m));el.append(b);
   }
  }else{$('reco-text').textContent='Cette position sort des variantes enregistrées. L’échiquier reste entièrement jouable : examinez les menaces, les échecs et les captures avant de choisir.';}
  const list=$('legal-choices');list.innerHTML='';
@@ -353,9 +441,33 @@ function renderHistory(){
  /* L'historique reste dans sa zone sans deplacer toute la page. */
 }
 function renderSelect(){const select=$('variation'),lines=activeEntry().lines;select.innerHTML='';for(const v of lines){const opt=document.createElement('option');opt.value=v.id;opt.textContent=v.name;select.append(opt);}select.value=selected;}
-function renderVariants(){const grid=$('variants-grid');grid.innerHTML='';for(const [j,v] of activeEntry().lines.entries()){
- const b=document.createElement('button');b.className='variant-card'+(v.id===selected?' active':'');b.type='button';const n=document.createElement('span');n.className='variant-number';n.textContent=String(j+1).padStart(2,'0')+' · '+v.tag;const title=document.createElement('strong');title.textContent=v.name;const desc=document.createElement('small');desc.textContent=v.note;const footer=document.createElement('span');footer.className='load';footer.textContent='Étudier cette ligne ↗';b.append(n,title,desc,footer);b.addEventListener('click',()=>chooseVariation(v.id));grid.append(b);
+function searchable(v){return (v.name+' '+v.tag+' '+v.note+' '+v.moves).toLocaleLowerCase('fr').normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
+function resetCatalogue(){
+ $('variant-search').value='';const select=$('variant-filter');select.innerHTML='';
+ const options=family==='queen'?[['all','Toutes les branches'],['albin','Albin · ...e5'],['autres ...e5','Englund / Budapest / autres ...e5'],['gambit accepté','Gambit accepté · ...dxc4'],['gambit refusé','Gambit refusé'],['slave','Slave et semi-slave']]:[['all','Toutes les branches'],['après 2.d4','Après 2.d4'],['transposition depuis 1.d4','Contre 1.d4'],['sans 2.d4','Sans 2.d4 immédiat']];
+ for(const [val,label] of options){const option=document.createElement('option');option.value=val;option.textContent=label;select.append(option);}
+ select.value='all';
+}
+function renderVariants(){
+ const grid=$('variants-grid'),search=$('variant-search').value.toLocaleLowerCase('fr').normalize('NFD').replace(/[\u0300-\u036f]/g,''),filter=$('variant-filter').value;
+ grid.innerHTML='';let visible=0;
+ for(const [j,v] of activeEntry().lines.entries()){
+  if(search&&!searchable(v).includes(search))continue;
+  if(filter!=='all'&&!((filter==='albin'&&(v.id.startsWith('albin')||v.id==='albin'))||(v.tag.toLocaleLowerCase('fr').includes(filter.toLocaleLowerCase('fr'))||(filter==='gambit accepté'&&v.id.startsWith('qga')))||(filter==='gambit refusé'&&v.id.startsWith('qgd'))||(filter==='slave'&&(v.id.startsWith('slav')||v.id==='semi'))||(filter==='après 2.d4'&&v.moves.startsWith('e2e4 c7c6 d2d4'))||(filter==='transposition depuis 1.d4'&&v.moves.startsWith('d2d4 c7c6'))||(filter==='sans 2.d4'&&!v.moves.startsWith('e2e4 c7c6 d2d4')&&!v.moves.startsWith('d2d4 c7c6'))))continue;
+  visible++;
+  const b=document.createElement('button');b.className='variant-card'+(v.id===selected?' active':'');b.type='button';const n=document.createElement('span');n.className='variant-number';n.textContent=String(j+1).padStart(2,'0')+' · '+v.tag;const title=document.createElement('strong');title.textContent=v.name;const desc=document.createElement('small');desc.textContent=v.note;const footer=document.createElement('span');footer.className='load';footer.textContent='Étudier cette ligne ↗';b.append(n,title,desc,footer);b.addEventListener('click',()=>chooseVariation(v.id));grid.append(b);
+ }
+ $('variant-count').textContent=visible+' / '+activeEntry().lines.length+' variantes';
+}
+const quicks={
+ queen:[['albin-nf3',4,'2...e5','Contre-gambit Albin'],['albin-nf3',6,'3...d4','Pion noir avancé'],['albin-e3',8,'4.e3','Piège à étudier'],['qga',4,'2...dxc4','Gambit accepté']],
+ caro:[['caro-main-3e5-short',4,'2.d4 d5','Choix du 3e coup'],['caro-main-3e5-short',6,'3.e5','Variante d’avance'],['caro-panov-...g6',8,'4.c4','Attaque Panov'],['caro-1d4',2,'1.d4 c6','Transposition possible']]
+};
+function renderQuick(){const el=$('quick-positions');el.innerHTML='';for(const [id,n,title,note] of quicks[family]){
+ const btn=document.createElement('button');btn.type='button';btn.className='quick-link';btn.innerHTML='<strong></strong><small></small>';btn.querySelector('strong').textContent=title;btn.querySelector('small').textContent=note;
+ btn.addEventListener('click',()=>{const line=allLines.find(x=>x.id===id&&x.familyId===family);if(!line)return;selected=id;reset();const limit=Math.min(n,line.moves.length);for(let i=0;i<limit;i++)commit(line.moves[i],false);notice='Position clé : '+title+'. Jouez maintenant la réponse que vous voulez.';renderSelect();renderVariants();render();$('atelier').scrollIntoView({behavior:'smooth',block:'start'});});el.append(btn);
 }}
+
 function render(){
  $('mode-queen').classList.toggle('active',family==='queen');$('mode-caro').classList.toggle('active',family==='caro');
  $('mode-queen').setAttribute('aria-pressed',family==='queen');$('mode-caro').setAttribute('aria-pressed',family==='caro');
@@ -381,7 +493,8 @@ $('fen-load').addEventListener('click',()=>{try{const s=R.parseFen($('fen-input'
 $('promotion-cancel').addEventListener('click',closePromotion);
 $('promotion-overlay').addEventListener('click',e=>{if(e.target===$('promotion-overlay'))closePromotion();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&promotionMoves){closePromotion();return;}if(['INPUT','SELECT','TEXTAREA','BUTTON'].includes(document.activeElement?.tagName))return;if(e.key==='ArrowLeft'){e.preventDefault();back();}if(e.key==='ArrowRight'){e.preventDefault();advance();}});
-initBook();renderSelect();renderVariants();render();
+$('variant-search').addEventListener('input',renderVariants);$('variant-filter').addEventListener('change',renderVariants);
+initBook();resetCatalogue();renderSelect();renderVariants();renderQuick();render();
 })();
 
 </script>
