@@ -40,6 +40,7 @@
 #variants-grid:empty:after{content:'Aucune variante trouvée.';font-size:13px;color:var(--muted)}
 
 .branch-map{margin:24px 0 36px}.branch-map .graph-shell{background:white;border:1px solid var(--line);border-radius:16px;overflow:auto;max-height:760px;box-shadow:inset 0 1px 0 #fff}.branch-map .graph-toolbar{display:flex;gap:14px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin:0 0 14px}.branch-map .graph-stats{font-size:12px;color:var(--muted);font-weight:700}.branch-map .graph-note{font-size:12px;color:var(--muted);margin-top:10px}.graph-svg{display:block;min-width:100%;background:linear-gradient(180deg,#fffdfb 0%,#faf7f2 100%)}.graph-edge{stroke:#c7b8a6;stroke-width:1.6;fill:none}.graph-node{cursor:pointer}.graph-node circle{fill:#fff;stroke:#8b0000;stroke-width:1.6}.graph-node text{font-family:'DM Sans',system-ui,sans-serif;fill:#3d3f3b}.graph-node .mv{font-size:12px;font-weight:700}.graph-node .ct{font-size:10px;fill:#8a877f}.graph-node.root circle{fill:#8b0000}.graph-node.root .mv,.graph-node.root .ct{fill:#fff}.graph-node.current circle{fill:#f5e0c8;stroke:#9b5c34;stroke-width:2.2}.graph-node:hover circle{fill:#f8f0e5}.graph-legend{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:#6f726d}.legend-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid #e1dbd1;border-radius:999px;background:#fff}.legend-dot{width:10px;height:10px;border-radius:50%;display:inline-block;background:#8b0000}.legend-dot.current{background:#c49058}.graph-empty{padding:22px;color:var(--muted);font-size:13px}
+.coach-picker{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:9px 0 13px;color:#555c55;font-size:12px;font-weight:700}.coach-picker select{min-width:120px;max-width:210px;padding:8px 10px;border-radius:8px;border:1px solid #d9cec1;background:#fff;color:#4b3028}.square.suggested-from:not(.selected){box-shadow:inset 0 0 0 4px #2e734dd8}.square.suggested-to:not(.selected){box-shadow:inset 0 0 0 4px #2e734d80}.square .suggest-label{position:absolute;right:2px;top:2px;font-size:10px;line-height:1;font-weight:900;color:#155b39;background:#d8f1db;padding:2px 3px;border-radius:3px;z-index:3;pointer-events:none}.coach-tip{font-size:12px;margin-top:8px;color:#6b675f}
 @media(max-width:920px){.quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:540px){.quick-grid{grid-template-columns:1fr 1fr}.quick-link{padding:8px}.quick-section{padding:15px}.catalog-tools>*{width:100%;max-width:none}}
 
@@ -53,7 +54,7 @@
 <section class="hero" aria-labelledby="hero-title"><div class="hero-copy"><span class="eyebrow">Culture · Stratégie · Jeux d'esprit</span><h1 id="hero-title">L'art des<br><em>64 cases.</em></h1><p>Deux ouvertures, une infinité de décisions : le gambit de la dame avec les Blancs et la Caro-Kann avec les Noirs. Rejouez les grandes idées, changez les réponses de l'adversaire et étudiez les positions qui en découlent.</p><a class="hero-chip" href="#atelier"><span class="dots"></span> Entrer dans l'atelier interactif ↓</a></div><div class="hero-art" aria-hidden="true"><div class="chess-art"><span>♞</span></div><div class="art-tag">L'atelier des ouvertures</div></div></section>
 <div class="intro-strip"><div class="intro-stat"><strong>2</strong><span>ouvertures étudiées</span></div><div class="intro-stat"><strong id="stat-lines">77</strong><span>branches théoriques étudiées</span></div><div class="intro-stat"><strong>40</strong><span>coups visés, puis jeu libre</span></div><div class="intro-stat"><strong>♟</strong><span>Stockfish pour les deux camps</span></div></div>
 <section id="atelier" class="lab" aria-labelledby="lab-title">
-<div class="section-head"><div><span class="eyebrow">Le laboratoire</span><h2 id="lab-title">Un échiquier qui s'adapte.</h2><p>Tu peux jouer librement les coups des deux camps. Pour obtenir des coups réellement calculés, active Stockfish : il analyse chaque nouvelle position et peut faire jouer automatiquement les deux camps jusqu’à 40 coups. Le graphe conserve les variantes théoriques, sans présenter les simples coups légaux comme des recommandations.</p></div></div>
+<div class="section-head"><div><span class="eyebrow">Le laboratoire</span><h2 id="lab-title">Un échiquier qui s'adapte.</h2><p>Des coups sont proposés automatiquement pour le camp que tu étudies : les Blancs avec le gambit de la dame, les Noirs avec la Caro-Kann. Tu peux changer de camp, déplacer les deux joueurs et activer Stockfish pour une analyse calculée. Les propositions théoriques ne sont jamais présentées comme des certitudes mathématiques.</p></div></div>
 <div class="lab-header"><div class="segmented" role="group" aria-label="Choisir l'ouverture"><button id="mode-queen" class="active" aria-pressed="true" type="button">♙ Gambit de la dame</button><button id="mode-caro" type="button" aria-pressed="false">♟ Défense Caro-Kann</button></div><div class="selectors"><label for="variation">Variante étudiée</label><select id="variation" aria-label="Choisir une variante"></select></div></div>
 <div class="quick-section"><div class="quick-title"><strong>Positions clés à explorer</strong><span>Choisissez une bifurcation puis jouez la réponse adverse.</span></div><div id="quick-positions" class="quick-grid"></div></div>
 <div class="lab-body">
@@ -66,8 +67,8 @@
 </div>
 <div class="side-area">
 <section class="panel"><div class="mini-kicker" id="side-eyebrow">Le plan des Blancs</div><h3 id="active-title">Gambit de la dame</h3><p id="opening-intro"></p><div class="cue" id="strategy-box"></div><p id="last-feedback" class="status-line" style="margin-top:13px"></p></section>
-<section class="panel"><div class="mini-kicker">Réponses adaptées à la position</div><h3>Quelles suites choisir ?</h3><p id="reco-text"></p><div id="book-choices" class="choice-list"></div><details style="margin-top:15px"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--wine)">Afficher tous les coups légaux</summary><div class="choice-list all-legal" id="legal-choices"></div></details></section>
-<section class="panel engine-panel"><div class="mini-kicker">Analyse vérifiable</div><h3>Stockfish · Coups calculés</h3><p>Les coups proposés par le moteur sont calculés pour le camp au trait, et non choisis au hasard. Les deux camps utilisent la même méthode de recherche.</p>
+<section class="panel"><div class="mini-kicker">Guide interactif</div><h3>Coups proposés pour ton camp</h3><label class="coach-picker" for="coach-side">Je veux des conseils pour <select id="coach-side" aria-label="Camp conseillé"><option value="1">les Blancs</option><option value="-1">les Noirs</option><option value="0">les deux camps</option></select></label><p id="reco-text" aria-live="polite"></p><div id="book-choices" class="choice-list"></div><details style="margin-top:15px"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--wine)">Afficher tous les coups légaux</summary><div class="choice-list all-legal" id="legal-choices"></div></details></section>
+<section class="panel engine-panel"><div class="mini-kicker">Analyse vérifiable</div><h3>Stockfish · Coups calculés</h3><p>Les coups du moteur sont calculés pour le camp au trait. Sans moteur, le guide affiche immédiatement les coups des variantes théoriques et, hors répertoire, peut consulter les parties de maîtres. Aucun coup n’est présenté comme optimal sans analyse.</p>
 <div class="tools-grid"><button class="btn primary" type="button" id="engine-start">Activer Stockfish</button><button class="btn" type="button" id="engine-play" disabled>Jouer le 1er choix Stockfish</button><button class="btn" type="button" id="engine-auto" disabled>Faire jouer les deux camps</button><button class="btn" type="button" id="engine-pause" disabled>Pause</button></div>
 <label for="engine-time" class="mini-kicker" style="display:block;margin-top:15px">Temps de réflexion par coup</label><select id="engine-time" class="engine-time"><option value="1000">1 seconde · rapide</option><option value="2500" selected>2,5 secondes · équilibré</option><option value="5000">5 secondes · plus précis</option></select>
 <p id="engine-status" class="engine-status" role="status" aria-live="polite">Moteur non activé. Aucun coup n'est présenté comme optimal sans calcul.</p><div id="engine-lines" class="engine-lines"></div><p class="engine-credits">Stockfish 19 Lite (WASM, secours ASM-JS). Nécessite Internet. <a href="https://github.com/nmrugg/stockfish.js" target="_blank" rel="noopener noreferrer">Moteur libre GPL-3.0</a>. Un score de moteur n’est pas une preuve de perfection.</p></section>
@@ -81,7 +82,7 @@
 <section aria-labelledby="principes"><span class="eyebrow">Trois principes à retenir</span><h2 id="principes">Comprendre avant de mémoriser.</h2><div class="lesson-cards"><article class="lesson"><small>01 · Le centre</small><h3>Ce qui compte, ce sont les cases.</h3><p>Le centre e4, d4, e5 et d5 gouverne la mobilité des pièces. Un pion offert peut être moins important que le temps de développement gagné.</p></article><article class="lesson"><small>02 · Le tempo</small><h3>Développer sans se disperser.</h3><p>Sortir les pièces, mettre son roi à l'abri, puis relier les tours. Ne pars pas à la chasse aux pions si cela laisse ton roi exposé.</p></article><article class="lesson"><small>03 · La réponse</small><h3>Aucun coup n'est automatique.</h3><p>À chaque nouveau coup adverse, examine la menace, les captures et les échecs. Le répertoire illustre des plans, il ne remplace pas un calcul concret.</p></article></div></section>
 <section class="faq"><details open><summary>Les Noirs prennent c4 après 1.d4 d5 2.c4 ?</summary><p>On obtient le <strong>gambit de la dame accepté</strong>. Un plan facile pour les Blancs est <strong>3.e3</strong>, suivi de <strong>Fxc4</strong> quand cela est possible. Si les Noirs défendent c4 par ...b5, réponds souvent <strong>a4</strong> pour attaquer le soutien du pion. Sélectionne « Gambit accepté · les Noirs gardent c4 » pour visualiser cette idée.</p></details><details open><summary>Comment jouer la Caro-Kann avec les Noirs ?</summary><p>Après <strong>1.e4 c6 2.d4 d5</strong>, réponds à 3.Cc3 ou 3.Cd2 par <strong>...dxe4</strong> puis souvent <strong>...Ff5</strong>. Contre 3.e5, développe généralement le fou en <strong>f5</strong>, puis prépare <strong>...e6</strong> et <strong>...c5</strong> pour attaquer la chaîne de pions.</p></details></section>
 <section class="faq"><details><summary>Que faire si les Blancs jouent 2.d4 dans la Caro-Kann ?</summary><p>La réponse de principe est <strong>2...d5</strong>. Ensuite, il faut distinguer <strong>3.e5</strong> (pion avancé, attaquer d4 par ...c5), <strong>3.Cc3 / 3.Cd2</strong> (souvent ...dxe4), <strong>3.exd5</strong> (recapturer ...cxd5) et <strong>3.f3</strong> (variante fantaisie). Vous pouvez aussi analyser la transposition <strong>1.d4 c6 2.e4 d5</strong>.</p></details><details><summary>Que signifie ...e5 contre le gambit de la dame ?</summary><p>Après <strong>1.d4 d5 2.c4 e5</strong>, c’est le <strong>contre-gambit Albin</strong>. Après <strong>3.dxe5 d4</strong>, les Noirs obtiennent un pion avancé dangereux ; comparez <strong>4.Cf3</strong>, <strong>4.a3</strong> et <strong>4.e3</strong>. Attention : <strong>1.d4 e5</strong> correspond au gambit Englund et <strong>1.d4 Cf6 2.c4 e5</strong> au gambit de Budapest.</p></details></section>
-<footer class="site-footer">Blog de l'intranquilité · Culture · Échecs. Le répertoire contient des variantes théoriques éditoriales. Pour une recommandation calculée, activez Stockfish ; les coups de maîtres proviennent de la base Lichess et ne garantissent pas à eux seuls le meilleur jeu. Stockfish est un moteur de forte qualité mais ne démontre pas le jeu parfait. Le compteur va jusqu’à 40 coups ; le jeu libre reste possible au-delà. Références : <a href="https://lichess.org/analysis" target="_blank" rel="noopener noreferrer">Lichess Analyse</a> et <a href="https://lichess.org/opening" target="_blank" rel="noopener noreferrer">Lichess Ouvertures</a>. La page valide les coups légaux et peut lancer Stockfish pour calculer des continuations depuis la position choisie.</footer>
+<footer class="site-footer">Blog de l'intranquilité · Culture · Échecs. Le répertoire contient des variantes théoriques éditoriales. Le guide propose automatiquement des coups connus pour le camp choisi. Pour les évaluer, activez Stockfish ; les coups de maîtres proviennent de Lichess et ne garantissent pas à eux seuls le meilleur jeu. Stockfish est un moteur de forte qualité mais ne démontre pas le jeu parfait. Le compteur va jusqu’à 40 coups ; le jeu libre reste possible au-delà. Références : <a href="https://lichess.org/analysis" target="_blank" rel="noopener noreferrer">Lichess Analyse</a> et <a href="https://lichess.org/opening" target="_blank" rel="noopener noreferrer">Lichess Ouvertures</a>. La page valide les coups légaux et peut lancer Stockfish pour calculer des continuations depuis la position choisie.</footer>
 </main>
 <div id="promotion-overlay" class="promotion-overlay" role="dialog" aria-modal="true" aria-labelledby="promotion-title"><div class="promotion-dialog"><h3 id="promotion-title">Choisir la promotion</h3><p class="muted">Par quelle pièce voulez-vous remplacer votre pion ?</p><div id="promotion-choices" class="promotion-choices"></div><button class="btn" id="promotion-cancel" type="button" style="margin-top:14px">Annuler</button></div></div>
 <script>
@@ -283,11 +284,11 @@ const GLYPH={K:'♔',Q:'♕',R:'♖',B:'♗',N:'♘',P:'♙',k:'♚',q:'♛',r:'
 const PIECES={k:'roi',q:'dame',r:'tour',b:'fou',n:'cavalier',p:'pion'};
 const $=id=>document.getElementById(id);
 const posKey=s=>R.positionKey(s);
-let family='queen',selected='qgd',flipped=false,selectedSquare=-1,promotionMoves=null;
+let family='queen',selected='qgd',flipped=false,selectedSquare=-1,promotionMoves=null,coachSide=1;
 let states=[R.parseFen(R.initial)],moves=[],cursor=0,customFEN=false,notice='',lastMoveWasInBook=true;
 const books=new Map();let allLines=[];
 const engine={worker:null,url:null,loading:false,ready:false,mode:0,pending:null,cache:new Map(),auto:false,latest:null,error:''};
-const mastersCache=new Map(),mastersBranches=new Map();
+const mastersCache=new Map(),mastersBranches=new Map(),autoMasterRequested=new Set();
 function positionFen(){return R.fen(current());}
 function getEngineMoves(){return engine.cache.get(positionFen())||null;}
 function engineMoveFor(s,uci){return R.legal(s).find(m=>R.key(m)===uci);}
@@ -404,7 +405,7 @@ function drawMasters(data,key){
   b.title='Fréquence observée chez les maîtres, non garanti meilleur coup';
   b.addEventListener('click',()=>{engine.auto=false;commit(m);});el.append(b);
  }
- renderGraph();
+ renderGraph();renderAdvice();renderBoard();
 }
 
 function initBook(){
@@ -432,8 +433,32 @@ function bookCandidates(s){
  for(const c of list){let v=d.get(c.move);if(!v){v={...c,also:[c.variation.name],ids:new Set([c.variation.id])};d.set(c.move,v);}else{v.also.push(c.variation.name);v.ids.add(c.variation.id);if(c.variation.id===selected){v.variation=c.variation;v.ply=c.ply;}}}
  return Array.from(d.values()).sort((a,b)=>Number(b.ids.has(selected))-Number(a.ids.has(selected))||b.also.length-a.also.length||a.san.localeCompare(b.san));
 }
+/* Choix traçables : moteur > théorie répertoriée > fréquence dans les parties de maîtres.
+   Jamais de recommandation heuristique inventée ; tout coup est revérifié comme légal. */
+function masterCandidates(s){
+ const key=moves.slice(0,cursor).map(m=>m.uci).join(',')||'start';
+ const data=mastersCache.get(key);if(!data?.moves)return [];
+ return data.moves.filter(v=>v.white+v.draws+v.black>=3)
+  .sort((a,b)=>(b.white+b.draws+b.black)-(a.white+a.draws+a.black))
+  .map(v=>({...v,m:engineMoveFor(s,v.uci)})).filter(v=>!!v.m).slice(0,3);
+}
+function candidateSuggestions(s){
+ const analysis=getEngineMoves();
+ if(analysis?.variants?.length){const arr=analysis.variants.map(v=>({m:engineMoveFor(s,v.uci),source:'moteur',detail:v.depth?'Profondeur '+v.depth:'Analyse Stockfish'})).filter(v=>v.m);if(arr.length)return arr.slice(0,3);}
+ const theory=bookCandidates(s).slice(0,3).map(v=>({m:engineMoveFor(s,v.move),source:'théorie',detail:v.also.length+' ligne'+(v.also.length>1?'s':'')+' du répertoire',note:v.variation.note})).filter(v=>v.m);
+ if(theory.length)return theory;
+ return masterCandidates(s).map(v=>({m:v.m,source:'maîtres',detail:(v.white+v.draws+v.black).toLocaleString('fr-FR')+' parties'}));
+}
+function autoLoadMasterIfNeeded(){
+ const s=current();if(s.t!==coachSide&&coachSide!==0)return;
+ if(R.status(states.slice(0,cursor+1)).end||candidateSuggestions(s).length||customFEN||R.fen(states[0])!==R.initial)return;
+ const key=moves.slice(0,cursor).map(m=>m.uci).join(',')||'start';
+ if(autoMasterRequested.has(key)||mastersCache.has(key))return;
+ autoMasterRequested.add(key);
+ setTimeout(()=>{const cur=moves.slice(0,cursor).map(m=>m.uci).join(',')||'start';if(cur===key&&!engine.pending&&!candidateSuggestions(current()).length)loadMasters();},250);
+}
 function reset(){stopEngine();states=[R.parseFen(R.initial)];moves=[];cursor=0;selectedSquare=-1;promotionMoves=null;customFEN=false;notice='';lastMoveWasInBook=true;render();requestEngine();}
-function changeFamily(f){if(!repertoire[f])return;family=f;selected=repertoire[f].lines[0].id;flipped=repertoire[f].side==='b';reset();resetCatalogue();renderVariants();renderSelect();renderQuick();render();}
+function changeFamily(f){if(!repertoire[f])return;family=f;selected=repertoire[f].lines[0].id;flipped=repertoire[f].side==='b';coachSide=f==='queen'?1:-1;$('coach-side').value=String(coachSide);reset();resetCatalogue();renderVariants();renderSelect();renderQuick();render();}
 function chooseVariation(id){const line=allLines.find(x=>x.id===id&&x.familyId===family);if(!line)return;selected=id;reset();renderVariants();renderSelect();notice='Variante chargée : '+line.variation.name;render();document.getElementById('atelier').scrollIntoView({behavior:'smooth',block:'start'});}
 function jumpToFork(){
  const l=selectedLine();if(!l)return;
@@ -484,11 +509,12 @@ function renderBoard(){
  const board=$('board'),s=current(),legals=R.legal(s),status=R.status(states.slice(0,cursor+1));
  const targets=legals.filter(m=>m[0]===selectedSquare).map(m=>m[1]);
  const prev=cursor?moves[cursor-1].move:null;
+ const proposed=candidateSuggestions(s)[0]?.m||null;
  board.innerHTML='';
  const order=Array.from({length:64},(_,j)=>flipped?(7-(j>>3))*16+(7-(j&7)):(j>>3)*16+(j&7));
  for(const [j,i] of order.entries()){
   const p=s.b[i],r=i>>4,c=i&7,button=document.createElement('button');button.type='button';
-  button.className='square'+((r+c)%2?' dark':'')+(selectedSquare===i?' selected':'')+(prev&&(prev[0]===i||prev[1]===i)?' last':'')+(p.toLowerCase()==='k'&&R.side(p)===s.t&&R.checked(s)?' is-check':'');
+  button.className='square'+((r+c)%2?' dark':'')+(selectedSquare===i?' selected':'')+(prev&&(prev[0]===i||prev[1]===i)?' last':'')+(p.toLowerCase()==='k'&&R.side(p)===s.t&&R.checked(s)?' is-check':'')+(proposed&&i===proposed[0]?' suggested-from':'')+(proposed&&i===proposed[1]?' suggested-to':'');
   button.dataset.square=R.sq(i);button.setAttribute('aria-label',R.sq(i)+(p==='.'?' vide':', '+PIECES[p.toLowerCase()]+' '+(p===p.toUpperCase()?'blanc':'noir')));
   if(p!=='.'){
    const span=document.createElement('span');span.className='piece '+(R.side(p)===1?'white':'black');span.textContent=GLYPH[p];button.append(span);
@@ -535,33 +561,43 @@ function contextualTip(s){
  return 'Cherchez un bon développement du fou c8, une structure de pions solide et une attaque du centre par <strong>...c5</strong> au bon moment.';
 }
 function renderAdvice(){
- const s=current(),start=activeEntry(),book=bookCandidates(s),status=R.status(states.slice(0,cursor+1)),selectedEntry=selectedLine(),analysis=getEngineMoves();
+ const s=current(),entry=activeEntry(),status=R.status(states.slice(0,cursor+1)),selectedEntry=selectedLine();
+ const tips=candidateSuggestions(s),myTurn=coachSide===0||s.t===coachSide;
  $('side-eyebrow').textContent=family==='caro'?'Le plan des Noirs':'Le plan des Blancs';
- $('active-title').textContent=selectedEntry?.variation.name||start.name;
- $('opening-intro').textContent=start.intro;
+ $('active-title').textContent=selectedEntry?.variation.name||entry.name;
+ $('opening-intro').textContent=entry.intro;
  $('strategy-box').innerHTML=contextualTip(s);
- $('last-feedback').textContent=cursor&&moves[cursor-1]?.book?'Ce coup figure dans le répertoire. Vérifie néanmoins sa qualité avec Stockfish.':cursor?'Coup légal hors répertoire : seule l’analyse moteur peut fournir une recommandation calculée.':'Choisissez votre premier coup ou une variante.';
+ $('last-feedback').textContent=cursor&&moves[cursor-1]?.book?'Ce coup figure dans le répertoire. Sa qualité n’est pas automatiquement garantie.':cursor?'Coup légal hors du répertoire local : Stockfish ou les parties de maîtres peuvent fournir des indications.':'Choisis ton camp ; les coups documentés apparaissent immédiatement.';
  $('last-feedback').classList.toggle('danger',false);
  const el=$('book-choices');el.innerHTML='';
- if(status.end){$('reco-text').textContent='La partie est terminée. Reviens en arrière pour reprendre l’analyse.';}
- else if(analysis?.variants?.length){
-  $('reco-text').textContent='Coups calculés par Stockfish pour la position actuelle, classés par son évaluation. Les variantes du répertoire ne sont pas considérées automatiquement comme les meilleures.';
-  for(const v of analysis.variants.slice(0,3)){
-   const m=engineMoveFor(s,v.uci);if(!m)continue;
+ let explanation='';
+ if(status.end){explanation='La partie est terminée. Reviens en arrière pour reprendre l’analyse.';}
+ else if(tips.length){
+  const src=tips[0].source;
+  if(myTurn){
+   explanation=src==='moteur'?'Propositions de Stockfish pour '+(s.t===1?'les Blancs':'les Noirs')+' à profondeur limitée :':
+     src==='théorie'?'Coups issus des variantes théoriques pour '+(s.t===1?'les Blancs':'les Noirs')+' (non classés par qualité moteur) :':
+     'Coups observés dans les parties de maîtres : ils sont classés par fréquence, pas par qualité calculée.';
+  }else{explanation='C’est au tour de l’adversaire. Voici des réponses documentées pour simuler son jeu ; les conseils pour ton camp apparaîtront ensuite.';}
+  for(const v of tips){
    const b=document.createElement('button');b.className='choice';b.type='button';
-   const label=document.createElement('strong');label.textContent=R.moveLabel(s,m);
-   const desc=document.createElement('span');desc.textContent=v.depth?'Analyse prof. '+v.depth:'Coup moteur';
-   b.append(label,desc);b.title='Proposition du moteur à profondeur limitée';b.addEventListener('click',()=>{engine.auto=false;commit(m);});el.append(b);
+   const label=document.createElement('strong');label.textContent=R.moveLabel(s,v.m);
+   const desc=document.createElement('span');desc.textContent=(v.source==='moteur'?'Stockfish · ':v.source==='maîtres'?'Maîtres · ':'Théorie · ')+v.detail;
+   b.append(label,desc);b.title=v.source==='moteur'?'Suggestion calculée à profondeur limitée':v.source==='théorie'?'Continuation documentée ; pas une garantie du meilleur coup':'Coup observé dans des parties de maîtres';
+   b.addEventListener('click',()=>{engine.auto=false;commit(v.m);});el.append(b);
   }
- }else if(engine.ready){$('reco-text').textContent='Stockfish analyse cette position. Aucun coup n’est recommandé avant la fin du calcul.';}
- else{$('reco-text').textContent='Pour éviter les coups absurdes, les suggestions approximatives ont été supprimées. Active Stockfish pour calculer des coups forts pour les deux camps. Les branches du répertoire restent consultables dans le graphe.';}
+ }else if(engine.pending||engine.loading){explanation='Analyse en cours. Aucun coup n’est encore calculé ; recherche des variantes documentées.';}
+ else if(engine.ready){explanation='Stockfish prépare une analyse pour cette position.';}
+ else{explanation=myTurn?'Hors du répertoire pour ce camp : recherche dans les parties de maîtres si disponible. Active Stockfish pour une recommandation calculée.':'Joue une réponse adverse légale pour revenir au tour de ton camp.';}
+ $('reco-text').textContent=explanation;
  const list=$('legal-choices');list.innerHTML='';
  if(!status.end)for(const m of R.legal(s)){
   const b=document.createElement('button');b.className='choice';b.type='button';b.textContent=R.san(s,m);b.title='Coup légal, pas nécessairement bon';b.addEventListener('click',()=>{engine.auto=false;if(m[2]){promotionMoves=R.legal(s).filter(x=>x[0]===m[0]&&x[1]===m[1]);renderPromotion();}else commit(m);});list.append(b);
  }
- const best=analysis?.best?engineMoveFor(s,analysis.best):null;
- $('suggest').disabled=!best||status.end;
- $('suggest').textContent=best?'Jouer le 1er choix Stockfish : '+R.san(s,best):'Activer Stockfish pour un conseil';
+ const suggested=tips[0]||null;
+ $('suggest').disabled=!suggested||status.end;
+ $('suggest').textContent=suggested?((myTurn?'Jouer le coup proposé':'Jouer une réponse adverse')+' : '+R.san(s,suggested.m)):'Aucun coup conseillé pour cette position';
+ $('suggest').title=suggested?(suggested.source==='moteur'?'Calcul Stockfish':'Proposition issue du '+(suggested.source==='théorie'?'répertoire':'corpus de maîtres')):'Active Stockfish ou explore les variantes';
  $('game-status').textContent=status.text+(status.claim?' · Nulle réclamable : '+status.claim:'');
  updateEngineUI();
 }
@@ -664,7 +700,7 @@ function renderQuick(){const el=$('quick-positions');el.innerHTML='';for(const [
 function render(){
  $('mode-queen').classList.toggle('active',family==='queen');$('mode-caro').classList.toggle('active',family==='caro');
  $('mode-queen').setAttribute('aria-pressed',family==='queen');$('mode-caro').setAttribute('aria-pressed',family==='caro');
- renderBoard();renderAdvice();renderHistory();renderGraph();requestEngine();
+ renderBoard();renderAdvice();renderHistory();renderGraph();requestEngine();autoLoadMasterIfNeeded();
 }
 async function copyText(text,label){try{await navigator.clipboard.writeText(text);announce(label+' copié.');}catch{
  const el=document.createElement('textarea');el.value=text;el.style.position='fixed';el.style.left='-9999px';document.body.append(el);el.select();try{document.execCommand('copy');announce(label+' copié.');}catch(e){announce('Copie impossible : sélectionnez le texte manuellement.');}el.remove();
@@ -675,7 +711,8 @@ function savePgn(){const blob=new Blob([pgn()],{type:'application/x-chess-pgn;ch
 $('mode-queen').addEventListener('click',()=>{changeFamily('queen');});
 $('mode-caro').addEventListener('click',()=>{changeFamily('caro');});
 $('variation').addEventListener('change',e=>chooseVariation(e.target.value));
-$('suggest').addEventListener('click',()=>{const m=engineMoveFor(current(),getEngineMoves()?.best);if(m){engine.auto=false;commit(m);}});
+$('suggest').addEventListener('click',()=>{const suggested=candidateSuggestions(current())[0];if(suggested){engine.auto=false;commit(suggested.m);}});
+$('coach-side').addEventListener('change',e=>{coachSide=Number(e.target.value);render();});
 $('engine-start').addEventListener('click',()=>startEngine());
 $('engine-play').addEventListener('click',()=>{const m=engineMoveFor(current(),getEngineMoves()?.best);if(m){engine.auto=false;commit(m);}});
 $('engine-auto').addEventListener('click',()=>{if(!engine.ready)return;engine.auto=true;const entry=getEngineMoves();if(entry?.best&&cursor<80){const m=engineMoveFor(current(),entry.best);if(m){commit(m);return;}}requestEngine();updateEngineUI();});
@@ -693,7 +730,7 @@ $('promotion-cancel').addEventListener('click',closePromotion);
 $('promotion-overlay').addEventListener('click',e=>{if(e.target===$('promotion-overlay'))closePromotion();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&promotionMoves){closePromotion();return;}if(['INPUT','SELECT','TEXTAREA','BUTTON'].includes(document.activeElement?.tagName))return;if(e.key==='ArrowLeft'){e.preventDefault();back();}if(e.key==='ArrowRight'){e.preventDefault();advance();}});
 $('variant-search').addEventListener('input',renderVariants);$('variant-filter').addEventListener('change',renderVariants);
-initBook();resetCatalogue();renderSelect();renderVariants();renderQuick();render();updateEngineUI();
+$('coach-side').value=String(coachSide);initBook();resetCatalogue();renderSelect();renderVariants();renderQuick();render();updateEngineUI();
 })();
 
 </script>
